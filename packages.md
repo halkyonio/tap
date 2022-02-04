@@ -1,11 +1,9 @@
 ## TAP Packages
 
-The following table list the packages installed using TAP - light profile. The information is coming from the offcial documentation [page](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-components.html)
+The following table list the packages installed using TAP - light profile. The information is coming from the official documentation [page](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-components.html)
 like also from what the `Tanzu community edition` references [here](https://github.com/vmware-tanzu/community-edition#packages).
 
-TODO: Do we have to list all the packages here OR using the following [TAP architecture slides](https://docs.google.com/presentation/d/1jf12oJIc9yoJ0TS-G7h1rmcgKzbvQ65nK36Kg_Doz9I)
-
-To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you have access to TAP, then execute the following [list-tap-packages.sh](./list-tap-packages.sh)
+**REMARK**: To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you have access to TAP, then execute the following [list-tap-packages.sh](./list-tap-packages.sh)
 ```bash
 ./list-tap-packages.sh
 ```
