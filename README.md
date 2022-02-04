@@ -108,9 +108,26 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 
 Execute the bash script
 ```bash
+REMOTE_HOME_DIR=<REMOTE_HOME_PATH>
+VM_IP=<VM_IP>
+REGISTRY_SERVER=<REGISTRY_SERVER>
+REGISTRY_OWNER=<REGISTRY_OWNER>
+REGISTRY_USERNAME=<REGISTRY_USERNAME>
+REGISTRY_PASSWORD=<REGISTRY_PASSWORD>
+TANZU_REG_USERNAME=<TANZU_REG_USERNAME>
+TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD>
+TANZU_LEGACY_API_TOKEN=<TANZU_LEGACY_API_TOKEN>
 ./install.sh
 
-ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} "bash -s" -- < ./install.sh
+ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
+    VM_IP=<VM_IP> \
+    REGISTRY_SERVER=<REGISTRY_SERVER> \
+    REGISTRY_OWNER=<REGISTRY_OWNER> \
+    REGISTRY_USERNAME=<REGISTRY_USERNAME> \
+    REGISTRY_PASSWORD=<REGISTRY_PASSWORD> \
+    TANZU_REG_USERNAME=<TANZU_REG_USERNAME> \
+    TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD> \
+    TANZU_LEGACY_API_TOKEN=<TANZU_LEGACY_API_TOKEN> "bash -s" -- < ./install.sh
 ```
 
 ### How to remove TAP
@@ -120,9 +137,9 @@ Define first the following variable within the [uninstall.sh](./uninstall.sh) ba
 
 Next, execute locally or remotely this bash script:
 ```bash
-./uninstall.sh
+REMOTE_HOME_DIR=<HOME_DIR> ./uninstall.sh
 
-ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} "bash -s" -- < ./uninstall.sh
+ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<HOME_DIR> 'bash -s' -- < ./uninstall.sh
 ```
 
 ### Review what it has been installed
@@ -518,12 +535,6 @@ That's all !
 Short introduction about what is TAP is available [here](https://www.youtube.com/watch?v=H6rbIkaJ1xc&ab_channel=VMwareTanzu)
 
 The problem TAP would like to solve is presented within this [video](https://www.youtube.com/watch?v=9oupRtKT_JM)
-
-[Contour Ingres architecture](https://projectcontour.io/docs/v1.18.1/architecture/)
-
-[Use an Ingress route with Contour](https://tanzu.vmware.com/developer/guides/kubernetes/service-routing-contour-to-ingress-and-beyond/)
-
-[How to install Tanzu (Contour, Harbor, TBS) on kind](https://github.com/tanzu-japan/devsecops-demo)
 
 ## Get the TAP repository bundle and packages content using imgpkg
 

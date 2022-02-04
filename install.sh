@@ -25,19 +25,19 @@ export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 # Terminal UI to interact with a Kubernetes cluster
 K9S_VERSION=$(curl --silent "https://api.github.com/repos/derailed/k9s/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
 
-REMOTE_HOME_DIR="<CHANGE_ME>"
+REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
 DEST_DIR="/usr/local/bin"
 TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
 
-VM_IP="<CHANGE_ME>"
-REGISTRY_SERVER="<CHANGE_ME>"
-REGISTRY_OWER="<CHANGE_ME>"
-REGISTRY_USERNAME="<CHANGE_ME>"
-REGISTRY_PASSWORD="<CHANGE_ME>"
+VM_IP=${VM_IP:-127.0.0.1}
+REGISTRY_SERVER=${REGISTRY_SERVER:-docker.io}
+REGISTRY_OWNER=${REGISTRY_OWNER}
+REGISTRY_USERNAME=${REGISTRY_USERNAME}
+REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
-TANZU_LEGACY_API_TOKEN="<CHANGE_ME>"
-TANZU_REG_USERNAME="<CHANGE_ME>"
-TANZU_REG_PASSWORD="<CHANGE_ME>"
+TANZU_LEGACY_API_TOKEN=${TANZU_LEGACY_API_TOKEN}
+TANZU_REG_USERNAME=${TANZU_REG_USERNAME}
+TANZU_REG_PASSWORD=${TANZU_REG_PASSWORD}
 
 INGRESS_DOMAIN=$VM_IP.nip.io
 
@@ -162,7 +162,7 @@ cnrs:
 
 buildservice:
   # Dockerhub has the form kp_default_repository: "my-dockerhub-user/build-service" or kp_default_repository: "index.docker.io/my-user/build-service"
-  kp_default_repository: "$REGISTRY_SERVER/$REGISTRY_OWER/build-service"
+  kp_default_repository: "$REGISTRY_SERVER/$REGISTRY_OWNER/build-service"
   kp_default_repository_username: "$REGISTRY_USERNAME"
   kp_default_repository_password: "$REGISTRY_PASSWORD"
   # ca_cert_data: $X_509_ONELINE
@@ -174,12 +174,8 @@ supply_chain: basic
 ootb_supply_chain_basic:
   service_account: default
   registry:
-    # hostname of the registry server. Dockerhub has the form server: "index.docker.io", Google Cloud Registry has the form server: "gcr.io"
     server: "$REGISTRY_SERVER"
-    # repository is where workload images are stored in the registry. Images are written to SERVER-NAME/REPO-NAME/workload-name. Examples:
-    # Dockerhub has the form repository: "my-dockerhub-user"
-    # Google Cloud Registry has the form repository: "my-project/supply-chain"
-    repository: "$REGISTRY_OWER"
+    repository: "$REGISTRY_OWNER"
   gitops:
     ssh_secret: ""
 

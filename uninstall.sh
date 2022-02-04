@@ -14,10 +14,11 @@
 KUBE_CFG_FILE=${1:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
+REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
+
 NAMESPACE_TAP="tap-install"
 NAMESPACE_TAP_DEMO="tap-demo"
 
-REMOTE_HOME_DIR="/home/snowdrop"
 DEST_DIR="/usr/local/bin"
 TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
 
