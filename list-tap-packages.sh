@@ -3,7 +3,7 @@ KUBECONFIG_PATH=${KUBECONFIG_PATH:-$HOME/.kube/config}
 NAMESPACE_TAP=${NAMESPACE_TAP:-tap-install}
 
 echo "| Name | Package name | Version |"
-echo "| ==== | ============ | ======= |"
+echo "| ---- | ---- | ---- |"
 
 while read -r package; do
   name=$(echo $package | jq -r '.name')

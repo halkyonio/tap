@@ -10,7 +10,7 @@ To generate the list of the packages hereafter, if `Tanzu CLI` is installed on y
 ./list-
 ```
 | Name | Package name | Version |
-| ==== | ============ | ======= |
+| ---- | ------------ | -------- |
 | accelerator | accelerator.apps.tanzu.vmware.com | 1.0.0 |
 | appliveview | run.appliveview.tanzu.vmware.com | 1.0.1 |
 | appliveview-conventions | build.appliveview.tanzu.vmware.com | 1.0.1 |
