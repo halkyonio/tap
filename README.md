@@ -19,13 +19,18 @@ Table of Contents
 
 ## What is TAP
 
-Tanzu Application Platform 1.1 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-overview.html is a packaged set of components that helps developers and
-operators to more easily build, deploy, and manage apps on a Kubernetes platform.
+Tanzu Application Platform 1.1 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-overview.html is a packaged set of components that helps developers, architects and
+operators to more easily build, deploy, and manage applications on a Kubernetes platform. By supporting the [Supply Chain choreograph])(https://cartographer.sh/docs/v0.2.0/) pattern it allows
+to decouple the path to be done to move a microservice to Production (build, scan, CI/CD, test, ...) from the microservices created by the developers.
 
-TAP is a `Knative` platform using `kpack` (= buildpacks controller) to build images, `Contour` (= ingress) to route the traffic, `kapp` (= kind of helm technology but with more features) to assemble the
-`applications` and `Application Live and Application Accelerator`** to guide the Architects/Developers to design/deploy/monitor applications on k8s.
-
-**: Where VMWare/Pivotal would like to capture with a great DevExp on K8s the Spring Architects and Developers.
+TAP rely on some key components such as:
+- `Knative`serving and eventing,
+- `kpack` controller able to build images using `Buildpacks`,
+- `Contour` to route the traffic internally or externally using `Ingress`
+- `kapp` controller to install/uninstall resources
+- `Application Live and Application Accelerator` to guide the Architects/Developers to design/deploy/monitor applications on k8s.
+- `Tekton pipelines` and `FluxCD` to fetch the sources (git, ...)
+- `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...). 
 
 ## Packages
 
