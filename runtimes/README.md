@@ -1,4 +1,4 @@
-## Steps executed to install our buildpacks
+## Steps executed to use the Quarkus builder image
 
 ```bash
 git clone https://github.com/quarkusio/quarkus-buildpacks.git && cd quarkus-buildpacks
@@ -29,7 +29,7 @@ popd
 kapp delete -a quarkus-builder -y
 ```
 
-## Build the Quarkus application
+## Build a Quarkus application using kpack and the builder image
 
 Use a git repository and create a `kpack` CR
 ```bash
@@ -42,6 +42,8 @@ NAME                              IMAGE                                         
 quarkus-petclinic-image-build-1   ghcr.io/halkyonio/quarkus-tap-petclinic@sha256:523e8064f3a45eb9b5920740d15c95449db68274b55aa5887182eaeabaf923d7   True
 ```
 
+## Deploy the Quarkus Petclinic Application
+
 TODO: Review the following steps as I don t think that we can still create on TAP 1.0 -> `kappctrl.k14s.io/v1alpha1` !!!
 
 Use the `kp client` to create an image for the local project
@@ -52,7 +54,6 @@ kp image create quarkus-petclinic-image \
    --builder my-builder \
    -n my-namespace
 ```
-## Deploy the Quarkus Petclinic Application
 
 ```bash
 kapp delete -a quarkus-petclinic -y
