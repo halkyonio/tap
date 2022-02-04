@@ -58,6 +58,7 @@ TL&DR; It is needed to:
 ### Introduction
 
 The instructions of the official [guide](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-install-intro.html) have been executed without problem.
+
 **WARNING**: As the TAP release `1.0` do not support to build/push an image using a local container registry (as we cannot inject a self-signed CA certificate),
 then it is needed to use an external repository (ghcr.io, docker.io) !
 
@@ -105,6 +106,7 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
 - **VM_IP**: IP address of the VM where the cluster is running
 
+Execute the bash script
 ```bash
 ./install.sh
 
