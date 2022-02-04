@@ -7,7 +7,7 @@ TODO: Do we have to list all the packages here OR using the following [TAP archi
 
 To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you have access to TAP, then execute the following [list-tap-packages.sh](./list-tap-packages.sh)
 ```bash
-./list-
+./list-tap-packages.sh
 ```
 | Name | Package name | Version |
 | ---- | ------------ | -------- |
