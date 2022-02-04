@@ -11,36 +11,26 @@ To generate the list of the packages hereafter, if `Tanzu CLI` is installed on y
 ```
 | Name | Package name | Version |
 | ---- | ------------ | -------- |
-| accelerator | accelerator.apps.tanzu.vmware.com | 1.0.0 |
-| appliveview | run.appliveview.tanzu.vmware.com | 1.0.1 |
-| appliveview-conventions | build.appliveview.tanzu.vmware.com | 1.0.1 |
-| buildservice | buildservice.tanzu.vmware.com | 1.4.2 |
-| cartographer | cartographer.tanzu.vmware.com | 0.1.0 |
-| cert-manager | cert-manager.tanzu.vmware.com | 1.5.3+tap.1 |
-| cnrs | cnrs.tanzu.vmware.com | 1.1.0 |
-| contour | contour.tanzu.vmware.com | 1.18.2+tap.1 |
-| conventions-controller | controller.conventions.apps.tanzu.vmware.com | 0.5.0 |
-| developer-conventions | developer-conventions.tanzu.vmware.com | 0.5.0-build.1 |
-| fluxcd-source-controller | fluxcd.source.controller.tanzu.vmware.com | 0.16.0 |
-| ootb-delivery-basic | ootb-delivery-basic.tanzu.vmware.com | 0.5.1 |
-| ootb-supply-chain-basic | ootb-supply-chain-basic.tanzu.vmware.com | 0.5.1 |
-| ootb-templates | ootb-templates.tanzu.vmware.com | 0.5.1 |
-| service-bindings | service-bindings.labs.vmware.com | 0.6.0 |
-| services-toolkit | services-toolkit.tanzu.vmware.com | 0.5.0 |
-| source-controller | controller.source.apps.tanzu.vmware.com | 0.2.0 |
-| spring-boot-conventions | spring-boot-conventions.tanzu.vmware.com | 0.3.0 |
-| tap | tap.tanzu.vmware.com | 1.0.0 |
-| tap-gui | tap-gui.tanzu.vmware.com | 1.0.1 |
+| [accelerator](https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/1.0/acc-docs/GUID-index.html) | accelerator.apps.tanzu.vmware.com | 1.0.0 |
+| [appliveview](https://docs.vmware.com/en/Application-Live-View-for-VMware-Tanzu/1.0/docs/GUID-index.html) | run.appliveview.tanzu.vmware.com | 1.0.1 |
+| [appliveview-conventions](https://docs.vmware.com/en/Application-Live-View-for-VMware-Tanzu/1.0/docs/GUID-installing.html) | build.appliveview.tanzu.vmware.com | 1.0.1 |
+| [buildservice](https://docs.vmware.com/en/Tanzu-Build-Service/1.4/vmware-tanzu-build-service-v14/GUID-index.html) | buildservice.tanzu.vmware.com | 1.4.2 |
+| [cartographer](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-scc-about.html) | cartographer.tanzu.vmware.com | 0.1.0 |
+| [cert-manager](https://cert-manager.io/docs/) | cert-manager.tanzu.vmware.com | 1.5.3+tap.1 |
+| [cnrs](https://docs.vmware.com/en/Cloud-Native-Runtimes-for-VMware-Tanzu/1.0/tanzu-cloud-native-runtimes-1-0/GUID-cnr-overview.html) | cnrs.tanzu.vmware.com | 1.1.0 |
+| [contour](https://projectcontour.io/) | contour.tanzu.vmware.com | 1.18.2+tap.1 |
+| [conventions-controller](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-convention-service-about.html) | controller.conventions.apps.tanzu.vmware.com | 0.5.0 |
+| [developer-conventions](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-developer-conventions-about.html) | developer-conventions.tanzu.vmware.com | 0.5.0-build.1 |
+| [fluxcd-source-controller](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-source-controller-about.html) | fluxcd.source.controller.tanzu.vmware.com | 0.16.0 |
+| [ootb-delivery-basic](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-scc-ootb-delivery-basic.html) | ootb-delivery-basic.tanzu.vmware.com | 0.5.1 |
+| [ootb-supply-chain-basic](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-scc-ootb-supply-chain-basic.html) | ootb-supply-chain-basic.tanzu.vmware.com | 0.5.1 |
+| [ootb-templates](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-scc-ootb-templates.html) | ootb-templates.tanzu.vmware.com | 0.5.1 |
+| [service-bindings](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-service-bindings-about.html) | service-bindings.labs.vmware.com | 0.6.0 |
+| [services-toolkit ](https://docs.vmware.com/en/Services-Toolkit-for-VMware-Tanzu/0.5/services-toolkit-0-5/GUID-overview.html)| services-toolkit.tanzu.vmware.com | 0.5.0 |
+| [source-controller](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-source-controller-about.html) | controller.source.apps.tanzu.vmware.com | 0.2.0 |
+| [spring-boot-conventions](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-components.html#install-spring-boot-conv) | spring-boot-conventions.tanzu.vmware.com | 0.3.0 |
+| [tap]() | tap.tanzu.vmware.com | 1.0.0 |
+| [tap-gui](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-tap-gui-about.html) | tap-gui.tanzu.vmware.com | 1.0.1 |
 | tap-telemetry | tap-telemetry.tanzu.vmware.com | 0.1.2 |
-| tekton-pipelines | tekton.tanzu.vmware.com | 0.30.0 |
+| [tekton-pipelines](https://tekton.dev/) | tekton.tanzu.vmware.com | 0.30.0 |
 
-Old table created manually
-
-| Name                                                                                                                 | Description                                                                                                                                                                                        | System(s)                                   | Product page                                         | Version        |
-| ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------ | ---------------- |
-| [Tanzu Build Service](https://docs.pivotal.io/build-service/1-2/)                                                    | Service building Container images using buildpacks spec                                                                                                                                            | kpack                                       | https://network.pivotal.io/products/build-service/   | 1.2.2          |
-| [Cloud Native runtimes](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/0.1/tap-0-1/GUID-overview.html) | Serverless application runtime for Kubernetes that is based on Knative and runs on a single Kubernetes cluster                                                                                     |                                             | https://network.pivotal.io/products/serverless       | 1.0.2+build.81 |
-| [Application Live](https://docs.vmware.com/en/Application-Live-View-for-VMware-Tanzu/0.1/docs/GUID-index.html)       | lightweight insights and troubleshooting tool that helps application developers and application operators to look inside running applications. It is based on the concept of Spring Boot Actuators | Application Live controller & server        | https://network.pivotal.io/products/app-live-view/   | 0.1.0          |
-| [Application Accelerator](https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/index.html)            | Controller reconciling accelerator CRD (= developer project definition)                                                                                                                            | Application accelerator & source controller | https://network.pivotal.io/products/app-accelerator/ | 0.2.0          |
-| [Flux2](https://github.com/fluxcd/flux2#flux-version-2)                                                              | Sync k8s resources and config up to date from Git repositories                                                                                                                                     | Flux2                                       | https://fluxcd.io/                                   | 0.17.0         |
-| [Kapp](https://carvel.dev/kapp-controller/)                                                                          | Deploy and view groups of Kubernetes resources as "applications" controller                                                                                                                        | kapp                                        | https://carvel.dev/kapp-controller/                  | 0.24.0         |

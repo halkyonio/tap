@@ -178,6 +178,8 @@ tanzu package installed get -n tap-install <package_name>
 tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-file tap-values.yml -n tap-install
 ```
 
+- To install a package individually, use the following [documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-components.html) page
+
 ## Demo
 
 TODO: To be reviewed before to release 1.0 !!
