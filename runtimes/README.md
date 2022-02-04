@@ -41,6 +41,33 @@ kc get build.kpack.io -l image.kpack.io/image=quarkus-petclinic-image -n tap-dem
 NAME                              IMAGE                                                                                                             SUCCEEDED
 quarkus-petclinic-image-build-1   ghcr.io/halkyonio/quarkus-tap-petclinic@sha256:523e8064f3a45eb9b5920740d15c95449db68274b55aa5887182eaeabaf923d7   True
 ```
+## Update TAP
+
+Edit the `tap-values.yml` file to add the following field abd value
+```yaml
+ootb_supply_chain_basic:
+  # cluster_builder: default
+  cluster_builder: runtime
+  ...
+```
+Next, update TAP
+```bash
+tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-file tap-values.yml -n tap-install
+```
+When done, we can create a new Quarkus workload
+```bash
+KUBECONFIG_PATH=</PATH/KUBE_CONFIG_FILE>
+QUARKUS_DEMO_GIT="https://github.com/halkyonio/quarkus-tap-petclinic.git"
+DEMO_NAMESPACE=tap-demo
+tanzu apps workload create quarkus-java-web-app \
+  --kubeconfig $KUBECONFIG_PATH \
+  -n $DEMO_NAMESPACE \
+  --git-repo $QUARKUS_DEMO_GIT \
+  --git-branch main \
+  --type web \
+  --label app.kubernetes.io/part-of=quarkus-java-web-app \
+  --yes
+```
 
 ## Deploy the Quarkus Petclinic Application
 

@@ -43,14 +43,25 @@ tanzu apps workload list -n $DEMO_NAMESPACE
 You can follow the build of the application using the commands:
 ```bash
 tanzu apps -n $DEMO_NAMESPACE workload get quarkus-java-web-app
-# quarkus-java-web-app: Unknown
+# quarkus-java-web-app: Ready
 ---
-lastTransitionTime: "2022-02-04T14:43:47Z"
-message: waiting to read value [.status.latestImage] from resource [image.kpack.io/quarkus-java-web-app]
-  in namespace [tap-demo]
+lastTransitionTime: "2022-02-04T17:16:15Z"
+message: ""
+reason: Ready
+status: "True"
+type: Ready
+
+Workload pods
+NAME                                           STATE       AGE
+quarkus-java-web-app-build-1-build-pod         Succeeded   113s
+quarkus-java-web-app-config-writer-864nj-pod   Succeeded   51s
 ...
 
 tanzu apps -n $DEMO_NAMESPACE workload tail quarkus-java-web-app --since 10m --timestamp
+```
+When the Quarkus application has been built, then we can access the service
+```bash
+
 ```
 
 To delete the workload:
