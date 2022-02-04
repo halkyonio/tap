@@ -1,0 +1,49 @@
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+  name: quarkus-petclinic
+  namespace: tap-install
+spec:
+  serviceAccountName: tap-service-account
+  fetch:
+    - inline:
+        paths:
+          manifest.yml: |
+            ---
+            apiVersion: kapp.k14s.io/v1alpha1
+            kind: Config
+            rebaseRules:
+              - path: [metadata, annotations, serving.knative.dev/creator]
+                type: copy
+                sources: [new, existing]
+                resourceMatchers: &matchers
+                  - apiVersionKindMatcher: {apiVersion: serving.knative.dev/v1, kind: Service}
+              - path: [metadata, annotations, serving.knative.dev/lastModifier]
+                type: copy
+                sources: [new, existing]
+                resourceMatchers: *matchers
+            ---
+            apiVersion: serving.knative.dev/v1
+            kind: Service
+            metadata:
+              name: quarkus-petclinic
+            spec:
+              template:
+                metadata:
+                  annotations:
+                    # See: https://knative.dev/docs/serving/autoscaling/scale-bounds/#configuring-scale-bounds
+                    autoscaling.knative.dev/scaleDownDelay: "15m"
+                    client.knative.dev/user-image: ""
+                  labels:
+                    tanzu.app.live.view: "true"
+                    tanzu.app.live.view.application.name: "quarkus-petclinic"
+                    # tanzu.app.live.view.application.flavours: "quarkus"
+                spec:
+                  containers:
+                  - image: 95.217.159.244:32500/quarkus-petclinic@sha256:848008bac5d0dea730450ec5ac844e28fd92a0a59f9cad9e62ff7cf28da44b5f
+                    securityContext:
+                      runAsUser: 1000
+  template:
+    - ytt: {}
+  deploy:
+    - kapp: {}
