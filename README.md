@@ -27,9 +27,11 @@ TAP rely on some key components such as:
 - `Knative`serving and eventing,
 - `kpack` controller able to build images using `Buildpacks`,
 - `Contour` to route the traffic internally or externally using `Ingress`
-- `kapp` controller to install/uninstall resources
-- `Application Live and Application Accelerator` to guide the Architects/Developers to design/deploy/monitor applications on k8s.
+- `kapp` controller to install/uninstall K8s resources using templates (ytt, ...)
+- `Application Live & Application Accelerator` to guide the Architects/Developers to design/deploy/monitor applications on k8s.
 - `Tekton pipelines` and `FluxCD` to fetch the sources (git, ...)
+- `Convention` controller able to change the `Workloads` according to METADATA (framework, runtime, ...)
+- `Service Binding`,
 - `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...). 
 
 ## Packages
