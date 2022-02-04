@@ -9,6 +9,7 @@ Table of Contents
    * [How to install TAP](#how-to-install-tap)
    * [How to remove TAP](#how-to-remove-tap)
    * [Review what it has been installed](#review-what-it-has-been-installed)
+   * [Change TAP configuration](#change-tap-configuration)
 * [Demo](#demo)
    * [Step by step instructions](#step-by-step-instructions)
    * [All in one instructions](#all-in-one-instructions)
@@ -172,7 +173,15 @@ tanzu package installed list -n tap-install
 tanzu package installed get -n tap-install <package_name>
 ```
 
-- To update a package or some of the parameters, use the following command:
+### Change TAP configuration
+
+- If some parameters should be changed, you can first check the list of the available values for a package:
+```bash
+tanzu package available get ootb-supply-chain-basic.tanzu.vmware.com/0.5.1 -n tap-install --values-schema
+```
+
+- Next edit and change the `values.yaml` file created
+- Update finally the TAP package using the following command:
 
 ```bash
 tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-file tap-values.yml -n tap-install
