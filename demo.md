@@ -19,7 +19,7 @@ quarkus-java-web-app-00001-deployment-c47476d6c-ldhk5[workload] 2022-02-04T17:16
 quarkus-java-web-app-00001-deployment-c47476d6c-ldhk5[queue-proxy] 2022-02-04T17:16:31.895835508+01:00 aggressive probe error (failed 202 times): dial tcp 127.0.0.1:8080: connect: connection refused
 quarkus-java-web-app-00001-deployment-c47476d6c-ldhk5[queue-proxy] 2022-02-04T17:16:31.895881215+01:00 timed out waiting for the condition
 ```
-then it is needed to use our own Quarkus Builder and that we configure Kpack & TAP as documented [here](runtimes/README.md)
+then it is needed to use our own Quarkus Builder and that we configure kpack & TAP as documented [here](runtimes/README.md)
 
 When done, you can now use the Tanzu client to create a Workload CR using the following parameters:
 

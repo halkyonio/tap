@@ -1,4 +1,4 @@
-apiVersion: kpack.io/v1alpha1
+apiVersion: kpack.io/v1alpha2
 kind: ClusterBuilder
 metadata:
   name: runtime
@@ -7,7 +7,7 @@ spec:
   - group:
       - id: "io.quarkus.buildpacks.buildpack"
   serviceAccountRef:
-    name: canonical-registry-serviceaccount
+    name: kp-default-repository-serviceaccount
     namespace: kpack
   stack:
     name: runtime
@@ -15,4 +15,4 @@ spec:
   store:
     name: runtime
     kind: ClusterStore
-  tag: '95.217.159.244:32500/runtime'
+  tag: 'ghcr.io/halkyonio/quarkus-builder:jvm'

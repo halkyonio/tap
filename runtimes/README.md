@@ -7,38 +7,44 @@ git clone https://github.com/quarkusio/quarkus-buildpacks.git && cd quarkus-buil
 ./create-buildpacks.sh
 
 # Tag and push the images to a private docker registry
-export REGISTRY_URL="localhost:5000"
-docker tag redhat/buildpacks-builder-quarkus-jvm:latest $REGISTRY_URL/redhat-buildpacks/quarkus-java:latest
-docker tag redhat/buildpacks-stack-quarkus-run:jvm $REGISTRY_URL/redhat-buildpacks/quarkus:run
-docker tag redhat/buildpacks-stack-quarkus-build:jvm $REGISTRY_URL/redhat-buildpacks/quarkus:build
+export REGISTRY_URL="ghcr.io/halkyonio"
+docker tag codejive/buildpacks-quarkus-builder:jvm $REGISTRY_URL/quarkus-builder:jvm
+docker tag codejive/buildpacks-quarkus-run:jvm $REGISTRY_URL/quarkus-stack:run
+docker tag codejive/buildpacks-quarkus-build:jvm $REGISTRY_URL/quarkus-stack:build
 
-docker push $REGISTRY_URL/redhat-buildpacks/quarkus-java:latest
-docker push $REGISTRY_URL/redhat-buildpacks/quarkus:build
-docker push $REGISTRY_URL/redhat-buildpacks/quarkus:run
+docker push $REGISTRY_URL/quarkus-builder:jvm
+docker push $REGISTRY_URL/quarkus-stack:run
+docker push $REGISTRY_URL/quarkus-stack:build
 
-# Create the Kpack ClusterStore, ClusterBuilder and ClusterStack Custom resources
-kapp deploy -a runtime-buildpacks \
+# Create the kpack ClusterStore, ClusterBuilder and ClusterStack Custom resources
+pushd runtimes
+KUBECONFIG=</PATH/KUBE_CONFIG_FILE>
+kapp deploy -a quarkus-builder \
+  --kubeconfig $KUBECONFIG \
   -f buildpacks/clusterstore.yml \
   -f buildpacks/clusterstack.yml \
   -f buildpacks/clusterbuilder.yml
-
-# To delete the buildpacks, builders installed
-kapp delete -a runtime-buildpacks -y
+popd
+# To delete the kapp "quarkus-builder" installed
+kapp delete -a quarkus-builder -y
 ```
 
 ## Build the Quarkus application
 
-Use a git repository and create a `Kpack` CR
+Use a git repository and create a `kpack` CR
 ```bash
 kc delete -f build/kpack-image.yml
 kc apply -f build/kpack-image.yml
 
 # Check build status
-kc get build.kpack.io -l image.kpack.io/image=quarkus-petclinic-image -n tap-install  
-NAME                                    IMAGE                                                                                                            SUCCEEDED
-quarkus-petclinic-image-build-1-7lkg4   95.217.159.244:32500/quarkus-petclinic@sha256:d7a49934e988e7c281b5de52b6b227a1926f4238c90b3a01ab654c7f554a82bd   True
+kc get build.kpack.io -l image.kpack.io/image=quarkus-petclinic-image -n tap-demo 
+NAME                              IMAGE                                                                                                             SUCCEEDED
+quarkus-petclinic-image-build-1   ghcr.io/halkyonio/quarkus-tap-petclinic@sha256:523e8064f3a45eb9b5920740d15c95449db68274b55aa5887182eaeabaf923d7   True
 ```
-Use the `kp client` and local project
+
+TODO: Review the following steps as I don t think that we can still create on TAP 1.0 -> `kappctrl.k14s.io/v1alpha1` !!!
+
+Use the `kp client` to create an image for the local project
 ```bash
 kp image create quarkus-petclinic-image \
    --tag <REGISTRY_URL>/<REPO> \

@@ -1,7 +1,7 @@
-apiVersion: kpack.io/v1alpha1
+apiVersion: kpack.io/v1alpha2
 kind: ClusterStore
 metadata:
   name: runtime
 spec:
   sources:
-    - image: 95.217.159.244:32500/redhat-buildpacks/quarkus-java
+    - image: ghcr.io/halkyonio/quarkus-builder:jvm

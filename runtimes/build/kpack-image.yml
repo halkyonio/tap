@@ -1,15 +1,15 @@
-apiVersion: kpack.io/v1alpha1
+apiVersion: kpack.io/v1alpha2
 kind: Image
 metadata:
   name: quarkus-petclinic-image
-  namespace: tap-install
+  namespace: tap-demo
 spec:
-  tag: 95.217.159.244:32500/quarkus-petclinic
-  serviceAccount: tap-service-account
+  tag: ghcr.io/halkyonio/quarkus-tap-petclinic
+  serviceAccount: default
   builder:
     kind: ClusterBuilder
     name: runtime
   source:
     git:
-      url: https://github.com/snowdrop/quarkus-tap-petclinic
+      url: https://github.com/halkyonio/quarkus-tap-petclinic
       revision: main
