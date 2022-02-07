@@ -538,6 +538,8 @@ That's all !
 
 ## References
 
+TAP documentation upstream [project](https://github.com/pivotal/docs-tap)
+
 Short introduction about what is TAP is available [here](https://www.youtube.com/watch?v=H6rbIkaJ1xc&ab_channel=VMwareTanzu)
 
 The problem TAP would like to solve is presented within this [video](https://www.youtube.com/watch?v=9oupRtKT_JM)
