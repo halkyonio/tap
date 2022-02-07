@@ -234,7 +234,7 @@ while [[ "$resp" != "Reconcile succeeded" ]]; do
   resp=$(tanzu package installed get tap -n tap-install -o json | jq -r .[].status);
 done
 
-log "CYAN" "List TAP the packages installed"
+log "CYAN" "List the TAP packages installed"
 tanzu package available list -n $NAMESPACE_TAP
 
 log "CYAN" "Set up the developer namespace: $NAMESPACE_DEMO, its RBAC and a secret able to access: tanzu registry & registry defined bvy the user: $REGISTRY_SERVER"
