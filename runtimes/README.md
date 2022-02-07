@@ -29,28 +29,16 @@ popd
 kapp delete -a quarkus-builder -y
 ```
 
-## Build a Quarkus application using kpack and the builder image
-
-Use a git repository and create a `kpack` CR
-```bash
-kc delete -f build/kpack-image.yml
-kc apply -f build/kpack-image.yml
-
-# Check build status
-kc get build.kpack.io -l image.kpack.io/image=quarkus-petclinic-image -n tap-demo 
-NAME                              IMAGE                                                                                                             SUCCEEDED
-quarkus-petclinic-image-build-1   ghcr.io/halkyonio/quarkus-tap-petclinic@sha256:523e8064f3a45eb9b5920740d15c95449db68274b55aa5887182eaeabaf923d7   True
-```
 ## Update TAP
 
-Edit the `tap-values.yml` file to add the following field abd value
+Edit the `tap-values.yml` file to configure the `cluster_builder` field to use the `runtime` ClusterBuilder
 ```yaml
 ootb_supply_chain_basic:
   # cluster_builder: default
   cluster_builder: runtime
   ...
 ```
-Next, update TAP
+Next, update the TAP package which will ultimately update the `ClusterSupplyChain/source-to-url`
 ```bash
 tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-file tap-values.yml -n tap-install
 ```
@@ -67,6 +55,36 @@ tanzu apps workload create quarkus-java-web-app \
   --type web \
   --label app.kubernetes.io/part-of=quarkus-java-web-app \
   --yes
+```
+
+## Trick to allow a quarkus application to work with Application Live View
+
+Actually, this is already sort of possible via plugins that app live view allows to create. Essentially you’d need a new “app-flavour” for quarkus,
+The label on such app needs to `tanzu.app.live.view.application.flavours: quarkus`.
+You’d need to follow **[Extensibility](https://https://docs.vmware.com/en/Application-Live-View-for-VMware-Tanzu/0.1/docs/GUID-extensibility.html)** doc to create a UI plugin.
+
+```
+The backend endpoint would be:
+/instance/{id}/actuator/**
+(i.e. /instance/abc-id/actuator/app-memory)
+```
+
+Now if apps actuator path is configured with label: `tanzu.app.live.view.application.actuator.path: quarkus`
+instead of the default which is actuator on the app you’d be hitting endpoint `/quarkus/app-memory` the response json
+for which you should be able to handle in your UI plugin.
+
+
+## Build a Quarkus application using kpack and the builder image
+
+Use a git repository and create a `kpack` CR
+```bash
+kc delete -f build/kpack-image.yml
+kc apply -f build/kpack-image.yml
+
+# Check build status
+kc get build.kpack.io -l image.kpack.io/image=quarkus-petclinic-image -n tap-demo 
+NAME                              IMAGE                                                                                                             SUCCEEDED
+quarkus-petclinic-image-build-1   ghcr.io/halkyonio/quarkus-tap-petclinic@sha256:523e8064f3a45eb9b5920740d15c95449db68274b55aa5887182eaeabaf923d7   True
 ```
 
 ## Deploy the Quarkus Petclinic Application
@@ -93,19 +111,3 @@ export VM_IP=95.217.159.244
 echo "Quarkus Petclinic demo: http://quarkus-petclinic.tap-install.$VM_IP.nip.io:$ENVOY_NODE_PORT"
 open -na "Google Chrome" --args --incognito http://petclinic.tap-install.$VM_IP.nip.io:$ENVOY_NODE_PORT
 ```
-
-## Trick to allow a quarkus application to work with Application Live View
-
-Actually, this is already sort of possible via plugins that app live view allows to create. Essentially you’d need a new “app-flavour” for quarkus,
-The label on such app needs to `tanzu.app.live.view.application.flavours: quarkus`.
-You’d need to follow **[Extensibility](https://https://docs.vmware.com/en/Application-Live-View-for-VMware-Tanzu/0.1/docs/GUID-extensibility.html)** doc to create a UI plugin.
-
-```
-The backend endpoint would be:
-/instance/{id}/actuator/**
-(i.e. /instance/abc-id/actuator/app-memory)
-```
-
-Now if apps actuator path is configured with label: `tanzu.app.live.view.application.actuator.path: quarkus`
-instead of the default which is actuator on the app you’d be hitting endpoint `/quarkus/app-memory` the response json
-for which you should be able to handle in your UI plugin.
