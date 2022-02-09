@@ -65,5 +65,5 @@ Having used `kapp` to deploy the example, you can get rid of it by deleting the
 `kapp` app:
 
 ```bash
-kapp delete -a quarkus-app
+kapp delete -a quarkus-app -n tap-demo
 ```

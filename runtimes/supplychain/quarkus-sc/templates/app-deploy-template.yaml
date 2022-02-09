@@ -46,6 +46,11 @@ spec:
                     metadata:
                       annotations:
                         autoscaling.knative.dev/minScale: "1"
+                      labels:
+                        app.tanzu.vmware.com/deliverable-type: #@ data.values.deliverable_type
+                        app.kubernetes.io/component: deliverable
+                        #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
+                        app.kubernetes.io/part-of: #@ data.values.workload.metadata.labels["app.kubernetes.io/part-of"]
                     spec:
                       serviceAccountName: $(params.service_account)$
                       containers:
