@@ -6,7 +6,7 @@ metadata:
   name: #@ data.values.workload.name
   namespace: #@ data.values.namespace
   labels:
-    app.tanzu.vmware.com/workload-type: quarkus
+    app.tanzu.vmware.com/workload-type: web
 spec:
   serviceAccountName: #@ data.values.service_account_name
   source:

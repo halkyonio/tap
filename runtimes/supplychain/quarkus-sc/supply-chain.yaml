@@ -6,7 +6,7 @@ metadata:
   name: quarkus-supply-chain
 spec:
   selector:
-    app.tanzu.vmware.com/workload-type: quarkus
+    app.tanzu.vmware.com/workload-type: web
   params:
     - name: image_prefix
       value: #@ data.values.image_prefix

@@ -43,59 +43,23 @@ tap-demo     └─SourceResolver/quarkus-app-source    True                    
 
 Once `App/quarkus-app` is ready ("Reconciliation Succeeded")
 
-```bash
-kubectl get quarkus-app -n tap-demo
-```
 ```console
-NAME   DESCRIPTION           SINCE-DEPLOY   AGE
-dev    Reconcile succeeded   19s            7m13s
+$ kubectl get app/quarkus-app -n tap-demo
+NAME          DESCRIPTION           SINCE-DEPLOY   AGE
+quarkus-app   Reconcile succeeded   16s            46s
 ```
 
 we can see that the service has been deployed:
 
-```bash
-kubectl get services.serving.knative -n tap-demo
-```
 ```console
-kubectl get services.serving
-NAME   URL                              LATESTCREATED   LATESTREADY   READY     REASON
-dev    http://dev.default.example.com   dev-00001       dev-00001     Unknown   IngressNotConfigured
+kubectl get services.serving.knative/quarkus-app -n tap-demo
+NAME          URL                                                 LATESTCREATED       LATESTREADY         READY   REASON
+quarkus-app   http://quarkus-app.tap-demo.94.130.111.125.nip.io   quarkus-app-00001   quarkus-app-00001   True
 ```
 
-Because we haven't installed and configured an ingress controller, we can't
-just hit that URL, but we can still verify that we have our application up and
-running by making use of port-forwarding, first by finding the deployment
-corresponding to the current revion (`dev-00001`)
+Open the URL within your browser: `http://quarkus-app.tap-demo.94.130.111.125.nip.io` to access the service
 
-```bash
-kubectl get deployment -n tap-demo
-```
-```console
-NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
-dev-00001-deployment   1/1     1            1           4m24s
-```
-
-and the doing the port-forwarding:
-
-```bash
-kubectl port-forward deployment/dev-00001-deployment 8080:8080
-```
-```console
-Forwarding from 127.0.0.1:8080 -> 8080
-Forwarding from [::1]:8080 -> 8080
-```
-
-That done, we can hit `8080` and get the result we expect by making a request
-from another terminal:
-
-```bash
-curl localhost:8080
-```
-```console
-hello world
-```
-
-## Tearing down the example
+## Tearing down the quarkus-app
 
 Having used `kapp` to deploy the example, you can get rid of it by deleting the
 `kapp` app:
