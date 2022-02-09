@@ -1,0 +1,59 @@
+apiVersion: carto.run/v1alpha1
+kind: ClusterTemplate
+metadata:
+  name: app-deploy
+spec:
+  template:
+    apiVersion: kappctrl.k14s.io/v1alpha1
+    kind: App
+    metadata:
+      name: $(workload.metadata.name)$
+    spec:
+      serviceAccountName: $(params.service_account)$
+      fetch:
+        - inline:
+            paths:
+              manifest.yml: |
+                ---
+                apiVersion: kapp.k14s.io/v1alpha1
+                kind: Config
+                rebaseRules:
+                  - path:
+                      - metadata
+                      - annotations
+                      - serving.knative.dev/creator
+                    type: copy
+                    sources: [new, existing]
+                    resourceMatchers: &matchers
+                      - apiVersionKindMatcher:
+                          apiVersion: serving.knative.dev/v1
+                          kind: Service
+                  - path:
+                      - metadata
+                      - annotations
+                      - serving.knative.dev/lastModifier
+                    type: copy
+                    sources: [new, existing]
+                    resourceMatchers: *matchers
+
+                ---
+                apiVersion: serving.knative.dev/v1
+                kind: Service
+                metadata:
+                  name: $(workload.metadata.name)$
+                spec:
+                  template:
+                    metadata:
+                      annotations:
+                        autoscaling.knative.dev/minScale: "1"
+                    spec:
+                      serviceAccountName: $(params.service_account)$
+                      containers:
+                        - name: workload
+                          image: $(images.image.image)$
+                          securityContext:
+                            runAsUser: 1000
+      template:
+        - ytt: {}
+      deploy:
+        - kapp: {}

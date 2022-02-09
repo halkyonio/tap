@@ -1,0 +1,11 @@
+#@data/values
+---
+service_account_name: default
+namespace: tap-demo
+image_prefix: ghcr.io/halkyonio/
+workload:
+  name: quarkus-app
+cluster_builder: runtime
+github:
+  url: https://github.com/halkyonio/quarkus-tap-petclinic.git
+  ref: main

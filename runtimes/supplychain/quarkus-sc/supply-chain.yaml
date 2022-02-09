@@ -1,0 +1,42 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: carto.run/v1alpha1
+kind: ClusterSupplyChain
+metadata:
+  name: quarkus-supply-chain
+spec:
+  selector:
+    app.tanzu.vmware.com/workload-type: quarkus
+  params:
+    - name: image_prefix
+      value: #@ data.values.image_prefix
+    - name: service_account
+      value: #@ data.values.service_account_name
+    - name: cluster_builder
+      value: #@ data.values.cluster_builder
+  resources:
+  #
+  #     source-provider                 fluxcd/GitRepository
+  #        <--[src]-- image-builder     kpack/Image
+  #           <--[img]-- deployer       kapp-ctrl/App
+  #
+    - name: source-provider
+      templateRef:
+        kind: ClusterSourceTemplate
+        name: source
+
+    - name: image-builder
+      templateRef:
+        kind: ClusterImageTemplate
+        name: image
+      sources:
+        - resource: source-provider
+          name: source
+
+    - name: deployer
+      templateRef:
+        kind: ClusterTemplate
+        name: app-deploy
+      images:
+        - resource: image-builder
+          name: image

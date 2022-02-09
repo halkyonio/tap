@@ -1,0 +1,16 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: carto.run/v1alpha1
+kind: Workload
+metadata:
+  name: #@ data.values.workload.name
+  namespace: #@ data.values.namespace
+  labels:
+    app.tanzu.vmware.com/workload-type: quarkus
+spec:
+  serviceAccountName: #@ data.values.service_account_name
+  source:
+    git:
+      url: #@ data.values.github.url
+      ref:
+        branch: #@ data.values.github.ref

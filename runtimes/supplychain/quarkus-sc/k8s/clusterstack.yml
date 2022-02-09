@@ -1,0 +1,10 @@
+apiVersion: kpack.io/v1alpha2
+kind: ClusterStack
+metadata:
+  name: runtime
+spec:
+  id: "io.quarkus.buildpacks.stack.jvm"
+  buildImage:
+    image: "ghcr.io/halkyonio/quarkus-stack:run"
+  runImage:
+    image: "ghcr.io/halkyonio/quarkus-stack:build"
