@@ -16,7 +16,7 @@ Table of Contents
 
 ## What is TAP
 
-Tanzu Application Platform 1.1 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-overview.html is a packaged set of components that helps developers, architects and
+Tanzu Application Platform 1.0 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is a packaged set of components that helps developers, architects and
 operators to more easily build, deploy, and manage applications on a Kubernetes platform. By supporting the [Supply Chain choreograph])(https://cartographer.sh/docs/v0.2.0/) pattern it allows
 to decouple the path to be done to move a microservice to Production (build, scan, CI/CD, test, ...) from the microservices created by the developers.
 
@@ -37,11 +37,11 @@ See list of TAP packages [here](./packages.md)
 
 ## Prerequisites
 
-The following [installation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-install-general.html#prereqs) guide explain what the prerequisites.
+The following [installation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#prereqs) guide explain what the prerequisites.
 
 TL&DR; It is needed to:
 - Have a [Tanzu account](https://network.tanzu.vmware.com/) to download the software or access the [Tanzu registry](registry.tanzu.vmware.com),
-- Accept the needed [EULA](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-install-general.html#eulas) 
+- Accept the needed [EULA](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#eulas) 
 - Access a k8s cluster >= 1.21 with Cluster Admin Role and kubectl installed
 - Have a Linux VM machine with 8 CPUs and 8 GB or RAM
 
@@ -49,7 +49,7 @@ TL&DR; It is needed to:
 
 ### Introduction
 
-The instructions of the official [guide](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-install-intro.html) have been executed without problem.
+The instructions of the official [guide](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-intro.html) have been executed without problem.
 
 **WARNING**: As the TAP release `1.0` do not support to build/push an image using a local container registry (as we cannot inject a self-signed CA certificate),
 then it is needed to use an external repository (ghcr.io, docker.io) !
@@ -148,8 +148,8 @@ tanzu package installed list -n tap-install
   buildservice              buildservice.tanzu.vmware.com                 1.4.2            Reconcile succeeded
   cartographer              cartographer.tanzu.vmware.com                 0.1.0            Reconcile succeeded
   cert-manager              cert-manager.tanzu.vmware.com                 1.5.3+tap.1      Reconcile succeeded
-  cnrs                      cnrs.tanzu.vmware.com                         1.1.0            Reconcile succeeded
-  contour                   contour.tanzu.vmware.com                      1.18.2+tap.1     Reconcile succeeded
+  cnrs                      cnrs.tanzu.vmware.com                         1.0.0            Reconcile succeeded
+  contour                   contour.tanzu.vmware.com                      1.08.2+tap.1     Reconcile succeeded
   conventions-controller    controller.conventions.apps.tanzu.vmware.com  0.5.0            Reconcile succeeded
   developer-conventions     developer-conventions.tanzu.vmware.com        0.5.0-build.1    Reconcile succeeded
   fluxcd-source-controller  fluxcd.source.controller.tanzu.vmware.com     0.16.0           Reconcile succeeded
