@@ -19,10 +19,30 @@ This example illustrates how to use a [supply chain](https://github.com/vmware-t
 
 ### Instructions
 
-Deploy the `quarkus-app` using kapp and the needed resources such as: kpack cluster|builder|stack, supply chain and templates !
+In order to use the Quarkus Buildpacks builder image, it is needed that first we tag the `codejive/***` images to the registry where we have access (docker.io, gcr.io, quay.io, ...)
+```bash
+export REGISTRY_URL="ghcr.io/halkyonio"
+docker tag codejive/buildpacks-quarkus-builder:jvm $REGISTRY_URL/buildpacks-quarkus-builder:jvm
+docker tag codejive/buildpacks-quarkus-run:jvm $REGISTRY_URL/buildpacks-quarkus-run:jvm
+docker tag codejive/buildpacks-quarkus-build:jvm $REGISTRY_URL/buildpacks-quarkus-build:jvm
+
+docker push $REGISTRY_URL/buildpacks-quarkus-builder:jvm
+docker push $REGISTRY_URL/buildpacks-quarkus-run:jvm
+docker push $REGISTRY_URL/buildpacks-quarkus-build:jvm
+```
+
+When done, we can install the Quarkus supply chain and templates application
+```bash
+pushd supplychain/quarkus-sc
+kapp deploy --yes -a quarkus-supply-chain -n tap-demo \
+  -f <(ytt --ignore-unknown-comments -f ./k8s -f ./templates -f supply-chain.yaml -f ./values.yaml)
+```
+
+When done, deploy the `quarkus-app` workload using kapp and the needed resources such as: kpack cluster|builder|stack, supply chain and templates !
 
 ```bash
-kapp deploy --yes -a quarkus-app -n tap-demo -f <(ytt --ignore-unknown-comments -f .) -f <(ytt --ignore-unknown-comments -f ./templates -f ./values.yaml)
+kapp deploy --yes -a quarkus-app -n tap-demo \
+  -f <(ytt --ignore-unknown-comments -f workload.yaml -f ./values.yaml)
 ```
 
 Observe the build/deployment of the application
@@ -78,7 +98,9 @@ Having used `kapp` to deploy the example, you can get rid of it by deleting the
 `kapp` app:
 
 ```bash
-kapp delete -a quarkus-app -n tap-demo
+kapp delete -a quarkus-app -n tap-demo -y 
+kapp delete -a quarkus-supply-chain -n tap-demo -y
+popd
 ```
 
 ### How to play with Quarkus on TAP

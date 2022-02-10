@@ -1,3 +1,13 @@
+#@ load("@ytt:data", "data")
+
+#@ def img(name):
+#@   return "/".join([
+#@      data.values.image_prefix,
+#@      name
+#@   ])
+#@ end
+
+---
 apiVersion: kpack.io/v1alpha2
 kind: ClusterBuilder
 metadata:
@@ -15,4 +25,4 @@ spec:
   store:
     name: runtime
     kind: ClusterStore
-  tag: 'codejive/buildpacks-quarkus-builder:jvm'
+  tag: #@ img("buildpacks-quarkus-builder:jvm")

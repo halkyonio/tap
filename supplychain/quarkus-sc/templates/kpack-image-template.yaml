@@ -19,7 +19,7 @@ spec:
       serviceAccountName: $(params.service_account)$
       builder:
         kind: ClusterBuilder
-        name: $(params.cluster_builder)$
+        name: $(params.kpack_cluster_builder)$
       source:
         blob:
           url: $(sources.source.url)$

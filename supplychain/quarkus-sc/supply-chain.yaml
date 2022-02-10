@@ -14,8 +14,8 @@ spec:
       value: #@ data.values.image_prefix
     - name: service_account
       value: #@ data.values.service_account_name
-    - name: cluster_builder
-      value: #@ data.values.runtime.cluster_builder
+    - name: kpack_cluster_builder
+      value: #@ data.values.buildpack.kpack_cluster_builder
   resources:
   #
   #     source-provider                 fluxcd/GitRepository
