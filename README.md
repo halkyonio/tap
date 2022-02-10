@@ -187,7 +187,7 @@ tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-fil
 
 ## Demo
 
-See demo page adn instructions [here](demo.md) to deploy a Quarkus application using a new supplyChain, the Quarkus Buildpack builder image, etc.
+See demo page & instructions [here](demo.md) to deploy a Quarkus application using a new Supply Chain, the Quarkus Buildpack builder image, etc.
 
 ## Clean
 
