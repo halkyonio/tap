@@ -92,7 +92,7 @@ using the following variables of the [install.sh](scripts/install.sh) bash scrip
 - **TANZU_REG_PASSWORD**: password to be used to be authenticated against the Tanzu images registry
 
 Remark: As the script will download the TAP packages, repository using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then you must also configure the following variable:
-- **TANZU_LEGACY_API_TOKEN**: Token used by pivnet CLI to login to the Tanzu products website
+- **TANZU_PIVNET_LEGACY_API_TOKEN**: Token used by pivnet CLI to login to the Tanzu products website
 
 Finally, define the home directory and IP address of the VM hosting TAP and the kubernetes cluster: 
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
@@ -108,7 +108,7 @@ REGISTRY_USERNAME=<REGISTRY_USERNAME>
 REGISTRY_PASSWORD=<REGISTRY_PASSWORD>
 TANZU_REG_USERNAME=<TANZU_REG_USERNAME>
 TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD>
-TANZU_LEGACY_API_TOKEN=<TANZU_LEGACY_API_TOKEN>
+TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN>
 ./install.sh
 
 ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
@@ -119,7 +119,7 @@ ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
     REGISTRY_PASSWORD=<REGISTRY_PASSWORD> \
     TANZU_REG_USERNAME=<TANZU_REG_USERNAME> \
     TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD> \
-    TANZU_LEGACY_API_TOKEN=<TANZU_LEGACY_API_TOKEN> "bash -s" -- < ./install.sh
+    TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN> "bash -s" -- < ./install.sh
 ```
 
 ### How to remove TAP

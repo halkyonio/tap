@@ -14,7 +14,7 @@
 # - REGISTRY_OWNER: docker user, ghcr.io ORG owner
 # - REGISTRY_USERNAME: username to be used to log on the registry
 # - REGISTRY_PASSWORD: password to be used to log on the registry
-# - TANZU_LEGACY_API_TOKEN: Token used by pivnet to login
+# - TANZU_PIVNET_LEGACY_API_TOKEN: Token used by pivnet to login
 # - TANZU_REG_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - TANZU_REG_PASSWORD: password to be used to be authenticated against the Tanzu image registry
 #
@@ -62,7 +62,7 @@ REGISTRY_OWNER=${REGISTRY_OWNER}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
-TANZU_LEGACY_API_TOKEN=${TANZU_LEGACY_API_TOKEN}
+TANZU_PIVNET_LEGACY_API_TOKEN=${TANZU_PIVNET_LEGACY_API_TOKEN}
 TANZU_REG_USERNAME=${TANZU_REG_USERNAME}
 TANZU_REG_PASSWORD=${TANZU_REG_PASSWORD}
 
@@ -93,7 +93,7 @@ chmod +x pivnet-linux-amd64-$PIVNET_CLI_VERSION && mv pivnet-linux-amd64-$PIVNET
 pivnet version
 
 log "CYAN" "Pivnet log in to Tanzu "
-pivnet login --api-token=$TANZU_LEGACY_API_TOKEN
+pivnet login --api-token=$TANZU_PIVNET_LEGACY_API_TOKEN
 
 log "CYAN" "Create tanzu directory "
 if [ ! -d $TANZU_TEMP_DIR ]; then
