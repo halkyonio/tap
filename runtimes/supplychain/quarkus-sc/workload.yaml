@@ -6,8 +6,8 @@ metadata:
   name: #@ data.values.workload.name
   namespace: #@ data.values.namespace
   labels:
-    apps.tanzu.vmware.com/workload-type: #@ data.values.deliverable_type
-    app.kubernetes.io/part-of: #@ data.values.kubernetes_io_partof
+    apps.tanzu.vmware.com/workload-type: #@ data.values.runtime.deliverable_type
+    app.kubernetes.io/part-of: #@ data.values.runtime.kubernetes_io_partof
 spec:
   serviceAccountName: #@ data.values.service_account_name
   source:

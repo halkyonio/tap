@@ -6,14 +6,16 @@ metadata:
   name: quarkus-supply-chain
 spec:
   selector:
-    apps.tanzu.vmware.com/workload-type: #@ data.values.deliverable_type
+    apps.tanzu.vmware.com/workload-type: #@ data.values.runtime.deliverable_type
   params:
+    - name: deliverable_type
+      value: #@ data.values.runtime.deliverable_type
     - name: image_prefix
       value: #@ data.values.image_prefix
     - name: service_account
       value: #@ data.values.service_account_name
     - name: cluster_builder
-      value: #@ data.values.cluster_builder
+      value: #@ data.values.runtime.cluster_builder
   resources:
   #
   #     source-provider                 fluxcd/GitRepository

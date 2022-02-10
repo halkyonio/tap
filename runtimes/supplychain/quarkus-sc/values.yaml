@@ -3,11 +3,12 @@
 service_account_name: default
 namespace: tap-demo
 image_prefix: ghcr.io/halkyonio
-deliverable_type: quarkus
-kubernetes_io_partof: quarkus-java-web-app
+runtime:
+  deliverable_type: quarkus
+  kubernetes_io_partof: quarkus-java-web-app
+  cluster_builder: runtime
 workload:
   name: quarkus-app
-cluster_builder: runtime
 github:
   url: https://github.com/halkyonio/quarkus-tap-petclinic.git
   ref: main
