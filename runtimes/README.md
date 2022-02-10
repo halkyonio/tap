@@ -1,5 +1,7 @@
 ## Steps executed to use the Quarkus builder image
 
+**WARNING**: Page deprecated as content is mainly used as a garage of instructions, tests, ... !!!!
+
 ```bash
 git clone https://github.com/quarkusio/quarkus-buildpacks.git && cd quarkus-buildpacks
 
