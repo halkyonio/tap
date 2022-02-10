@@ -1,7 +1,0 @@
-apiVersion: kpack.io/v1alpha2
-kind: ClusterStore
-metadata:
-  name: runtime
-spec:
-  sources:
-    - image: ghcr.io/halkyonio/quarkus-builder:jvm
