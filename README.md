@@ -58,7 +58,7 @@ The instructions of the official [guide](https://docs.vmware.com/en/Tanzu-Applic
 **WARNING**: As the TAP release `1.0` do not support to build/push an image using a local container registry (as we cannot inject a self-signed CA certificate),
 then it is needed to use an external repository (ghcr.io, docker.io) !
 
-To simplify your life, we have designed a [bash script](./install.sh) which allow to install the following software:
+To simplify your life, we have designed a [bash script](scripts/install.sh) which allow to install the following software:
 
 1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Tools & Controllers)
     - [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins
@@ -77,7 +77,7 @@ To simplify your life, we have designed a [bash script](./install.sh) which allo
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
    They are managed using the following command `tanzu package installed ...`
 
-**NOTE**: Some additional tools are installed within the VM by our [install.sh](./install.sh) bash script such as: unzip, k9s and pivnet !
+**NOTE**: Some additional tools are installed within the VM by our [install.sh](scripts/install.sh) bash script such as: unzip, k9s and pivnet !
 
 ### How to install TAP
 
@@ -85,7 +85,7 @@ To install TAP, it is needed to have access to a Linux VM (locally or remotely) 
 The VM should have least 8GB of RAM and 8 CPU.
 
 As different images will be pulled, pushed to an images registry, then it is needed to configure the credentials to access it like also the Tanzu registry server
-using the following variables of the [install.sh](./install.sh) bash script:
+using the following variables of the [install.sh](scripts/install.sh) bash script:
 
 - **REGISTRY_SERVER**: registry DNS name (docker.io, ghcr.io, quay.io,...)
 - **REGISTRY_OWNER**: docker username, ghcr.io ORG owner
@@ -128,7 +128,7 @@ ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
 
 ### How to remove TAP
 
-Define first the following variable within the [uninstall.sh](./uninstall.sh) bash script
+Define first the following variable within the [uninstall.sh](scripts/uninstall.sh) bash script
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
 
 Next, execute locally or remotely this bash script:
