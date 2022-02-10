@@ -1,6 +1,6 @@
 ## Quarkus demo
 
-This example illustrates how to use a [supply chain](https://github.com/vmware-tanzu/cartographer) able to:
+This example illustrates how to use a [supply chain](https://github.com/vmware-tanzu/cartographer) top of TAP able to:
 
 - Git clone a github [quarkus application](https://github.com/halkyonio/quarkus-tap-petclinic) using Fluxcd
 - Build an image using the Quarkus [buildpacks](https://github.com/quarkusio/quarkus-buildpacks) and kpack
