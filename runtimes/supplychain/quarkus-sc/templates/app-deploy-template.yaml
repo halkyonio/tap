@@ -48,6 +48,7 @@ spec:
           annotations:
             autoscaling.knative.dev/minScale: "1"
           labels:
+            tanzu.app.live.view: true
             app.kubernetes.io/component: service
             app.tanzu.vmware.com/deliverable-type: #@ data.values.workload.metadata.name
             #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
