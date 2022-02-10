@@ -1,0 +1,7 @@
+apiVersion: kpack.io/v1alpha2
+kind: ClusterStore
+metadata:
+  name: runtime
+spec:
+  sources:
+    - image: codejive/buildpacks-quarkus-builder:jvm
