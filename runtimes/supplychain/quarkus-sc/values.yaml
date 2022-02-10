@@ -4,6 +4,7 @@ service_account_name: default
 namespace: tap-demo
 image_prefix: ghcr.io/halkyonio
 deliverable_type: quarkus
+kubernetes_io_partof: quarkus-java-web-app
 workload:
   name: quarkus-app
 cluster_builder: runtime
