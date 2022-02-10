@@ -15,7 +15,7 @@ spec:
     metadata:
       name: $(workload.metadata.name)$
     spec:
-      tag: $(params.image_prefix)$$(workload.metadata.name)$
+      tag: $(params.image_prefix)$/$(workload.metadata.name)$
       serviceAccountName: $(params.service_account)$
       builder:
         kind: ClusterBuilder

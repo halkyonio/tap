@@ -2,7 +2,7 @@
 ---
 service_account_name: default
 namespace: tap-demo
-image_prefix: ghcr.io/halkyonio/
+image_prefix: ghcr.io/halkyonio
 deliverable_type: quarkus
 workload:
   name: quarkus-app

@@ -5,6 +5,61 @@ metadata:
 spec:
   ytt: |
     #@ load("@ytt:data", "data")
+    #@ load("@ytt:yaml", "yaml")
+
+    #@ def img():
+    #@ return "/".join([
+    #@   data.values.params.image_prefix,
+    #@   data.values.workload.metadata.name
+    #@   ])
+    #@ end
+
+    #@ def manifest():
+    ---
+    apiVersion: kapp.k14s.io/v1alpha1
+    kind: Config
+    rebaseRules:
+      - path:
+          - metadata
+          - annotations
+          - serving.knative.dev/creator
+        type: copy
+        sources: [new, existing]
+        resourceMatchers: &matchers
+          - apiVersionKindMatcher:
+              apiVersion: serving.knative.dev/v1
+              kind: Service
+      - path:
+          - metadata
+          - annotations
+          - serving.knative.dev/lastModifier
+        type: copy
+        sources: [new, existing]
+        resourceMatchers: *matchers
+
+    ---
+    apiVersion: serving.knative.dev/v1
+    kind: Service
+    metadata:
+      name: #@ data.values.workload.metadata.name
+    spec:
+      template:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+          labels:
+            app.kubernetes.io/component: "deliverable"
+            app.tanzu.vmware.com/deliverable-type: #@ data.values.workload.metadata.name
+            app.kubernetes.io/part-of: ""
+        spec:
+          serviceAccountName: #@ data.values.params.service_account
+          containers:
+          - name: workload
+            image: #@ img()
+            securityContext:
+              runAsUser: 1000
+    #@ end
+
     ---
     apiVersion: kappctrl.k14s.io/v1alpha1
     kind: App
@@ -15,51 +70,7 @@ spec:
       fetch:
         - inline:
             paths:
-              manifest.yml: |
-                ---
-                apiVersion: kapp.k14s.io/v1alpha1
-                kind: Config
-                rebaseRules:
-                  - path:
-                      - metadata
-                      - annotations
-                      - serving.knative.dev/creator
-                    type: copy
-                    sources: [new, existing]
-                    resourceMatchers: &matchers
-                      - apiVersionKindMatcher:
-                          apiVersion: serving.knative.dev/v1
-                          kind: Service
-                  - path:
-                      - metadata
-                      - annotations
-                      - serving.knative.dev/lastModifier
-                    type: copy
-                    sources: [new, existing]
-                    resourceMatchers: *matchers
-
-                ---
-                apiVersion: serving.knative.dev/v1
-                kind: Service
-                metadata:
-                  name: #@ data.values.workload.metadata.name
-                spec:
-                  template:
-                    metadata:
-                      annotations:
-                        autoscaling.knative.dev/minScale: "1"
-                      labels:
-                        app.tanzu.vmware.com/deliverable-type: #@ data.values.deliverable_type
-                        app.kubernetes.io/component: deliverable
-                        #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
-                        app.kubernetes.io/part-of: #@ data.values.workload.metadata.labels["app.kubernetes.io/part-of"]
-                    spec:
-                      serviceAccountName: #@ data.values.params.service_account
-                      containers:
-                        - name: workload
-                          image: $(images.image.image)$
-                          securityContext:
-                            runAsUser: 1000
+              manifest.yml: #@ yaml.encode(manifest())
       template:
         - ytt: {}
       deploy:
