@@ -47,8 +47,8 @@ kapp deploy --yes -a quarkus-app -n tap-demo \
 
 Observe the build/deployment of the application
 
-```console
-$ tanzu apps workload get quarkus-app -n tap-demo
+```bash
+tanzu apps workload get quarkus-app -n tap-demo
 # quarkus-app: Ready
 ---
 lastTransitionTime: "2022-02-09T15:58:01Z"
@@ -63,7 +63,7 @@ quarkus-app-build-1-build-pod   Succeeded   2m20s
 
 or
 
-$ kubectl tree workload quarkus-app -n tap-demo
+kubectl tree workload quarkus-app -n tap-demo
 NAMESPACE  NAME                                     READY  REASON               AGE  
 tap-demo   Workload/quarkus-app                     True   Ready                2m55s
 tap-demo   ├─App/quarkus-app                        -                           102s 
@@ -76,8 +76,8 @@ tap-demo     └─SourceResolver/quarkus-app-source    True                    
 
 Once `App/quarkus-app` is ready ("Reconciliation Succeeded")
 
-```console
-$ kubectl get app/quarkus-app -n tap-demo
+```bash
+kubectl get app/quarkus-app -n tap-demo
 NAME          DESCRIPTION           SINCE-DEPLOY   AGE
 quarkus-app   Reconcile succeeded   16s            46s
 ```
