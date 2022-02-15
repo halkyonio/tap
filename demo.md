@@ -13,9 +13,9 @@ This example illustrates how to use a [supply chain](https://github.com/vmware-t
 ### Prerequisites
 
 - TAP 1.0 installed
-- Tanzu client v0.10.0 is available
+- [Tanzu client](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#tanzu-cli-clean-install) (>= v0.11) is available like [kubernetes tree](https://github.com/ahmetb/kubectl-tree)
 - Have a kube config file configured to access the Kubernetes cluster hosting TAP 1.0
-- Have a secret created with the registry credentials and linked to ServiceAccount default of the demo namespace
+- Have a secret created with the registry credentials and linked to ServiceAccount default of the demo namespace (e.g tap-demo namespace)
 
 ### Instructions
 
@@ -35,7 +35,7 @@ When done, we can install the Quarkus supply chain and templates application
 ```bash
 pushd supplychain/quarkus-sc
 kapp deploy --yes -a quarkus-supply-chain -n tap-demo \
-  -f <(ytt --ignore-unknown-comments -f ./k8s -f ./templates -f supply-chain.yaml -f ./values.yaml)
+  -f <(ytt --ignore-unknown-comments -f ./values.yaml -f helpers.lib.yml -f ./k8s -f ./templates -f supply-chain.yaml)
 ```
 
 When done, deploy the `quarkus-app` workload using kapp and the needed resources such as: kpack cluster|builder|stack, supply chain and templates !

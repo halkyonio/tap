@@ -1,0 +1,8 @@
+#@ load("@ytt:data", "data")
+
+#@ def img(name):
+#@   return "/".join([
+#@      data.values.image_prefix,
+#@      name
+#@   ])
+#@ end

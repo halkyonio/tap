@@ -1,11 +1,6 @@
 #@ load("@ytt:data", "data")
+#@ load("helpers.lib.yml", "img")
 
-#@ def img(name):
-#@   return "/".join([
-#@      data.values.image_prefix,
-#@      name
-#@   ])
-#@ end
 ---
 apiVersion: kpack.io/v1alpha2
 kind: ClusterStore

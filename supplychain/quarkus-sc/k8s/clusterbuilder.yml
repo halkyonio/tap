@@ -1,11 +1,5 @@
 #@ load("@ytt:data", "data")
-
-#@ def img(name):
-#@   return "/".join([
-#@      data.values.image_prefix,
-#@      name
-#@   ])
-#@ end
+#@ load("helpers.lib.yml", "img")
 
 ---
 apiVersion: kpack.io/v1alpha2
