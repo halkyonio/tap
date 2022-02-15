@@ -86,6 +86,11 @@ sudo cp k9s /usr/local/bin
 sudo yum install unzip epel-release -y
 sudo yum install jq -y
 
+log "CYAN" "Installing Helm"
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+
 log "CYAN" "Executing installation Part I of the TAP guide"
 log "CYAN" "Installing pivnet tool ..."
 wget -q -c https://github.com/pivotal-cf/pivnet-cli/releases/download/v$PIVNET_CLI_VERSION/pivnet-linux-amd64-$PIVNET_CLI_VERSION
