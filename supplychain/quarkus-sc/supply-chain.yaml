@@ -35,10 +35,18 @@ spec:
         - resource: source-provider
           name: source
 
+    - name: config-provider
+      templateRef:
+        kind: ClusterConfigTemplate
+        name: app-config
+
     - name: deployer
       templateRef:
         kind: ClusterTemplate
         name: app-deploy
+      configs:
+        - resource: config-provider
+          name: data
       images:
         - resource: image-builder
           name: image

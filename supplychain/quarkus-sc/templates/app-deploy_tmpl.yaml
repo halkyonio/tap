@@ -65,6 +65,14 @@ spec:
     #@ end
 
     ---
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: dummy
+    data:
+      #@ data.values.config
+
+    ---
     apiVersion: kappctrl.k14s.io/v1alpha1
     kind: App
     metadata:

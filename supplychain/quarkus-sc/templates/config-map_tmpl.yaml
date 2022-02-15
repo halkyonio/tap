@@ -1,0 +1,15 @@
+apiVersion: carto.run/v1alpha1
+kind: ClusterConfigTemplate
+metadata:
+  name: app-config
+spec:
+  configPath: .data
+
+  ytt: |
+    #@ load("@ytt:data", "data")
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: #@ data.values.workload.metadata.name
+    data:
+      foo: bar
