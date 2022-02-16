@@ -18,7 +18,8 @@
 # - TANZU_REG_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - TANZU_REG_PASSWORD: password to be used to be authenticated against the Tanzu image registry
 #
-#
+
+set -e
 
 # Defining some colors for output
 RED='\033[0;31m'
@@ -83,7 +84,7 @@ log "CYAN" "Install useful tools: k9s, unzip, jq,..."
 wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
 sudo cp k9s /usr/local/bin
 
-sudo yum install unzip epel-release -y
+sudo yum install wget unzip epel-release -y
 sudo yum install jq -y
 
 log "CYAN" "Installing Helm"
@@ -123,7 +124,7 @@ export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
 export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
 export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
 cd ./tanzu-cluster-essentials
-export KUBECONFIG="/home/snowdrop/.kube/config"
+export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
 ./install.sh
 
 log "CYAN" "Install the kapp CLI onto your $PATH:"
@@ -329,7 +330,3 @@ kubectl patch serviceaccount default -n $NAMESPACE_DEMO -p '{"imagePullSecrets":
 
 popd
 exit
-
-
-
-
