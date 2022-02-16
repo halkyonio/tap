@@ -84,7 +84,7 @@ quarkus-app   Reconcile succeeded   16s            46s
 
 we can see that the service has been deployed:
 
-```console
+```bash
 kubectl get services.serving.knative/quarkus-app -n tap-demo
 NAME          URL                                                 LATESTCREATED       LATESTREADY         READY   REASON
 quarkus-app   http://quarkus-app.tap-demo.94.130.111.125.nip.io   quarkus-app-00001   quarkus-app-00001   True
