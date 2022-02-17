@@ -47,7 +47,9 @@ NAMESPACE_DEMO="tap-demo"
 
 POSTGRESQL_VERSION=1.5.0
 POSTGRES_API_GROUP=sql.tanzu.vmware.com
+POSTGRES_API_VERSION=v1
 POSTGRES_KIND=Postgres
+POSTGRES_RESOURCE_NAME=postgres
 
 KUBE_CFG_FILE=${1:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
@@ -213,7 +215,7 @@ rules:
   - apiGroups:
     - $POSTGRES_API_GROUP
     resources:
-    - $POSTGRES_KIND
+    - $POSTGRES_RESOURCE_NAME
     verbs: ["get", "list", "watch", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -224,7 +226,7 @@ rules:
   - apiGroups:
     - $POSTGRES_API_GROUP
     resources:
-    - $POSTGRES_KIND
+    - $POSTGRES_RESOURCE_NAME
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -242,7 +244,7 @@ subjects:
 EOF
 
 log "CYAN" "Register the Postgres DB as Service to the API"
-cat <<'EOF' | kubectl apply -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ClusterResource
 metadata:
@@ -253,4 +255,19 @@ spec:
     group: $POSTGRES_API_GROUP
     kind: $POSTGRES_KIND
 EOF
+
+#log "CYAN" "Deploying the resource claim"
+#cat <<EOF | kubectl apply -f -
+#apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+#kind: ResourceClaim
+#metadata:
+#  name: quarkus-app
+#  namespace: tap-demo
+#spec:
+#  ref:
+#    apiVersion: $POSTGRES_API_GROUP/$POSTGRES_API_VERSION
+#    kind: $POSTGRES_KIND
+#    name: postgres-db
+#    namespace: tap-demo
+#EOF
 

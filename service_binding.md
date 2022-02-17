@@ -244,7 +244,7 @@ EOF
 Create a `ResouceClaim` (to be moved to the supply chain) for the `Quarkus App` able to let the Service toolkit to find the secret to be "bind"
 ```bash
 kubectl delete ResourceClaim/quarkus-app -n tap-demo
-cat <<'EOF' | kubectl apply -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ResourceClaim
 metadata:

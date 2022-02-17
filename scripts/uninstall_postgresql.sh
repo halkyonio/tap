@@ -68,4 +68,7 @@ kubectl delete ClusterRoleBinding/postgresqlcluster
 kubectl delete ClusterRole/resource-claims-postgresql
 kubectl delete ClusterRole/postgresqlcluster-reader
 
+#log "YELLOW" "Removing ResourceClaim"
+#kubectl delete ResourceClaim/quarkus-app -n tap-demo
+
 
