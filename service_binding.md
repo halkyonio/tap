@@ -280,6 +280,32 @@ tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Pos
 Finally, do the binding 
 ```bash
 tanzu apps workload update -n tap-demo quarkus-app --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
+Update workload:
+...
+  5,  5   |  annotations:
+  6,  6   |    kapp.k14s.io/identity: v1;tap-demo/carto.run/Workload/quarkus-app;carto.run/v1alpha1
+  7,  7   |    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"Workload","metadata":{"labels":{"app.kubernetes.io/part-of":"quarkus-java-web-app","apps.tanzu.vmware.com/workload-type":"quarkus","kapp.k14s.io/app":"1645036140638736550","kapp.k14s.io/association":"v1.510f67347b44bc842e58e71e2cf14164"},"name":"quarkus-app","namespace":"tap-demo"},"spec":{"serviceAccountName":"default","source":{"git":{"ref":{"branch":"main"},"url":"https://github.com/halkyonio/quarkus-tap-petclinic.git"}}}}'
+  8,  8   |    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+      9 + |    serviceclaims.supplychain.apps.x-tanzu.vmware.com/extensions: '{"kind":"ServiceClaimsExtension","apiVersion":"supplychain.apps.x-tanzu.vmware.com/v1alpha1","spec":{"serviceClaims":{"db":{"namespace":"tap-demo"}}}}'
+  9, 10   |  labels:
+ 10, 11   |    app.kubernetes.io/part-of: quarkus-java-web-app
+ 11, 12   |    apps.tanzu.vmware.com/workload-type: quarkus
+ 12, 13   |    kapp.k14s.io/app: "1645036140638736550"
+ 13, 14   |    kapp.k14s.io/association: v1.510f67347b44bc842e58e71e2cf14164
+ 14, 15   |  name: quarkus-app
+ 15, 16   |  namespace: tap-demo
+ 16, 17   |spec:
+     18 + |  serviceClaims:
+     19 + |  - name: db
+     20 + |    ref:
+     21 + |      apiVersion: sql.tanzu.vmware.com/v1
+     22 + |      kind: Postgres
+     23 + |      name: postgres-db
+ 17, 24   |  source:
+ 18, 25   |    git:
+ 19, 26   |      ref:
+ 20, 27   |        branch: main
+...
 ```
 
 Create the ServiceBinding
