@@ -187,7 +187,6 @@ Create the appropriate RBAC to let the `resourceclaims.services.apps.tanzu.vmwar
 ```bash
 kubectl delete ClusterRoleBinding/postgresqlcluster
 kubectl delete ClusterRole/resource-claims-postgresql
-kubectl delete ClusterRole/resource-claims-policies-postgresql
 kubectl delete ClusterRole/postgresqlcluster-reader
 
 cat <<'EOF' | kubectl apply -f -
@@ -198,17 +197,6 @@ metadata:
   name: resource-claims-postgresql
   labels:
     resourceclaims.services.apps.tanzu.vmware.com/controller: "true"
-rules:
-  - apiGroups: ["sql.tanzu.vmware.com"]
-    resources: ["postgres"]
-    verbs: ["get", "list", "watch", "update"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: resource-claims-policies-postgresql
-  labels:
-    resourceclaimpolicies.services.apps.tanzu.vmware.com/controller: "true"
 rules:
   - apiGroups: ["sql.tanzu.vmware.com"]
     resources: ["postgres"]

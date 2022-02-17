@@ -62,4 +62,10 @@ rm -rf $HOME/postgresql
 sudo rm -rf /tmp/pv100
 sudo rm -rf /tmp/pv101
 
+log "YELLOW" "Removing RBAC"
+kubectl delete ClusterResource/postgresql
+kubectl delete ClusterRoleBinding/postgresqlcluster
+kubectl delete ClusterRole/resource-claims-postgresql
+kubectl delete ClusterRole/postgresqlcluster-reader
+
 

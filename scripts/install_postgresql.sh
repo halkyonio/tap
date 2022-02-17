@@ -46,6 +46,8 @@ REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 NAMESPACE_DEMO="tap-demo"
 
 POSTGRESQL_VERSION=1.5.0
+POSTGRES_API_GROUP=sql.tanzu.vmware.com
+POSTGRES_KIND=Postgres
 
 KUBE_CFG_FILE=${1:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
@@ -196,5 +198,59 @@ spec:
 #  backupLocation:
 #    name: backuplocation-sample
 #  certificateSecretName:
+EOF
+
+log "CYAN" "Create the RBAC to allow the resource claim to access the resources of the DB"
+cat <<EOF | kubectl apply -f -
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: resource-claims-postgresql
+  labels:
+    resourceclaims.services.apps.tanzu.vmware.com/controller: "true"
+rules:
+  - apiGroups:
+    - $POSTGRES_API_GROUP
+    resources:
+    - $POSTGRES_KIND
+    verbs: ["get", "list", "watch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: postgresqlcluster-reader
+rules:
+  - apiGroups:
+    - $POSTGRES_API_GROUP
+    resources:
+    - $POSTGRES_KIND
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: postgresqlcluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: postgresqlcluster-reader
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: system:authenticated
+EOF
+
+log "CYAN" "Register the Postgres DB as Service to the API"
+cat <<'EOF' | kubectl apply -f -
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterResource
+metadata:
+  name: postgresql
+spec:
+  shortDescription: It's a PostgreSQL cluster!
+  resourceRef:
+    group: $POSTGRES_API_GROUP
+    kind: $POSTGRES_KIND
 EOF
 
