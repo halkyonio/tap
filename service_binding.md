@@ -33,8 +33,8 @@ The Postgres Operator will use this secret to allow the Kubernetes cluster to au
 ```bash
 NAMESPACE_DEMO=tap-demo
 REGISTRY_SERVER="registry.pivotal.io"
-REGISTRY_USERNAME="cmoulliard@redhat.com"
-REGISTRY_PASSWORD=".P?V9yM^e3vsVH9"
+REGISTRY_USERNAME="xxxxxx"
+REGISTRY_PASSWORD="xxxxx"
 
 kubectl -n $NAMESPACE_DEMO delete secret regsecret
 kubectl -n $NAMESPACE_DEMO create secret docker-registry regsecret --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD

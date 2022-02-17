@@ -44,17 +44,22 @@ KUBE_CFG_FILE=${1:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
 log "YELLOW" "Deleting the regsecret secret"
-kubectl -n $NAMESPACE_DEMO delete secret regsecret
+kubectl -n $NAMESPACE_DEMO delete secret regsecret --ignore-not-found
 
 log "YELLOW" "Delete the postgresql instance"
-kubectl delete Postgres/postgres-db -n $NAMESPACE_DEMO
+kubectl delete Postgres/postgres-db -n $NAMESPACE_DEMO --ignore-not-found
 
 log "YELLOW" "Delete the PV100, PV101"
-kubectl delete sc/standard
-kubectl delete pv/pv100
-kubectl delete pv/pv101
+kubectl delete pv/pv100 --ignore-not-found
+kubectl delete pv/pv101 --ignore-not-found
+kubectl delete sc/standard --ignore-not-found
 
 log "YELLOW" "Uninstalling the Helm chart of postgresql"
 helm uninstall tanzu-postgresql -n $NAMESPACE_DEMO
+
+log "YELLOW" "Removing the installation folder of posgresql & pv100, pv101"
+rm -rf $HOME/postgresql
+sudo rm -rf /tmp/pv100
+sudo rm -rf /tmp/pv101
 
 

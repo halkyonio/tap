@@ -55,16 +55,16 @@ export HELM_EXPERIMENTAL_OCI=1
 helm registry login $REGISTRY_SERVER \
        --username=$REGISTRY_USERNAME \
        --password=$REGISTRY_PASSWORD
+
 helm pull oci://registry.pivotal.io/tanzu-sql-postgres/postgres-operator-chart --version v$POSTGRESQL_VERSION --untar --untardir ./postgresql
 
 log "CYAN" "Create the secret to allow to pull images from pivotal registry within the $NAMESPACE_DEMO"
-kubectl -n $NAMESPACE_DEMO delete secret regsecret
 kubectl -n $NAMESPACE_DEMO create secret docker-registry regsecret --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD
 
-log "CYAN" "Install the tanzu-postgresql chart"
+log "CYAN" "Install the tanzu postgresql chart"
 helm install tanzu-postgresql ./postgresql/postgres-operator --wait -n $NAMESPACE_DEMO
 
-log "CYAN" "Create the storageclass a nd needed PV"
+log "CYAN" "Create the kubernetes storageclass and needed PV"
 cat << 'EOF' | kubectl apply -f -
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
