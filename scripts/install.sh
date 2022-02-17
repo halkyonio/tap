@@ -127,7 +127,8 @@ cd ./tanzu-cluster-essentials
 export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
 ./install.sh
 
-log "CYAN" "Install the kapp CLI onto your $PATH:"
+log "CYAN" "Install the kapp, ytt onto your $PATH:"
+sudo cp ytt /usr/local/bin
 sudo cp ./kapp /usr/local/bin/kapp
 cd ..
 
