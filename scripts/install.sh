@@ -80,12 +80,26 @@ TANZU_CLI_VERSION="v0.10.0"
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
 
-log "CYAN" "Install useful tools: k9s, unzip, jq,..."
+log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
 wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
 sudo cp k9s /usr/local/bin
 
 sudo yum install wget unzip epel-release -y
 sudo yum install jq -y
+
+log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
+(
+  set -x; cd "$(mktemp -d)" &&
+  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+  KREW="krew-${OS}_${ARCH}" &&
+  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+  tar zxvf "${KREW}.tar.gz" &&
+  ./"${KREW}" install krew
+)
+
+log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree"
+kubectl krew install tree
 
 log "CYAN" "Installing Helm"
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
