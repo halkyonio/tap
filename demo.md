@@ -61,8 +61,9 @@ Workload pods
 NAME                            STATE       AGE
 quarkus-app-build-1-build-pod   Succeeded   2m20s
 
-or
+or using the tree plugin 
 
+## List the supply chain resources created to build
 kubectl tree workload quarkus-app -n tap-demo
 NAMESPACE  NAME                                     READY  REASON               AGE  
 tap-demo   Workload/quarkus-app                     True   Ready                2m55s
@@ -72,14 +73,35 @@ tap-demo   └─Image/quarkus-app                      True                    
 tap-demo     ├─Build/quarkus-app-build-1            -                           2m40s
 tap-demo     │ └─Pod/quarkus-app-build-1-build-pod  False  PodCompleted         2m39s
 tap-demo     └─SourceResolver/quarkus-app-source    True                        2m40s
-```
 
-Once `App/quarkus-app` is ready ("Reconciliation Succeeded")
 
-```bash
-kubectl get app/quarkus-app -n tap-demo
-NAME          DESCRIPTION           SINCE-DEPLOY   AGE
-quarkus-app   Reconcile succeeded   16s            46s
+## List what knative service populates (as created by App)
+[centos@n121-test ~]$ kubectl tree services.serving.knative.dev quarkus-app -n tap-demo
+NAMESPACE  NAME                                                                         READY  REASON  AGE
+tap-demo   Service/quarkus-app                                                          True           13m
+tap-demo   ├─Configuration/quarkus-app                                                  True           13m
+tap-demo   │ └─Revision/quarkus-app-00001                                               True           13m
+tap-demo   │   ├─Deployment/quarkus-app-00001-deployment                                -              13m
+tap-demo   │   │ └─ReplicaSet/quarkus-app-00001-deployment-7f6f79f45                    -              13m
+tap-demo   │   │   └─Pod/quarkus-app-00001-deployment-7f6f79f45-4rlbm                   True           13m
+tap-demo   │   ├─Image/quarkus-app-00001-cache-workload                                 -              13m
+tap-demo   │   └─PodAutoscaler/quarkus-app-00001                                        True           13m
+tap-demo   │     ├─Metric/quarkus-app-00001                                             True           13m
+tap-demo   │     └─ServerlessService/quarkus-app-00001                                  True           13m
+tap-demo   │       ├─Endpoints/quarkus-app-00001                                        -              13m
+tap-demo   │       │ └─EndpointSlice/quarkus-app-00001-56lq5                            -              13m
+tap-demo   │       ├─Service/quarkus-app-00001                                          -              13m
+tap-demo   │       └─Service/quarkus-app-00001-private                                  -              13m
+tap-demo   │         └─EndpointSlice/quarkus-app-00001-private-d2ckh                    -              13m
+tap-demo   └─Route/quarkus-app                                                          True           13m
+tap-demo     ├─Endpoints/quarkus-app                                                    -              13m
+tap-demo     │ └─EndpointSlice/quarkus-app-7k427                                        -              13m
+tap-demo     ├─Ingress/quarkus-app                                                      True           13m
+tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo                     -              13m
+tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.10.0.76.205.nip.io  -              13m
+tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.svc                 -              13m
+tap-demo     │ └─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.svc.cluster.local   -              13m
+tap-demo     └─Service/quarkus-app                                                      -              13m
 ```
 
 we can see that the service has been deployed:
