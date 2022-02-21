@@ -54,7 +54,6 @@ spec:
       image: #@ data.values.workload.spec.source.image
     #@ end
 ---
-
 apiVersion: carto.run/v1alpha1
 kind: ClusterTemplate
 metadata:
@@ -145,7 +144,6 @@ spec:
         #@ if/end not is_gitops():
         image: #@ image()
 ---
-
 apiVersion: carto.run/v1alpha1
 kind: ClusterImageTemplate
 metadata:
@@ -212,7 +210,6 @@ spec:
         #@ end
         #@ end
 ---
-
 apiVersion: carto.run/v1alpha1
 kind: ClusterConfigTemplate
 metadata:
@@ -292,7 +289,6 @@ spec:
               #@ if/end hasattr(data.values.workload.spec, "resources"):
               resources: #@ data.values.workload.spec["resources"]
 ---
-
 apiVersion: carto.run/v1alpha1
 kind: ClusterConfigTemplate
 metadata:
@@ -404,7 +400,6 @@ spec:
       serviceclaims.yml: #@ yaml.encode(claims())
       #@ end
 ---
-
 apiVersion: carto.run/v1alpha1
 kind: ClusterTemplate
 metadata:
