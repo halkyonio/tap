@@ -74,7 +74,7 @@ NAMESPACE_TAP="tap-install"
 
 PIVNET_CLI_VERSION="3.0.1"
 TANZU_CLUSTER_ESSENTIALS_VERSION="1.0.0"
-TAP_VERSION="1.0.0"
+TAP_VERSION="1.0.1"
 TANZU_CLI_VERSION="v0.10.0"
 
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
@@ -127,7 +127,7 @@ log "CYAN" "Set the Cluster Essentials product ID"
 TANZU_CLUSTER_ESSENTIALS_FILE_ID="1105818"
 TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:82dfaf70656b54dcba0d4def85ccae1578ff27054e7533d08320244af7fb0343"
 
-log "CYAN" "Download Cluster Essentials ... "
+log "CYAN" "Download g ... "
 pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
 mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd64-$TANZU_CLUSTER_ESSENTIALS_VERSION.tgz -C ./tanzu-cluster-essentials
 
@@ -148,7 +148,7 @@ cd ..
 
 log "CYAN" "Install the Tanzu client & plug-ins"
 log "CYAN" "Download the Tanzu client and extract it"
-TANZU_PRODUCT_FILE_ID="1114447"
+TANZU_PRODUCT_FILE_ID="1156163"
 TANZU_PRODUCT_NAME="tanzu-framework-linux-amd64"
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=$TAP_VERSION --product-file-id=$TANZU_PRODUCT_FILE_ID
 tar -vxf $TANZU_PRODUCT_NAME.tar
