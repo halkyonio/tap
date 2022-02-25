@@ -12,8 +12,6 @@
 
 NAMESPACE_DEMO=tap-demo
 
-set -e
-
 # Defining some colors for output
 RED='\033[0;31m'
 NC='\033[0m' # No Color
@@ -56,6 +54,11 @@ kubectl delete sc/standard --ignore-not-found
 
 log "YELLOW" "Uninstalling the Helm chart of postgresql"
 helm uninstall tanzu-postgresql -n $NAMESPACE_DEMO
+if [ $? -eq 0 ]; then
+   echo "Helm chart removed"
+else
+   echo "Let's continue ..."
+fi
 
 log "YELLOW" "Removing the installation folder of posgresql & pv100, pv101"
 rm -rf $HOME/postgresql
