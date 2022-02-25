@@ -1,23 +1,80 @@
-## Quarkus demo
-
-This example illustrates how to use a [supply chain](https://github.com/vmware-tanzu/cartographer) top of TAP able to:
-
-- Git clone a github [quarkus application](https://github.com/halkyonio/quarkus-tap-petclinic) using Fluxcd
-- Build an image using the Quarkus [buildpacks](https://github.com/quarkusio/quarkus-buildpacks) and kpack
-- Deploy the application as knative-serving
-
-```
-  source --> image --> knative service
-```
+## TAP demo
 
 ### Prerequisites
 
 - TAP 1.0 installed
 - [Tanzu client](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#tanzu-cli-clean-install) (>= v0.11) is available like [kubernetes tree](https://github.com/ahmetb/kubectl-tree)
 - Have a kube config file configured to access the Kubernetes cluster hosting TAP 1.0
-- Have a secret created with the registry credentials and linked to ServiceAccount default of the demo namespace (e.g tap-demo namespace)
+- Have a secret created with the registry credentials and linked to the ServiceAccount `default` of the demoed namespace (e.g tap-demo)
 
-### Instructions
+### Demo 1: Accelerator
+
+- Look to the accelerators available on the backstage UI `http://tap-gui.10.0.76.205.nip.io/create`
+- Download a zipped project from the accelerators such as `Spring Boot Petclinic` and deploy it
+```bash
+pushd ~/code/tanzu
+K8S_CFG_FILE=./tap/_temp/config.yml
+tanzu apps --kubeconfig $K8S_CFG_FILE workload create spring-petclinic-app \
+   --source-image ghcr.io/halkyonio/spring-petclinic-app \
+   --local-path . \
+   --type web \
+   --label app.kubernetes.io/part-of=spring-petclinic-app \
+   -n tap-demo \
+   --yes
+```
+- Tail to check the build process or status of the workload/component
+```bash
+tanzu apps --kubeconfig $K8S_CFG_FILE workload tail spring-petclinic-app --since 10m --timestamp -n tap-demo 
+tanzu apps --kubeconfig $K8S_CFG_FILE workload get spring-petclinic-app
+```
+
+- Cleanup 
+```bash
+tanzu apps --kubeconfig $K8S_CFG_FILE -n tap-demo workload delete spring-petclinic-app
+popd
+```
+
+### Demo 2: Tanzu web App
+
+Use an existing project such as Tanzu Java Web app
+
+- Add first the project as component to the TAP UI:
+  http://tap-gui.10.0.76.205.nip.io/catalog-import
+  Repo and backstage file to be imported: https://github.com/halkyonio/tanzu-java-web/blob/main/catalog-info.yaml
+
+  !! We can add a new component to the UI but we cannot remove it
+
+- Create next a Tanzu workload
+```bash
+tanzu apps workload create web-app --git-repo https://github.com/sample-accelerators/tanzu-java-web-app --git-branch main --type web --label app.kubernetes.io/part-of=tanzu-java-web-app -n tap-demo --yes
+tanzu apps workload tail web-app --since 10m --timestamp -n tap-demo
+```
+
+- Access the component and service
+
+```bash
+http://tap-gui.10.0.76.205.nip.io/catalog/default/component/tanzu-java-web-app/
+http://web-app.tap-demo.10.0.76.205.nip.io/
+```
+
+- Delete the component
+```bash
+tanzu apps workload delete web-app -n tap-demo --yes
+```
+
+### Demo 3
+
+This example illustrates how to use a new [supply chain](https://github.com/vmware-tanzu/cartographer) able to perform a build
+using the Quarkus Buildpacks registered as `Cluster`
+
+- Git clone a github [quarkus application](https://github.com/halkyonio/quarkus-tap-petclinic) using Fluxcd
+- Build an image using the Quarkus [buildpacks](https://github.com/quarkusio/quarkus-buildpacks) and kpack
+- Deploy the application as knative serving
+- Bind the Service
+
+```
+  source --> image --> knative service
+```
 
 In order to use the Quarkus Buildpacks builder image, it is needed that first we tag the `codejive/***` images to the registry where we have access (docker.io, gcr.io, quay.io, ...)
 ```bash
@@ -43,6 +100,18 @@ When done, deploy the `quarkus-app` workload using kapp and the needed resources
 ```bash
 kapp deploy --yes -a quarkus-app -n tap-demo \
   -f <(ytt --ignore-unknown-comments -f workload.yaml -f ./values.yaml)
+```
+or create the workload using the `Tanzu client`
+```bash
+tanzu apps workload create quarkus-app \
+  --kubeconfig ../../_temp/config.yml \
+  -n tap-demo \
+  --git-repo https://github.com/halkyonio/quarkus-tap-petclinic.git \
+  --git-branch main \
+  --type quarkus \
+  --label app.kubernetes.io/part-of=spring-petclinic-app \
+  --yes
+tanzu apps workload tail quarkus-app --since 10m --timestamp -n tap-demo  
 ```
 
 Observe the build/deployment of the application
@@ -76,7 +145,7 @@ tap-demo     └─SourceResolver/quarkus-app-source    True                    
 
 
 ## List what knative service populates (as created by App)
-[centos@n121-test ~]$ kubectl tree services.serving.knative.dev quarkus-app -n tap-demo
+kubectl tree services.serving.knative.dev quarkus-app -n tap-demo
 NAMESPACE  NAME                                                                         READY  REASON  AGE
 tap-demo   Service/quarkus-app                                                          True           13m
 tap-demo   ├─Configuration/quarkus-app                                                  True           13m
@@ -114,7 +183,7 @@ quarkus-app   http://quarkus-app.tap-demo.94.130.111.125.nip.io   quarkus-app-00
 
 Open the URL within your browser: `http://quarkus-app.tap-demo.94.130.111.125.nip.io` to access the service
 
-#### Tearing down the quarkus-app
+### Tearing down the quarkus-app
 
 Having used `kapp` to deploy the example, you can get rid of it by deleting the
 `kapp` app:
