@@ -75,7 +75,7 @@ NAMESPACE_TAP="tap-install"
 PIVNET_CLI_VERSION="3.0.1"
 TANZU_CLUSTER_ESSENTIALS_VERSION="1.0.0"
 TAP_VERSION="1.0.1"
-TANZU_CLI_VERSION="v0.10.0"
+TANZU_CLI_VERSION="v0.11.1"
 
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
