@@ -71,17 +71,14 @@ tanzu apps workload delete web-app -n tap-demo --yes
 
 ### Demo 3: Quarkus Appp + DB
 
-This example illustrates how to use a new [supply chain](https://github.com/vmware-tanzu/cartographer) able to perform a build
-using the Quarkus Buildpacks registered as `Cluster`
+This example illustrates how to use the quarkus runtime and a Database service on a platform running TAP. As the current platform is not able to build by default
+the fat-jar used by Quarkus, it has been needed to create a new supply chain able to perform such a build. The scenatio that we will follow part of this demo will
+do: 
 
 - Git clone a github [quarkus application](https://github.com/halkyonio/quarkus-tap-petclinic) using Fluxcd
 - Build an image using the Quarkus [buildpacks](https://github.com/quarkusio/quarkus-buildpacks) and kpack
 - Deploy the application as knative serving
-- Bind the Service
-
-```
-  source --> image --> knative service
-```
+- Bind the Service using the Service Binding Operator and Service Toolkit
 
 In order to use the Quarkus Buildpacks builder image, it is needed that first we tag the `codejive/***` images to the registry where we have access (docker.io, gcr.io, quay.io, ...)
 ```bash
@@ -95,14 +92,14 @@ docker push $REGISTRY_URL/buildpacks-quarkus-run:jvm
 docker push $REGISTRY_URL/buildpacks-quarkus-build:jvm
 ```
 
-When done, we can install the Quarkus supply chain and templates application
+When done, we can install the Quarkus supply chain and templates files as an application using kapp
 ```bash
 pushd supplychain/quarkus-sc
 kapp deploy --yes -a quarkus-supply-chain -n tap-demo \
   -f <(ytt --ignore-unknown-comments -f ./values.yaml -f helpers.lib.yml -f ./k8s -f ./templates -f supply-chain.yaml)
 ```
 
-When done, deploy the `quarkus-app` workload using kapp and the needed resources such as: kpack cluster|builder|stack, supply chain and templates !
+When done, deploy the `quarkus-app` workload using either `kapp`
 
 ```bash
 kapp deploy --yes -a quarkus-app -n tap-demo \
@@ -111,14 +108,13 @@ kapp deploy --yes -a quarkus-app -n tap-demo \
 or create the workload using the `Tanzu client`
 ```bash
 tanzu apps workload create quarkus-app \
-  --kubeconfig ../../_temp/config.yml \
   -n tap-demo \
   --git-repo https://github.com/halkyonio/quarkus-tap-petclinic.git \
   --git-branch main \
   --type quarkus \
   --label app.kubernetes.io/part-of=spring-petclinic-app \
   --yes
-tanzu apps workload tail quarkus-app --since 10m --timestamp -n tap-demo  
+tanzu apps workload -n tap-demo tail quarkus-app --since 10m --timestamp
 ```
 
 Observe the build/deployment of the application
@@ -150,9 +146,8 @@ tap-demo     ├─Build/quarkus-app-build-1            -                       
 tap-demo     │ └─Pod/quarkus-app-build-1-build-pod  False  PodCompleted         2m39s
 tap-demo     └─SourceResolver/quarkus-app-source    True                        2m40s
 
-
 ## List what knative service populates (as created by App)
-kubectl tree services.serving.knative.dev quarkus-app -n tap-demo
+kubectl tree ksvc quarkus-app -n tap-demo
 NAMESPACE  NAME                                                                         READY  REASON  AGE
 tap-demo   Service/quarkus-app                                                          True           13m
 tap-demo   ├─Configuration/quarkus-app                                                  True           13m
@@ -183,12 +178,15 @@ tap-demo     └─Service/quarkus-app                                          
 we can see that the service has been deployed:
 
 ```bash
-kubectl get services.serving.knative/quarkus-app -n tap-demo
-NAME          URL                                                 LATESTCREATED       LATESTREADY         READY   REASON
-quarkus-app   http://quarkus-app.tap-demo.94.130.111.125.nip.io   quarkus-app-00001   quarkus-app-00001   True
+kubectl get ksvc/quarkus-app -n tap-demo
+NAME          URL                                              LATESTCREATED       LATESTREADY         READY   REASON
+quarkus-app   http://quarkus-app.tap-demo.10.0.76.205.nip.io   quarkus-app-00001   quarkus-app-00001   True   
 ```
 
-Open the URL within your browser: `http://quarkus-app.tap-demo.94.130.111.125.nip.io` to access the service
+Open the URL within your browser: `http://quarkus-app.tap-demo.10.0.76.205.nip.io/` to access the service
+And now, do the job to bind the microservice to a postgresql DB
+
+
 
 ### Tearing down the quarkus-app
 
