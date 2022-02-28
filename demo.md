@@ -57,11 +57,10 @@ tanzu apps workload -n tap-demo delete web-app
 Use an existing project such as `Tanzu Java Web app`
 
 - Open the project using VSCode where the [Tanzu extension](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-vscode-extension-install.html) has been installed
-- Do some changes locally and launch tilt (or using extension)
+- Do some changes locally and launch tilt (or using extension). Wait till project is refreshed and script tilt re-executed.
 - Access the component & service
 
 ```bash
-http://tap-gui.10.0.76.205.nip.io/catalog/default/component/web-app/
 http://web-app.tap-demo.10.0.76.205.nip.io/
 ```
 
@@ -70,7 +69,7 @@ http://web-app.tap-demo.10.0.76.205.nip.io/
 tanzu apps workload delete web-app -n tap-demo --yes
 ```
 
-### Demo 3
+### Demo 3: Quarkus Appp + DB
 
 This example illustrates how to use a new [supply chain](https://github.com/vmware-tanzu/cartographer) able to perform a build
 using the Quarkus Buildpacks registered as `Cluster`
