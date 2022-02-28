@@ -155,8 +155,13 @@ tar -vxf $TANZU_PRODUCT_NAME.tar
 
 log "CYAN" "Set env var TANZU_CLI_NO_INIT to true to assure the local downloaded versions of the CLI core and plug-ins are installed"
 export TANZU_CLI_NO_INIT=true
+mkdir -p $HOME/.tanzu
 sudo install cli/core/$TANZU_CLI_VERSION/tanzu-core-linux_amd64 /usr/local/bin/tanzu
 tanzu version
+
+log "CYAN" "Enable tanzu completion for bash"
+printf "\n# Tanzu shell completion\nsource '$HOME/.tanzu/completion.bash.inc'\n" >> $HOME/.bash_profile
+tanzu completion bash > $HOME/.tanzu/completion.bash.inc
 
 log "CYAN" "Clean install Tanzu CLI plug-ins now"
 export TANZU_CLI_NO_INIT=true
