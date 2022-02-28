@@ -185,8 +185,60 @@ quarkus-app   http://quarkus-app.tap-demo.10.0.76.205.nip.io   quarkus-app-00001
 
 Open the URL within your browser: `http://quarkus-app.tap-demo.10.0.76.205.nip.io/` to access the service
 And now, do the job to bind the microservice to a postgresql DB
+Create a `ResouceClaim` (to be moved to the supply chain) for the `Quarkus App` able to let the Service toolkit to find the secret to be "bind"
+```bash
+kubectl delete ResourceClaim/quarkus-app -n tap-demo
+cat <<EOF | kubectl apply -f -
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ResourceClaim
+metadata:
+  name: quarkus-app
+  namespace: tap-demo
+spec:
+  ref:
+    apiVersion: sql.tanzu.vmware.com/v1
+    kind: Postgres
+    name: postgres-db
+    namespace: tap-demo    
+EOF
+```
+Obtain a service reference by running:
+```bash
+tanzu service instance list -owide -A
+NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
+tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db
+```
 
+Finally, do the binding
+```bash
+tanzu apps workload update -n tap-demo quarkus-app --git-branch service-binding
+tanzu apps workload update -n tap-demo quarkus-app --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
+```
+Create the ServiceBinding
 
+```bash
+kubectl delete -n tap-demo ServiceBinding/quarkus-app
+cat <<'EOF' | kubectl apply -f -
+apiVersion: servicebinding.io/v1alpha3
+kind: ServiceBinding
+metadata:
+  labels:
+    apps.tanzu.vmware.com/workload-type: quarkus
+  name: quarkus-app
+  namespace: tap-demo
+spec:
+  name: postgresql
+  service:
+    apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+    kind: ResourceClaim
+    name: quarkus-app
+  workload:
+    apiVersion: serving.knative.dev/v1
+    kind: Service
+    name: quarkus-app
+EOF
+```
+Enjoy !!
 
 ### Tearing down the quarkus-app
 
@@ -195,6 +247,8 @@ Having used `kapp` to deploy the example, you can get rid of it by deleting the
 
 ```bash
 kapp delete -a quarkus-app -n tap-demo -y 
+or
+tanzu apps workload -n tap-demo delete quarkus-app
 kapp delete -a quarkus-supply-chain -n tap-demo -y
 popd
 ```
