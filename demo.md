@@ -7,75 +7,61 @@
 - Have a kube config file configured to access the Kubernetes cluster hosting TAP 1.0
 - Have a secret created with the registry credentials and linked to the ServiceAccount `default` of the demoed namespace (e.g tap-demo)
 - Import the config of the kubernetes cluster using its file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools
-### Demo 1: Accelerator
+
+### Demo 1: Accelerator & GUI
 
 - Look to the accelerators available on the backstage UI `http://tap-gui.10.0.76.205.nip.io/create`
-- Download a zipped project from the accelerators such as `Spring Boot Petclinic` and deploy it
+- Download a zipped project from the accelerators such as `Tanzu Java Web app` and deploy it
 - Look to the code and next create a `workload`
 ```bash
-pushd ~/code/tanzu
-tanzu apps workload create spring-petclinic-app \
-   --source-image ghcr.io/halkyonio/spring-petclinic-app \
-   --local-path ./spring-tap-petclinic  \
+PROJECT_DIR=$HOME/code/tanzu/tap/tanzu-java-web
+tanzu apps workload create web-app \
+   --source-image ghcr.io/halkyonio/web-app \
+   --local-path $PROJECT_DIR  \
    --type web \
-   --label app.kubernetes.io/part-of=spring-petclinic-app \
+   --label app.kubernetes.io/part-of=web-app \
    -n tap-demo \
    --yes
 ```
 - Tail to check the build process or status of the workload/component
 ```bash
-tanzu apps -n tap-demo workload tail spring-petclinic-app --since 10m --timestamp
-tanzu apps -n tap-demo workload get spring-petclinic-app
-# spring-petclinic-app: Ready
+tanzu apps -n tap-demo workload tail web-app --since 10m --timestamp
+tanzu apps -n tap-demo workload get web-app
+# web-app: Ready
 ---
-lastTransitionTime: "2022-02-25T15:21:09Z"
+lastTransitionTime: "2022-02-28T09:06:34Z"
 message: ""
 reason: Ready
 status: "True"
 type: Ready
 
 Workload pods
-NAME                                           STATUS      RESTARTS   AGE
-spring-petclinic-app-build-1-build-pod         Succeeded   0          46m
-spring-petclinic-app-config-writer-5zlgm-pod   Succeeded   0          44m
+NAME                                        STATUS      RESTARTS   AGE
+web-app-00001-deployment-749dd9d8b5-fbz6f   Running     0          110s
+web-app-build-1-build-pod                   Succeeded   0          5m45s
+web-app-config-writer-t6ffb-pod             Succeeded   0          4m48s
 
 Workload Knative Services
-NAME                   READY   URL
-spring-petclinic-app   Ready   http://spring-petclinic-app.tap-demo.10.0.76.205.nip.io
+NAME      READY   URL
+web-app   Ready   http://web-app.tap-demo.10.0.76.205.nip.io
 ```
-- Add using the TAP-GUI a new component using as url: https://github.com/halkyonio/spring-tap-petclinic/blob/main/catalog-info.yaml
+- Add using the `TAP GUI` a new component using as url: https://github.com/halkyonio/tanzu-java-web/blob/main/catalog-info.yaml
 - Look to the resource health, beans, ....
 - Cleanup 
 ```bash
-tanzu apps -n tap-demo workload delete spring-petclinic-app
-popd
+tanzu apps workload -n tap-demo delete web-app
 ```
 
-### Demo 2: Tanzu web App & VScode
+### Demo 2: Web App & VScode
 
 Use an existing project such as `Tanzu Java Web app`
 
-- Add first the project as component to the [TAP UI](http://tap-gui.10.0.76.205.nip.io/catalog-import)
-  using the following backstage catalog file to be imported: https://github.com/halkyonio/tanzu-java-web/blob/main/catalog-info.yaml
-
-- Create next a Tanzu workload
-```bash
-pushd ~/code/tanzu
-tanzu apps -n tap-demo workload create web-app \
-  --git-repo https://github.com/sample-accelerators/tanzu-java-web-app\
-  --git-branch main \
-  --type web \
-  --label app.kubernetes.io/part-of=tanzu-java-web-app \
-  --yes
-tanzu apps workload tail web-app --since 10m --timestamp -n tap-demo
-```
-- Open the project using VSCode where the Tanzu extension has been installed
+- Open the project using VSCode where the [Tanzu extension](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-vscode-extension-install.html) has been installed
 - Do some changes locally and launch tilt (or using extension)
-
 - Access the component & service
 
 ```bash
-http://tap-gui.10.0.76.205.nip.io/catalog/default/component/tanzu-java-web-app/
+http://tap-gui.10.0.76.205.nip.io/catalog/default/component/web-app/
 http://web-app.tap-demo.10.0.76.205.nip.io/
 ```
 
