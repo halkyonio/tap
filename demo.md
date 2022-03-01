@@ -11,23 +11,33 @@
 ### Demo 1: Accelerator & GUI
 
 - Look to the accelerators available on the backstage UI `http://tap-gui.10.0.76.205.nip.io/create`
-- Download a zipped project from the accelerators such as `Tanzu Java Web app` and deploy it
+- Download a zipped project from the accelerators such as `Spring Petclinic app` and deploy it
 - Look to the code and next create a `workload`
 ```bash
-PROJECT_DIR=$HOME/code/tanzu/tap/tanzu-java-web
-tanzu apps workload create web-app \
-   --source-image ghcr.io/halkyonio/web-app \
-   --local-path $PROJECT_DIR  \
+PROJECT_DIR=$HOME/code/tanzu/tap
+#PROJECT=web-app
+APP=spring-tap-petclinic
+tanzu apps workload create $APP \
+   --source-image ghcr.io/halkyonio/$APP-tap-demo-source \
+   --local-path $PROJECT_DIR/$APP  \
    --type web \
-   --label app.kubernetes.io/part-of=web-app \
+   --label app.kubernetes.io/part-of=$APP \
+   -n tap-demo \
+   --yes
+   
+tanzu apps workload create $APP \
+   --git-repo https://github.com/halkyonio/$APP.git \
+   --git-branch main  \
+   --type web \
+   --label app.kubernetes.io/part-of=$APP \
    -n tap-demo \
    --yes
 ```
 - Tail to check the build process or status of the workload/component
 ```bash
-tanzu apps -n tap-demo workload tail web-app --since 10m --timestamp
-tanzu apps -n tap-demo workload get web-app
-# web-app: Ready
+tanzu apps -n tap-demo workload tail $APP --since 10m --timestamp
+tanzu apps -n tap-demo workload get $APP
+# $APP: Ready
 ---
 lastTransitionTime: "2022-02-28T09:06:34Z"
 message: ""
@@ -37,19 +47,19 @@ type: Ready
 
 Workload pods
 NAME                                        STATUS      RESTARTS   AGE
-web-app-00001-deployment-749dd9d8b5-fbz6f   Running     0          110s
-web-app-build-1-build-pod                   Succeeded   0          5m45s
-web-app-config-writer-t6ffb-pod             Succeeded   0          4m48s
+$APP-00001-deployment-749dd9d8b5-fbz6f   Running     0          110s
+$APP-build-1-build-pod                   Succeeded   0          5m45s
+$APP-config-writer-t6ffb-pod             Succeeded   0          4m48s
 
 Workload Knative Services
 NAME      READY   URL
-web-app   Ready   http://web-app.tap-demo.10.0.76.205.nip.io
+$APP   Ready   http://$APP.tap-demo.10.0.76.205.nip.io
 ```
-- Add using the `TAP GUI` a new component using as url: https://github.com/halkyonio/tanzu-java-web/blob/main/catalog-info.yaml
+- Add using the `TAP GUI` a new component using as url: https://github.com/halkyonio/$APP/blob/main/catalog-info.yaml
 - Look to the resource health, beans, ....
 - Cleanup 
 ```bash
-tanzu apps workload -n tap-demo delete web-app
+tanzu apps workload -n tap-demo delete $APP
 ```
 
 ### Demo 2: Web App & VScode
@@ -61,12 +71,12 @@ Use an existing project such as `Tanzu Java Web app`
 - Access the component & service
 
 ```bash
-http://web-app.tap-demo.10.0.76.205.nip.io/
+http://$APP.tap-demo.10.0.76.205.nip.io/
 ```
 
 - Delete the component
 ```bash
-tanzu apps workload delete web-app -n tap-demo --yes
+tanzu apps workload delete $APP -n tap-demo --yes
 ```
 
 ### Demo 3: Quarkus Appp + DB
@@ -185,7 +195,22 @@ quarkus-app   http://quarkus-app.tap-demo.10.0.76.205.nip.io   quarkus-app-00001
 
 Open the URL within your browser: `http://quarkus-app.tap-demo.10.0.76.205.nip.io/` to access the service
 And now, do the job to bind the microservice to a postgresql DB
-Create a `ResouceClaim` (to be moved to the supply chain) for the `Quarkus App` able to let the Service toolkit to find the secret to be "bind"
+
+Obtain a service reference by running:
+```bash
+tanzu service instance list -owide -A
+NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
+tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db
+```
+
+Finally, do the binding
+```bash
+tanzu apps workload update -n tap-demo quarkus-app --git-branch service-binding --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
+```
+
+Create a `ResouceClaim` able to let the Service toolkit to find the secret from the target Service
+**Remark**: This manifest could become part of the Quatkus supply chain
+
 ```bash
 kubectl delete ResourceClaim/quarkus-app -n tap-demo
 cat <<EOF | kubectl apply -f -
@@ -202,20 +227,9 @@ spec:
     namespace: tap-demo    
 EOF
 ```
-Obtain a service reference by running:
-```bash
-tanzu service instance list -owide -A
-NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
-tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db
-```
 
-Finally, do the binding
-```bash
-tanzu apps workload update -n tap-demo quarkus-app --git-branch service-binding
-tanzu apps workload update -n tap-demo quarkus-app --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
-```
-Create the ServiceBinding
-
+Create the ServiceBinding to tell to the SBO to get the secret from the `ResourceClaim` and mout it to the `ksvc`
+**Remark**: This manifest could become part of the Quatkus supply chain
 ```bash
 kubectl delete -n tap-demo ServiceBinding/quarkus-app
 cat <<'EOF' | kubectl apply -f -
