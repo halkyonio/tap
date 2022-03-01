@@ -98,8 +98,10 @@ log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide
   ./"${KREW}" install krew
 )
 
-log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree"
+log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
 kubectl krew install tree
+kubectl krew install ctx
+kubectl krew install ns
 
 log "CYAN" "Installing Helm"
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
