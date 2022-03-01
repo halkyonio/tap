@@ -12,11 +12,12 @@ Table of Contents
 
 ### Prerequisites
 
-- TAP 1.0 installed
-- [Tanzu client](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#tanzu-cli-clean-install) (>= v0.11) is available like [kubernetes tree](https://github.com/ahmetb/kubectl-tree)
-- Have a kube config file configured to access the Kubernetes cluster hosting TAP 1.0
-- Have a secret created with the registry credentials and linked to the ServiceAccount `default` of the demoed namespace (e.g tap-demo)
-- Import the config of the kubernetes cluster using its file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools
+- TAP 1.0.1 installed
+- [Tanzu client](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#tanzu-cli-clean-install) (>= v0.11) is available
+- Some kubernetes tools such as [kubernetes tree](https://github.com/ahmetb/kubectl-tree)
+- Have a kube config file configured to access the Kubernetes cluster hosting TAP 1.0.1
+- Have a secret created with the registry credentials and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
+- Import the config of the kubernetes cluster using the file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools
 
 ### Demo 1: Accelerator & GUI
 
@@ -32,7 +33,7 @@ tanzu apps workload create $APP \
    --type web \
    --label app.kubernetes.io/part-of=$APP \
    -n tap-demo \
-   --yes
+   -y
 ```
 - Tail to check the build process or status of the workload/component
 ```bash
@@ -124,7 +125,7 @@ tanzu apps workload create quarkus-app \
   --git-branch main \
   --type quarkus \
   --label app.kubernetes.io/part-of=spring-petclinic-app \
-  --yes
+  -y
 tanzu apps workload -n tap-demo tail quarkus-app --since 10m --timestamp
 ```
 
@@ -213,7 +214,6 @@ Create a `ResouceClaim` able to let the Service toolkit to find the secret from 
 **Remark**: This manifest could become part of the Quatkus supply chain
 
 ```bash
-kubectl delete ResourceClaim/quarkus-app -n tap-demo
 cat <<EOF | kubectl apply -f -
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ResourceClaim
@@ -230,9 +230,8 @@ EOF
 ```
 
 Create the ServiceBinding to tell to the SBO to get the secret from the `ResourceClaim` and mout it to the `ksvc`
-**Remark**: This manifest could become part of the Quatkus supply chain
+**Remark**: This manifest could become part of the Quarkus supply chain
 ```bash
-kubectl delete -n tap-demo ServiceBinding/quarkus-app
 cat <<'EOF' | kubectl apply -f -
 apiVersion: servicebinding.io/v1alpha3
 kind: ServiceBinding
@@ -255,16 +254,19 @@ EOF
 ```
 Enjoy !!
 
-### Tearing down the quarkus-app
+### Tearing down the demo app and supply-chain
 
-Having used `kapp` to deploy the example, you can get rid of it by deleting the
-`kapp` app:
-
+Spring Petclinic app
 ```bash
-kapp delete -a quarkus-app -n tap-demo -y 
-or
-tanzu apps workload -n tap-demo delete quarkus-app -y
 tanzu apps workload -n tap-demo delete spring-tap-petclinic -y
+```
+
+Quarkus App and Supply chain
+```bash
+kubectl delete ResourceClaim/quarkus-app -n tap-demo
+kubectl delete servicebinding/quarkus-app -n tap-demo
+tanzu apps workload -n tap-demo delete quarkus-app -y
+
 kapp delete -a quarkus-supply-chain -n tap-demo -y
 popd
 ```
