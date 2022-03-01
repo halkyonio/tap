@@ -1,5 +1,15 @@
 ## TAP demo
 
+Table of Contents
+=================
+
+* [Prerequisites](#prerequisites)
+* [Demo 1: Accelerator &amp; GUI](#demo-1-accelerator--gui)
+* [Demo 2: Web App &amp; VScode](#demo-2-web-app--vscode)
+* [Demo 3: Quarkus Appp + DB](#demo-3-quarkus-appp--db)
+* [Tearing down the quarkus-app](#tearing-down-the-quarkus-app)
+* [Issues](#issues)
+
 ### Prerequisites
 
 - TAP 1.0 installed
@@ -15,16 +25,7 @@
 - Look to the code and next create a `workload`
 ```bash
 PROJECT_DIR=$HOME/code/tanzu/tap
-#PROJECT=web-app
 APP=spring-tap-petclinic
-tanzu apps workload create $APP \
-   --source-image ghcr.io/halkyonio/$APP-tap-demo-source \
-   --local-path $PROJECT_DIR/$APP  \
-   --type web \
-   --label app.kubernetes.io/part-of=$APP \
-   -n tap-demo \
-   --yes
-   
 tanzu apps workload create $APP \
    --git-repo https://github.com/halkyonio/$APP.git \
    --git-branch main  \
@@ -262,7 +263,21 @@ Having used `kapp` to deploy the example, you can get rid of it by deleting the
 ```bash
 kapp delete -a quarkus-app -n tap-demo -y 
 or
-tanzu apps workload -n tap-demo delete quarkus-app
+tanzu apps workload -n tap-demo delete quarkus-app -y
+tanzu apps workload -n tap-demo delete spring-tap-petclinic -y
 kapp delete -a quarkus-supply-chain -n tap-demo -y
 popd
+```
+
+### Issues
+
+Component cannot be built by `kpack` as we got the following [error](https://community.pivotal.io/s/question/0D54y00007DRNzjCAH/why-is-tap-workload-returning-as-error-error-failed-to-get-previous-image-missing-os-for-image-ghcriohalkyoniospringtappetclinictapdemo-) `ERROR: failed to get previous image: missing OS for image "ghcr.io/halkyonio/spring-tap-petclinic-tap-demo` if we create a project using a `sopurce-image` and this command
+```bash
+tanzu apps workload create $APP \
+   --source-image ghcr.io/halkyonio/$APP-tap-demo-source \
+   --local-path $PROJECT_DIR/$APP  \
+   --type web \
+   --label app.kubernetes.io/part-of=$APP \
+   -n tap-demo \
+   --yes
 ```
