@@ -103,6 +103,11 @@ kubectl krew install tree
 kubectl krew install ctx
 kubectl krew install ns
 
+printf "\n### kubectl tree\nalias ktree='kubectl tree'\n" >> $HOME/.bashrc
+printf "\n### kubectl ns\nalias kubens='kubectl ns'\n" >> $HOME/.bashrc
+printf "\n### kubectl ctx\nalias kubctx='kubectl ctx'\n" >> $HOME/.bashrc
+source $HOME/.bashrc
+
 log "CYAN" "Installing Helm"
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
