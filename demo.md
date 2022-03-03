@@ -67,6 +67,58 @@ tanzu apps workload -n tap-demo delete $APP
 
 ### Demo 2: Spring Petclinic & Postgresql
 
+This example extends the previous ad will demonstrate how to bind a Postgresql DB with the Spring application.
+
+- First, install the Postgresql DB operator and create an instance within the `tap-demo` namespace using this command:
+```bash
+./scripts/install_postgresql.sh
+```
+- Wait a few moments to be sure that the DB is up and running 
+- Obtain a service reference by running:
+```bash
+tanzu service instance list -owide -A
+NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
+tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db
+```
+
+- Use `Workload` of the [git repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
+```bash
+tanzu apps workload create -n tap-demo spring-tap-petclinic \
+     -f config/workload.yaml \
+     --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
+     --env "SPRING_PROFILES_ACTIVE=postgres" \
+     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
+```
+- Check the status of the workload, if a new build succeeded and application has been redeployed
+```bash
+tanzu apps workload get -n tap-demo spring-tap-petclinic
+...
+NAME                                                     STATUS      RESTARTS   AGE
+spring-tap-petclinic-build-10-build-pod                  Succeeded   0          5h18m
+spring-tap-petclinic-00015-deployment-75575545fd-k4b27   Running     0          4h50m
+```
+- Review some resources such as `ServiceBinding` and pod to verify if the postgresql user Secret has been mounted as a volume within the pod of the application
+```bash
+kubectl get pod/spring-tap-petclinic-00002-deployment-85bf75f965-crwcl -o yaml | grep -A 4 volume
+    volumeMounts:
+    - mountPath: /bindings/db
+      name: binding-d9cb99c4e655c91104670a7cc22c8bff9585d79a
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+--
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-f266x
+      readOnly: true
+  dnsPolicy: ClusterFirst
+--
+  volumes:
+  - name: binding-d9cb99c4e655c91104670a7cc22c8bff9585d79a
+    projected:
+      defaultMode: 420
+      sources: 
+```
+
 ### Demo 3: Quarkus App + DB
 
 This example illustrates how to use the quarkus runtime and a Database service on a platform running TAP. As the current platform is not able to build by default
@@ -239,7 +291,6 @@ spec:
 EOF
 ```
 Enjoy !!
-
 
 ### Demo 4: Web App & VScode
 
