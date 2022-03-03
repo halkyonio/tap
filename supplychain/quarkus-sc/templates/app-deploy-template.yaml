@@ -47,6 +47,7 @@ spec:
         metadata:
           annotations:
             autoscaling.knative.dev/minScale: "1"
+            autoscaling.knative.dev/scaleDownDelay: "15m"
           labels:
             tanzu.app.live.view: "true"
             tanzu.app.live.view.application.name: #@ data.values.workload.metadata.name
