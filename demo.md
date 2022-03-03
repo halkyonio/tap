@@ -99,7 +99,7 @@ spring-tap-petclinic-00015-deployment-75575545fd-k4b27   Running     0          
 ```
 - Review some resources such as `ServiceBinding` and pod to verify if the postgresql user Secret has been mounted as a volume within the pod of the application
 ```bash
-kubectl get pod/spring-tap-petclinic-00002-deployment-85bf75f965-crwcl -o yaml | grep -A 4 volume
+kubectl get pod -l "app=spring-tap-petclinic-00002" -o yaml | grep -A 4 volume
     volumeMounts:
     - mountPath: /bindings/db
       name: binding-d9cb99c4e655c91104670a7cc22c8bff9585d79a
