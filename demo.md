@@ -4,9 +4,10 @@ Table of Contents
 =================
 
 * [Prerequisites](#prerequisites)
-* [Demo 1: Accelerator &amp; GUI](#demo-1-accelerator--gui)
-* [Demo 2: Web App &amp; VScode](#demo-2-web-app--vscode)
-* [Demo 3: Quarkus Appp + DB](#demo-3-quarkus-appp--db)
+* [Demo 1: Spring Petclinic &amp; TAP GUI](#demo-1-spring-petclinic--tap-gui)
+* [Demo 2: Spring Petclinic &amp; Postgresql](#demo-2-spring-petclinic--postgresql)
+* [Demo 3: Quarkus App + DB](#demo-3-quarkus-app--db)
+* [Demo 4: Web App &amp; VScode](#demo-4-web-app--vscode)
 * [Tearing down the quarkus-app](#tearing-down-the-quarkus-app)
 * [Issues](#issues)
 
@@ -19,10 +20,10 @@ Table of Contents
 - Have a secret created with the registry credentials and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
 - Import the config of the kubernetes cluster using the file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools
 
-### Demo 1: Accelerator & GUI
+### Demo 1: Spring Petclinic & TAP GUI
 
-- Look to the accelerators available on the backstage UI `http://tap-gui.10.0.76.205.nip.io/create`
-- Download a zipped project from the accelerators such as `Spring Petclinic app` and deploy it
+- Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
+- Download a zipped project from the accelerators such as `Spring Petclinic app` and unzip it
 - Look to the code and next create a `workload`
 ```bash
 PROJECT_DIR=$HOME/code/tanzu/tap
@@ -55,7 +56,7 @@ $APP-config-writer-t6ffb-pod             Succeeded   0          4m48s
 
 Workload Knative Services
 NAME      READY   URL
-$APP   Ready   http://$APP.tap-demo.10.0.76.205.nip.io
+...
 ```
 - Add using the `TAP GUI` a new component using as url: https://github.com/halkyonio/$APP/blob/main/catalog-info.yaml
 - Look to the resource health, beans, ....
@@ -64,24 +65,9 @@ $APP   Ready   http://$APP.tap-demo.10.0.76.205.nip.io
 tanzu apps workload -n tap-demo delete $APP
 ```
 
-### Demo 2: Web App & VScode
+### Demo 2: Spring Petclinic & Postgresql
 
-Use an existing project such as `Tanzu Java Web app`
-
-- Open the project using VSCode where the [Tanzu extension](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-vscode-extension-install.html) has been installed
-- Do some changes locally and launch tilt (or using extension). Wait till project is refreshed and script tilt re-executed.
-- Access the component & service
-
-```bash
-http://$APP.tap-demo.10.0.76.205.nip.io/
-```
-
-- Delete the component
-```bash
-tanzu apps workload delete $APP -n tap-demo --yes
-```
-
-### Demo 3: Quarkus Appp + DB
+### Demo 3: Quarkus App + DB
 
 This example illustrates how to use the quarkus runtime and a Database service on a platform running TAP. As the current platform is not able to build by default
 the fat-jar used by Quarkus, it has been needed to create a new supply chain able to perform such a build. The scenatio that we will follow part of this demo will
@@ -181,7 +167,7 @@ tap-demo     ├─Endpoints/quarkus-app                                        
 tap-demo     │ └─EndpointSlice/quarkus-app-7k427                                        -              13m
 tap-demo     ├─Ingress/quarkus-app                                                      True           13m
 tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo                     -              13m
-tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.10.0.76.205.nip.io  -              13m
+tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.<TAP_DNS_HOSTNAME>  -              13m
 tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.svc                 -              13m
 tap-demo     │ └─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.svc.cluster.local   -              13m
 tap-demo     └─Service/quarkus-app                                                      -              13m
@@ -192,10 +178,10 @@ we can see that the service has been deployed:
 ```bash
 kubectl get ksvc/quarkus-app -n tap-demo
 NAME          URL                                              LATESTCREATED       LATESTREADY         READY   REASON
-quarkus-app   http://quarkus-app.tap-demo.10.0.76.205.nip.io   quarkus-app-00001   quarkus-app-00001   True   
+quarkus-app   http://quarkus-app.tap-demo.<TAP_DNS_HOSTNAME>   quarkus-app-00001   quarkus-app-00001   True   
 ```
 
-Open the URL within your browser: `http://quarkus-app.tap-demo.10.0.76.205.nip.io/` to access the service
+Open the URL within your browser: `http://quarkus-app.tap-demo.<TAP_DNS_HOSTNAME>/` to access the service
 And now, do the job to bind the microservice to a postgresql DB
 
 Obtain a service reference by running:
@@ -253,6 +239,24 @@ spec:
 EOF
 ```
 Enjoy !!
+
+
+### Demo 4: Web App & VScode
+
+Use an existing project such as `Tanzu Java Web app`
+
+- Open the project using VSCode where the [Tanzu extension](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-vscode-extension-install.html) has been installed
+- Do some changes locally and launch tilt (or using extension). Wait till project is refreshed and script tilt re-executed.
+- Access the component & service
+
+```bash
+http://$APP.tap-demo.<TAP_DNS_HOSTNAME>/
+```
+
+- Delete the component
+```bash
+tanzu apps workload delete $APP -n tap-demo --yes
+```
 
 ### Tearing down the demo app and supply-chain
 
