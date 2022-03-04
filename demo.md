@@ -86,6 +86,7 @@ tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Pos
 tanzu apps workload create -n tap-demo spring-tap-petclinic \
      -f config/workload.yaml \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
+     --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
      --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
 ```
