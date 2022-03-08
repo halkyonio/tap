@@ -1,8 +1,20 @@
-## Scenario and steps followed to evaluate TCE
+# Scenario and steps followed to evaluate TCE
+
+Table of Contents
+=================
+
+* [Introduction](#introduction)
+* [Install, upgrade needed tools (optional)](#install-upgrade-needed-tools-optional)
+* [Create the TCE K8s cluster](#create-the-tce-k8s-cluster)
+* [Demo](#demo)
+
+## Introduction
 
 Github repo: https://github.com/vmware-tanzu/community-edition
 
 Doc: https://tanzucommunityedition.io/
+
+## Install, upgrade needed tools (optional)
 
 Install or upgrade tools on Centos7
 ```bash
@@ -85,7 +97,7 @@ tanzu completion bash >  $HOME/.tanzu/completion.bash.inc
 printf "\n# Tanzu shell completion\nsource '$HOME/.tanzu/completion.bash.inc'\n" >> $HOME/.bash_profile
 ```
 
-# Demo
+## Create the TCE K8s cluster
 
 Create the TCE unmanaged cluster (= Kind cluster) and install the needed packages
 ```bash
@@ -116,6 +128,8 @@ tanzu package install knative --package-name knative-serving.community.tanzu.vmw
 tanzu package install kpack --package-name kpack.community.tanzu.vmware.com --version 0.5.1 --wait=false
 tanzu package install cartographer --package-name cartographer.community.tanzu.vmware.com --version 0.2.2 --wait=false
 ```
+
+## Demo
 
 We will now use the cartographer and a simple supply-chain [example](https://github.com/vmware-tanzu/cartographer/blob/main/examples/basic-sc/README.md) to build an image from the source and next deploy a knative service
 ```bash
