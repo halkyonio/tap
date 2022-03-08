@@ -145,7 +145,8 @@ registry:
   username: xxxxxxxx
   password: yyyyyyyyy
 EOF
-kapp deploy --yes -a example -f <(ytt --ignore-unknown-comments -f .) -f <(ytt --ignore-unknown-comments -f ../shared/ -f ./new-values.yaml)
+kapp deploy --yes -a supplychain -f <(ytt --ignore-unknown-comments -f ../shared/ -f ./app-operator/ -f ./new-values.yaml)
+kapp deploy --yes -a example -f <(ytt --ignore-unknown-comments -f ./developer/ -f ./new-values.yaml)
 popd
 ```
 Wait till the build pod is created within the default namespace and check the status ...
@@ -173,4 +174,5 @@ hello world
 To clean up the example, simply delete it
 ```bash
 kapp delete -a example
+kapp delete -a supplychain
 ```
