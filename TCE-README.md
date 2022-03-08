@@ -72,7 +72,7 @@ brew install fluxcd/tap/flux
 flux check --pre
 ```
 
-Install TCE and download the Snapshot of TCE of March 8th as it proposed now: cartographer + kpack
+Install TCE and download the [Snapshot](https://github.com/vmware-tanzu/community-edition#latest-daily-build) of TCE of March 8th as it proposed now: cartographer + kpack
 ```bash
 mkdir tce
 cd tce/
@@ -117,7 +117,7 @@ tanzu package install kpack --package-name kpack.community.tanzu.vmware.com --ve
 tanzu package install cartographer --package-name cartographer.community.tanzu.vmware.com --version 0.2.2 --wait=false
 ```
 
-We will now use the cartographer and a simple supply-chain to build an image from the source and next deploy a knative service
+We will now use the cartographer and a simple supply-chain [example](https://github.com/vmware-tanzu/cartographer/blob/main/examples/basic-sc/README.md) to build an image from the source and next deploy a knative service
 ```bash
 git clone https://github.com/vmware-tanzu/cartographer.git
 pushd $HOME/tce/cartographer/examples/basic-sc/
@@ -158,7 +158,7 @@ URL=$(kc -n default get ksvc/dev -o jsonpath='{.status.url}')
 curl $URL:$PORT
 hello world
 ```
-To cleanup the example, simply
+To clean up the example, simply delete it
 ```bash
 kapp delete -a example
 ```
