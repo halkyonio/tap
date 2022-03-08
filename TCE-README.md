@@ -102,7 +102,7 @@ printf "\n# Tanzu shell completion\nsource '$HOME/.tanzu/completion.bash.inc'\n"
 Create the TCE unmanaged cluster (= Kind cluster) and install the needed packages
 ```bash
 tanzu uc delete toto
-tanzu uc create toto -p 32510:32510/tcp
+tanzu uc create toto -p 80:80 -p 443:443
 
 kc create ns tce
 tanzu package repository update community-repository --url projects.registry.vmware.com/tce/main:v0.11.0-alpha.1 --namespace tanzu-package-repo-global
@@ -112,10 +112,9 @@ tanzu package install cert-manager --package-name cert-manager.community.tanzu.v
 cat <<EOF > $HOME/tce/values-contour.yaml
 envoy:
   service:
-    type: NodePort
-    externalTrafficPolicy: Local
-    nodePorts:
-      http: 32510
+    type: ClusterIP
+  hostPorts:
+    enable: true
 EOF
 tanzu package install contour --package-name contour.community.tanzu.vmware.com --version 1.20.1 -f $HOME/tce/values-contour.yaml --wait=false
 
@@ -167,9 +166,8 @@ default      └─SourceResolver/dev-source        True                        
 ```
 When the deployment has been created, get the URL and PORT to curl it
 ```bash
-PORT=$(kc get services/envoy --namespace projectcontour -o jsonpath='{.spec.ports[0].nodePort}')
 URL=$(kc -n default get ksvc/dev -o jsonpath='{.status.url}')
-curl $URL:$PORT
+curl $URL
 hello world
 ```
 To clean up the example, simply delete it
