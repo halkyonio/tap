@@ -1,6 +1,7 @@
 ## Scenario and steps followed to evaluate TCE
 
 Github repo: https://github.com/vmware-tanzu/community-edition
+
 Doc: https://tanzucommunityedition.io/
 
 Install or upgrade tools on Centos7
