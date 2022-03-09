@@ -131,25 +131,9 @@ tanzu package install cartographer --package-name cartographer.community.tanzu.v
 
 ## Install the K8s dashboard
 
+Setup the Issuer & Certificate resources used by the certificate Manager to generate a selfsigned certificate using Letscencrypt
 ```bash
 IP=65.108.148.216
-cat <<EOF > $HOME/k8s-ui-values.yml
-ingress:
-  enabled: true
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-staging
-    projectcontour.io/ingress.class: contour
-  hosts:
-  - k8s-ui.$IP.nip.io
-  tls:
-  - secretName: k8s-ui-secret
-    hosts:
-      - k8s-ui.$IP.nip.io
-service:
-  annotations:
-    projectcontour.io/upstream-protocol.tls: "443"      
-EOF
-
 kc delete issuer.cert-manager.io/letsencrypt-staging -n kubernetes-dashboard
 kc delete certificate.cert-manager.io/letsencrypt-staging -n kubernetes-dashboard
 
@@ -183,17 +167,38 @@ spec:
   dnsNames:
   - k8s-ui.$IP.nip.io
 EOF
+```
 
+Configure and deploy and the helm chart
+```bash
+IP=65.108.148.216
+cat <<EOF > $HOME/k8s-ui-values.yml
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    projectcontour.io/ingress.class: contour
+  hosts:
+  - k8s-ui.$IP.nip.io
+  tls:
+  - secretName: k8s-ui-secret
+    hosts:
+      - k8s-ui.$IP.nip.io
+service:
+  annotations:
+    projectcontour.io/upstream-protocol.tls: "443"      
+EOF
 helm uninstall k8s-ui -n kubernetes-dashboard
 helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard -f k8s-ui-values.yml
+```
 
+Grant the `cluster-admin` role to the k8s dashboard service account and next get the token to be logged using the UI
+```bash
 kubectl create serviceaccount dashboard -n kubernetes-dashboard
 kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard
-```
-To get the token
-```bash
 kubectl get secret $(kubectl get sa/dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode
 ```
+Open the browser at this address: `https://k8s-ui.$IP.nip.io`
 
 ## Demo
 
