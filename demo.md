@@ -25,6 +25,7 @@ Table of Contents
 - Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
 - Download a zipped project from the accelerators such as `Spring Petclinic app` and unzip it
 - Look to the code and next create a `workload`
+
 ```bash
 PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
@@ -36,7 +37,9 @@ tanzu apps workload create $APP \
    -n tap-demo \
    -y
 ```
+
 - Tail to check the build process or status of the workload/component
+
 ```bash
 tanzu apps -n tap-demo workload tail $APP --since 10m --timestamp
 tanzu apps -n tap-demo workload get $APP
@@ -58,9 +61,11 @@ Workload Knative Services
 NAME      READY   URL
 ...
 ```
+
 - Add using the `TAP GUI` a new component using as url: https://github.com/halkyonio/$APP/blob/main/catalog-info.yaml
 - Look to the resource health, beans, ....
-- Cleanup 
+- Cleanup
+
 ```bash
 tanzu apps workload -n tap-demo delete $APP
 ```
@@ -70,11 +75,14 @@ tanzu apps workload -n tap-demo delete $APP
 This example extends the previous ad will demonstrate how to bind a Postgresql DB with the Spring application.
 
 - First, install the Postgresql DB operator and create an instance within the `tap-demo` namespace using this command:
+
 ```bash
 ./scripts/install_postgresql.sh
 ```
-- Wait a few moments to be sure that the DB is up and running 
+
+- Wait a few moments to be sure that the DB is up and running
 - Obtain a service reference by running:
+
 ```bash
 tanzu service instance list -owide -A
 NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
@@ -82,15 +90,19 @@ tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Pos
 ```
 
 - Use `Workload` of the [git repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
+
 ```bash
+PROJECT=../spring-tap-petclinic
 tanzu apps workload create -n tap-demo spring-tap-petclinic \
-     -f config/workload.yaml \
+     -f $PROJECT/config/workload.yaml \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
      --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
 ```
+
 - Check the status of the workload, if a new build succeeded and application has been redeployed
+
 ```bash
 tanzu apps workload get -n tap-demo spring-tap-petclinic
 ...
@@ -98,7 +110,9 @@ NAME                                                     STATUS      RESTARTS   
 spring-tap-petclinic-build-10-build-pod                  Succeeded   0          5h18m
 spring-tap-petclinic-00015-deployment-75575545fd-k4b27   Running     0          4h50m
 ```
+
 - Review some resources such as `ServiceBinding` and pod to verify if the postgresql user Secret has been mounted as a volume within the pod of the application
+
 ```bash
 kubectl get pod -l "app=spring-tap-petclinic-00002" -o yaml | grep -A 4 volume
     volumeMounts:
@@ -124,7 +138,7 @@ kubectl get pod -l "app=spring-tap-petclinic-00002" -o yaml | grep -A 4 volume
 
 This example illustrates how to use the quarkus runtime and a Database service on a platform running TAP. As the current platform is not able to build by default
 the fat-jar used by Quarkus, it has been needed to create a new supply chain able to perform such a build. The scenatio that we will follow part of this demo will
-do: 
+do:
 
 - Git clone a github [quarkus application](https://github.com/halkyonio/quarkus-tap-petclinic) using Fluxcd
 - Build an image using the Quarkus [buildpacks](https://github.com/quarkusio/quarkus-buildpacks) and kpack
@@ -132,6 +146,7 @@ do:
 - Bind the Service using the Service Binding Operator and Service Toolkit
 
 In order to use the Quarkus Buildpacks builder image, it is needed that first we tag the `codejive/***` images to the registry where we have access (docker.io, gcr.io, quay.io, ...)
+
 ```bash
 export REGISTRY_URL="ghcr.io/halkyonio"
 docker tag codejive/buildpacks-quarkus-builder:jvm $REGISTRY_URL/buildpacks-quarkus-builder:jvm
@@ -144,6 +159,7 @@ docker push $REGISTRY_URL/buildpacks-quarkus-build:jvm
 ```
 
 When done, we can install the Quarkus supply chain and templates files as an application using kapp
+
 ```bash
 pushd supplychain/quarkus-sc
 kapp deploy --yes -a quarkus-supply-chain -n tap-demo \
@@ -156,7 +172,9 @@ When done, deploy the `quarkus-app` workload using either `kapp`
 kapp deploy --yes -a quarkus-app -n tap-demo \
   -f <(ytt --ignore-unknown-comments -f workload.yaml -f ./values.yaml)
 ```
+
 or create the workload using the `Tanzu client`
+
 ```bash
 tanzu apps workload create quarkus-app \
   -n tap-demo \
@@ -238,6 +256,7 @@ Open the URL within your browser: `http://quarkus-app.tap-demo.<TAP_DNS_HOSTNAME
 And now, do the job to bind the microservice to a postgresql DB
 
 Obtain a service reference by running:
+
 ```bash
 tanzu service instance list -owide -A
 NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
@@ -245,6 +264,7 @@ tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Pos
 ```
 
 Finally, do the binding
+
 ```bash
 tanzu apps workload update -n tap-demo quarkus-app --git-branch service-binding --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
 ```
@@ -264,12 +284,13 @@ spec:
     apiVersion: sql.tanzu.vmware.com/v1
     kind: Postgres
     name: postgres-db
-    namespace: tap-demo    
+    namespace: tap-demo  
 EOF
 ```
 
 Create the ServiceBinding to tell to the SBO to get the secret from the `ResourceClaim` and mout it to the `ksvc`
 **Remark**: This manifest could become part of the Quarkus supply chain
+
 ```bash
 cat <<'EOF' | kubectl apply -f -
 apiVersion: servicebinding.io/v1alpha3
@@ -291,6 +312,7 @@ spec:
     name: quarkus-app
 EOF
 ```
+
 Enjoy !!
 
 ### Demo 4: Web App & VScode
@@ -306,6 +328,7 @@ http://$APP.tap-demo.<TAP_DNS_HOSTNAME>/
 ```
 
 - Delete the component
+
 ```bash
 tanzu apps workload delete $APP -n tap-demo --yes
 ```
@@ -313,11 +336,13 @@ tanzu apps workload delete $APP -n tap-demo --yes
 ### Tearing down the demo app and supply-chain
 
 Spring Petclinic app
+
 ```bash
 tanzu apps workload -n tap-demo delete spring-tap-petclinic -y
 ```
 
 Quarkus App and Supply chain
+
 ```bash
 kubectl delete ResourceClaim/quarkus-app -n tap-demo
 kubectl delete servicebinding/quarkus-app -n tap-demo
@@ -330,6 +355,7 @@ popd
 ### Issues
 
 Component cannot be built by `kpack` as we got the following [error](https://community.pivotal.io/s/question/0D54y00007DRNzjCAH/why-is-tap-workload-returning-as-error-error-failed-to-get-previous-image-missing-os-for-image-ghcriohalkyoniospringtappetclinictapdemo-) `ERROR: failed to get previous image: missing OS for image "ghcr.io/halkyonio/spring-tap-petclinic-tap-demo` if we create a project using a `sopurce-image` and this command
+
 ```bash
 tanzu apps workload create $APP \
    --source-image ghcr.io/halkyonio/$APP-tap-demo-source \
