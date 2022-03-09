@@ -6,6 +6,7 @@ Table of Contents
 * [Introduction](#introduction)
 * [Install, upgrade needed tools (optional)](#install-upgrade-needed-tools-optional)
 * [Create the TCE K8s cluster](#create-the-tce-k8s-cluster)
+* [Install the K8s dashboard](#install-the-k8s-dashboard)
 * [Demo](#demo)
 
 ## Introduction
@@ -126,6 +127,72 @@ EOF
 tanzu package install knative --package-name knative-serving.community.tanzu.vmware.com --version 1.0.0 -f $HOME/tce/values-knative.yml --wait=false
 tanzu package install kpack --package-name kpack.community.tanzu.vmware.com --version 0.5.1 --wait=false
 tanzu package install cartographer --package-name cartographer.community.tanzu.vmware.com --version 0.2.2 --wait=false
+```
+
+## Install the K8s dashboard
+
+```bash
+IP=65.108.148.216
+cat <<EOF > $HOME/k8s-ui-values.yml
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    projectcontour.io/ingress.class: contour
+  hosts:
+  - k8s-ui.$IP.nip.io
+  tls:
+  - secretName: k8s-ui-secret
+    hosts:
+      - k8s-ui.$IP.nip.io
+service:
+  annotations:
+    projectcontour.io/upstream-protocol.tls: "443"      
+EOF
+
+kc delete issuer.cert-manager.io/letsencrypt-staging -n kubernetes-dashboard
+kc delete certificate.cert-manager.io/letsencrypt-staging -n kubernetes-dashboard
+
+cat <<EOF | kubectl apply -f -
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-staging
+  namespace: kubernetes-dashboard
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: cmoulliard@redhat.com
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+      - http01:
+          ingress:
+            name: k8s-ui-kubernetes-dashboard
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-staging
+  namespace: kubernetes-dashboard
+spec:
+  secretName: k8s-ui-secret
+  issuerRef:
+    name: letsencrypt-staging
+  dnsNames:
+  - k8s-ui.$IP.nip.io
+EOF
+
+helm uninstall k8s-ui -n kubernetes-dashboard
+helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard -f k8s-ui-values.yml
+
+kubectl create serviceaccount dashboard -n kubernetes-dashboard
+kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard
+```
+To get the token
+```bash
+kubectl get secret $(kubectl get sa/dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode
 ```
 
 ## Demo
