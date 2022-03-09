@@ -131,7 +131,8 @@ tanzu package install cartographer --package-name cartographer.community.tanzu.v
 
 ## Install the K8s dashboard
 
-Setup the Issuer & Certificate resources used by the certificate Manager to generate a selfsigned certificate using Letscencrypt
+Setup the Issuer & Certificate resources used by the certificate Manager to generate a selfsigned certificate and dnsNames `k8s-ui.$IP.nip.io` using Letscencrypt.
+The secret name `k8s-ui-secret` referenced by the Certificate resource will be filled by the Certificate Manager and next used by the Ingress TLS endpoint
 ```bash
 IP=65.108.148.216
 kc delete issuer.cert-manager.io/letsencrypt-staging -n kubernetes-dashboard
