@@ -7,6 +7,7 @@ Table of Contents
 * [Install, upgrade needed tools (optional)](#install-upgrade-needed-tools-optional)
 * [TCE installation](#tce-installation)
 * [Create the TCE K8s cluster](#create-the-tce-k8s-cluster)
+* [Configure/install thee needed packages](#configureinstall-thee-needed-packages)
 * [Install the K8s dashboard (optional)](#install-the-k8s-dashboard-optional)
 * [Demo](#demo)
 
@@ -109,12 +110,16 @@ Create the TCE unmanaged cluster (= Kind cluster) and install the needed package
 tanzu uc delete toto
 tanzu uc create toto -p 80:80 -p 443:443
 ```
+
+## Configure/install thee needed packages
+
 As FluxCD is not yet packaged/proposed by TCE, it is then needed to install it separately
 ```bash
 brew install fluxcd/tap/flux
 flux check --pre
+```
 
-Create now the `tce` namespace and configure/install thee needed packages
+Create now the `tce` namespace and configure/install the needed packages
 ```bash
 kc create ns tce
 tanzu package repository update community-repository --url projects.registry.vmware.com/tce/main:v0.11.0-alpha.1 --namespace tanzu-package-repo-global
