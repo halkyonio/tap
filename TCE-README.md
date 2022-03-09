@@ -5,8 +5,9 @@ Table of Contents
 
 * [Introduction](#introduction)
 * [Install, upgrade needed tools (optional)](#install-upgrade-needed-tools-optional)
+* [TCE installation](#tce-installation)
 * [Create the TCE K8s cluster](#create-the-tce-k8s-cluster)
-* [Install the K8s dashboard](#install-the-k8s-dashboard)
+* [Install the K8s dashboard (optional)](#install-the-k8s-dashboard-optional)
 * [Demo](#demo)
 
 ## Introduction
@@ -38,8 +39,10 @@ Enable a new port that we will use as NodePort
 ```bash
 sudo firewall-cmd --permanent --add-port=32510/tcp
 sudo firewall-cmd --reload
+```
 
-## Upgrade curl and git as needed by homebrew
+Upgrade curl and git as needed by homebrew
+```bash
 sudo bash -c 'cat << EOF > /etc/yum.repos.d/city-fan.repo
 [CityFan]
 name=City Fan Repo
@@ -84,11 +87,7 @@ brew install imgpkg
 brew install crane
 ```
 
-As FluxCD is not yet packaged/proposed, it is then needed to install it separately
-```bash
-brew install fluxcd/tap/flux
-flux check --pre
-```
+## TCE installation
 
 Install TCE and download the [Snapshot](https://github.com/vmware-tanzu/community-edition#latest-daily-build) of TCE of March 8th as it proposed now: cartographer + kpack
 ```bash
@@ -109,7 +108,14 @@ Create the TCE unmanaged cluster (= Kind cluster) and install the needed package
 ```bash
 tanzu uc delete toto
 tanzu uc create toto -p 80:80 -p 443:443
+```
+As FluxCD is not yet packaged/proposed by TCE, it is then needed to install it separately
+```bash
+brew install fluxcd/tap/flux
+flux check --pre
 
+Create now the `tce` namespace and configure/install thee needed packages
+```bash
 kc create ns tce
 tanzu package repository update community-repository --url projects.registry.vmware.com/tce/main:v0.11.0-alpha.1 --namespace tanzu-package-repo-global
 flux install --namespace=flux-system --network-policy=false --components=source-controller
@@ -134,7 +140,7 @@ tanzu package install kpack --package-name kpack.community.tanzu.vmware.com --ve
 tanzu package install cartographer --package-name cartographer.community.tanzu.vmware.com --version 0.2.2 --wait=false
 ```
 
-## Install the K8s dashboard
+## Install the K8s dashboard (optional)
 
 Setup the Issuer & Certificate resources used by the certificate Manager to generate a selfsigned certificate and dnsNames `k8s-ui.$IP.nip.io` using Letscencrypt.
 The secret name `k8s-ui-secret` referenced by the Certificate resource will be filled by the Certificate Manager and next used by the Ingress TLS endpoint
