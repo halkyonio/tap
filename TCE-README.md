@@ -11,9 +11,14 @@ Table of Contents
 
 ## Introduction
 
-Github repo: https://github.com/vmware-tanzu/community-edition
+This page describes how to install TCE which is a small application able to create a K8S cluster top of docker using Kind.
+Next, we will install the needed packaged such as (cartographer, fluxcd, kpack, ...) able to build a github project and deploy it
 
-Doc: https://tanzucommunityedition.io/
+References: 
+
+- Github repo: https://github.com/vmware-tanzu/community-edition
+
+- Doc: https://tanzucommunityedition.io/
 
 ## Install, upgrade needed tools (optional)
 
