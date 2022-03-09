@@ -7,9 +7,9 @@ Table of Contents
 * [Install, upgrade needed tools (optional)](#install-upgrade-needed-tools-optional)
 * [TCE installation](#tce-installation)
 * [Create the TCE K8s cluster](#create-the-tce-k8s-cluster)
-* [Configure/install thee needed packages](#configureinstall-thee-needed-packages)
-* [Install the K8s dashboard (optional)](#install-the-k8s-dashboard-optional)
+* [Configure/install the needed packages](#configureinstall-the-needed-packages)
 * [Demo](#demo)
+* [Install the K8s dashboard (optional)](#install-the-k8s-dashboard-optional)
 
 ## Introduction
 
@@ -92,9 +92,9 @@ brew install crane
 
 Install TCE and download the [Snapshot](https://github.com/vmware-tanzu/community-edition#latest-daily-build) of TCE of March 8th as it proposed now: cartographer + kpack
 ```bash
-mkdir tce
-cd tce/
-wget https://storage.googleapis.com/tce-cli-plugins-staging/build-daily/2022-03-08/tce-linux-amd64-v0.11.0-dev.1.tar.gz
+mkdir tce && cd tce/
+TCE_OS_VERSION="tce-linux-amd64-v0.11.0-dev.1"
+wget https://storage.googleapis.com/tce-cli-plugins-staging/build-daily/2022-03-08/$TCE_OS_VERSION.tar.gz
 ./install.sh
 
 # Add completion
@@ -111,7 +111,7 @@ tanzu uc delete toto
 tanzu uc create toto -p 80:80 -p 443:443
 ```
 
-## Configure/install thee needed packages
+## Configure/install the needed packages
 
 As FluxCD is not yet packaged/proposed by TCE, it is then needed to install it separately
 ```bash
@@ -145,6 +145,56 @@ tanzu package install knative --package-name knative-serving.community.tanzu.vmw
 tanzu package install kpack --package-name kpack.community.tanzu.vmware.com --version 0.5.1 --wait=false
 tanzu package install cartographer --package-name cartographer.community.tanzu.vmware.com --version 0.2.2 --wait=false
 ```
+
+## Demo
+
+We will now use the cartographer and a simple supply-chain [example](https://github.com/vmware-tanzu/cartographer/blob/main/examples/basic-sc/README.md) to build an image from the source and next deploy a knative service
+```bash
+git clone https://github.com/vmware-tanzu/cartographer.git
+pushd $HOME/tce/cartographer/examples/basic-sc/
+cat <<EOF > new-values.yaml
+#@data/values
+---
+service_account_name: cartographer-example-basic-sc-sa
+image_prefix: ghcr.io/halkyonio/demo-
+workload_name: dev
+registry:
+  server: ghcr.io
+  username: xxxxxxxx
+  password: yyyyyyyyy
+EOF
+kapp deploy --yes -a supplychain -f <(ytt --ignore-unknown-comments -f ../shared/ -f ./app-operator/ -f ./new-values.yaml)
+kapp deploy --yes -a example -f <(ytt --ignore-unknown-comments -f ./developer/ -f ./new-values.yaml)
+popd
+```
+Wait till the build pod is created within the default namespace and check the status ...
+```bash
+kc -n default get workload/dev
+kc get pods -n default
+
+ktree workload dev
+NAMESPACE  NAME                                 READY  REASON               AGE
+default    Workload/dev                         True   Ready                89s
+default    ├─App/dev                            -                           25s
+default    ├─GitRepository/dev                  True   GitOperationSucceed  87s
+default    └─Image/dev                          True                        85s
+default      ├─Build/dev-build-1                -                           85s
+default      │ └─Pod/dev-build-1-build-pod      False  PodCompleted         84s
+default      ├─PersistentVolumeClaim/dev-cache  -                           85s
+default      └─SourceResolver/dev-source        True                        85s
+```
+When the deployment has been created, get the URL and PORT to curl it
+```bash
+URL=$(kc -n default get ksvc/dev -o jsonpath='{.status.url}')
+curl $URL
+hello world
+```
+To clean up the example, simply delete it
+```bash
+kapp delete -a example
+kapp delete -a supplychain
+```
+
 
 ## Install the K8s dashboard (optional)
 
@@ -217,52 +267,3 @@ kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clus
 kubectl get secret $(kubectl get sa/dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode
 ```
 Open the browser at this address: `https://k8s-ui.$IP.nip.io`
-
-## Demo
-
-We will now use the cartographer and a simple supply-chain [example](https://github.com/vmware-tanzu/cartographer/blob/main/examples/basic-sc/README.md) to build an image from the source and next deploy a knative service
-```bash
-git clone https://github.com/vmware-tanzu/cartographer.git
-pushd $HOME/tce/cartographer/examples/basic-sc/
-cat <<EOF > new-values.yaml
-#@data/values
----
-service_account_name: cartographer-example-basic-sc-sa
-image_prefix: ghcr.io/halkyonio/demo-
-workload_name: dev
-registry:
-  server: ghcr.io
-  username: xxxxxxxx
-  password: yyyyyyyyy
-EOF
-kapp deploy --yes -a supplychain -f <(ytt --ignore-unknown-comments -f ../shared/ -f ./app-operator/ -f ./new-values.yaml)
-kapp deploy --yes -a example -f <(ytt --ignore-unknown-comments -f ./developer/ -f ./new-values.yaml)
-popd
-```
-Wait till the build pod is created within the default namespace and check the status ...
-```bash
-kc -n default get workload/dev
-kc get pods -n default
-
-ktree workload dev
-NAMESPACE  NAME                                 READY  REASON               AGE
-default    Workload/dev                         True   Ready                89s
-default    ├─App/dev                            -                           25s
-default    ├─GitRepository/dev                  True   GitOperationSucceed  87s
-default    └─Image/dev                          True                        85s
-default      ├─Build/dev-build-1                -                           85s
-default      │ └─Pod/dev-build-1-build-pod      False  PodCompleted         84s
-default      ├─PersistentVolumeClaim/dev-cache  -                           85s
-default      └─SourceResolver/dev-source        True                        85s
-```
-When the deployment has been created, get the URL and PORT to curl it
-```bash
-URL=$(kc -n default get ksvc/dev -o jsonpath='{.status.url}')
-curl $URL
-hello world
-```
-To clean up the example, simply delete it
-```bash
-kapp delete -a example
-kapp delete -a supplychain
-```
