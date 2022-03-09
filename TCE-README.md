@@ -121,6 +121,7 @@ flux check --pre
 
 Create now the `tce` namespace and configure/install the needed packages
 ```bash
+IP=65.108.148.216
 kc create ns tce
 tanzu package repository update community-repository --url projects.registry.vmware.com/tce/main:v0.11.0-alpha.1 --namespace tanzu-package-repo-global
 flux install --namespace=flux-system --network-policy=false --components=source-controller
@@ -138,7 +139,7 @@ tanzu package install contour --package-name contour.community.tanzu.vmware.com 
 cat <<EOF > $HOME/tce/values-knative.yml
 domain:
   type: real
-  name: 65.108.148.216.nip.io
+  name: $IP.nip.io
 EOF
 tanzu package install knative --package-name knative-serving.community.tanzu.vmware.com --version 1.0.0 -f $HOME/tce/values-knative.yml --wait=false
 tanzu package install kpack --package-name kpack.community.tanzu.vmware.com --version 0.5.1 --wait=false
