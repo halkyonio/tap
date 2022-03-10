@@ -91,18 +91,61 @@ SECONDS=0
 log "CYAN" "Populate a self signed certificate for "
 mkdir -p $TCE_DIR/certs/${REG_SERVER}
 
-log "CYAN" "Generate the openssl config"
-create_openssl_cfg > $TCE_DIR/certs/req.cnf
+log "CYAN" "Generate the openssl stuff"
+TCE_DIR=$HOME/tce
 
-log "CYAN" "Create the self signed certificate certificate and client key files"
-openssl req -x509 \
-  -nodes \
-  -days 365 \
-  -newkey rsa:4096 \
-  -keyout $TCE_DIR/certs/${REG_SERVER}/tls.key \
-  -out $TCE_DIR/certs/${REG_SERVER}/tls.crt \
-  -config $TCE_DIR/certs/req.cnf \
-  -sha256
+# Generate a CA certificate private key.
+openssl genrsa -out $TCE_DIR/certs/ca.key 4096
+
+# Generate the CA certificate.
+openssl req -x509 -new -nodes -sha512 -days 3650 \
+ -subj "/C=CN/ST=Namur/L=Florennes/O=Red Hat/OU=Snowdrop/CN=harbor.65.108.148.216.nip.io" \
+ -key $TCE_DIR/certs/ca.key \
+ -out $TCE_DIR/certs/ca.crt
+
+# Generate a Server Certificate
+openssl genrsa -out tls.key 4096
+openssl req -sha512 -new \
+    -subj "/C=CN/ST=Namur/L=Florennes/O=Red Hat/OU=Snowdrop/CN=harbor.65.108.148.216.nip.io" \
+    -key $TCE_DIR/certs/tls.key \
+    -out $TCE_DIR/certs/tls.csr
+
+# Generate an x509 v3 extension file.
+cat > $TCE_DIR/certs/v3.ext <<-EOF
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1=harbor.65.108.148.216.nip.io
+DNS.2=notary.harbor.65.108.148.216.nip.io
+EOF
+
+# Use the v3.ext file to generate a certificate for your Harbor host.
+openssl x509 -req -sha512 -days 3650 \
+    -extfile $TCE_DIR/certs/v3.ext \
+    -CA $TCE_DIR/certs/ca.crt -CAkey $TCE_DIR/certs/ca.key -CAcreateserial \
+    -in $TCE_DIR/certs/tls.csr \
+    -out $TCE_DIR/certs/tls.crt
+
+mkdir -p $TCE_DIR/certs/${REG_SERVER}
+cp $TCE_DIR/certs/ca.crt $TCE_DIR/certs/${REG_SERVER}
+cp $TCE_DIR/certs/tls.crt $TCE_DIR/certs/${REG_SERVER}
+cp $TCE_DIR/certs/tls.key $TCE_DIR/certs/${REG_SERVER}
+
+# create_openssl_cfg > $TCE_DIR/certs/req.cnf
+
+# log "CYAN" "Create the self signed certificate certificate and client key files"
+# openssl req -x509 \
+#   -nodes \
+#   -days 365 \
+#   -newkey rsa:4096 \
+#   -keyout $TCE_DIR/certs/${REG_SERVER}/tls.key \
+#   -out $TCE_DIR/certs/${REG_SERVER}/tls.crt \
+#   -config $TCE_DIR/certs/req.cnf \
+#   -sha256
 
 log "CYAN" "Configure the TCE cluster config file: $TCE_DIR/config.yml"
 cat <<EOF > $TCE_DIR/config.yml
@@ -206,7 +249,6 @@ EOF
 
 $TCE_DIR/harbor/config/scripts/generate-passwords.sh >> $TCE_DIR/values-harbor.yml
 head -n -1 $TCE_DIR/values-harbor.yml> $TCE_DIR/new-values-harbor.yml; mv $TCE_DIR/new-values-harbor.yml $TCE_DIR/values-harbor.yml
-cp $TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.crt $TCE_DIR/certs/harbor.$VM_IP.nip.io/ca.crt
 
 kubectl create -n harbor secret generic harbor-tls --type=kubernetes.io/tls --from-file=$TCE_DIR/certs/harbor.$VM_IP.nip.io/ca.crt --from-file=$TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.crt --from-file=$TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.key
 tanzu package install harbor --package-name harbor.community.tanzu.vmware.com --version 2.3.3 -n harbor --values-file $TCE_DIR/values-harbor.yml
