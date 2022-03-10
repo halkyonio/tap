@@ -98,8 +98,8 @@ openssl req -x509 \
   -nodes \
   -days 365 \
   -newkey rsa:4096 \
-  -keyout $TCE_DIR/certs/${REG_SERVER}/client.key \
-  -out $TCE_DIR/certs/${REG_SERVER}/client.crt \
+  -keyout $TCE_DIR/certs/${REG_SERVER}/tls.key \
+  -out $TCE_DIR/certs/${REG_SERVER}/tls.crt \
   -config req.cnf \
   -sha256
 
@@ -122,8 +122,8 @@ ProviderConfiguration:
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REG_SERVER}"]
         endpoint = ["https://${REG_SERVER}"]
       [plugins."io.containerd.grpc.v1.cri".registry.configs."${REG_SERVER}".tls]
-        cert_file = "/etc/docker/certs.d/${REG_SERVER}/client.crt"
-        key_file  = "/etc/docker/certs.d/${REG_SERVER}/client.key"
+        cert_file = "/etc/docker/certs.d/${REG_SERVER}/tls.crt"
+        key_file  = "/etc/docker/certs.d/${REG_SERVER}/tls.key"
     nodes:
     - role: control-plane
       extraMounts:
@@ -200,6 +200,9 @@ port:
   https: 443
 logLevel: info
 enableContourHttpProxy: true
+tlsCertificate:
+  tls.crt: $TCE_DIR/certs/${REG_SERVER}/tls.crt
+  tls.key: $TCE_DIR/certs/${REG_SERVER}/tls.key
 EOF
 
 $TCE_DIR/harbor/config/scripts/generate-passwords.sh >> $TCE_DIR/values-harbor.yml
