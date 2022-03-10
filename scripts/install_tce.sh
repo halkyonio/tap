@@ -206,8 +206,9 @@ EOF
 
 $TCE_DIR/harbor/config/scripts/generate-passwords.sh >> $TCE_DIR/values-harbor.yml
 head -n -1 $TCE_DIR/values-harbor.yml> $TCE_DIR/new-values-harbor.yml; mv $TCE_DIR/new-values-harbor.yml $TCE_DIR/values-harbor.yml
+cp $TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.crt $TCE_DIR/certs/harbor.$VM_IP.nip.io/ca.crt
 
-kubectl create -n harbor secret tls harbor-tls --cert=$TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.crt --key=$TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.key
+kubectl create -n harbor secret generic harbor-tls --type=kubernetes.io/tls --from-file=$TCE_DIR/certs/harbor.$VM_IP.nip.io/ca.crt --from-file=$TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.crt --from-file=$TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.key
 tanzu package install harbor --package-name harbor.community.tanzu.vmware.com --version 2.3.3 -n harbor --values-file $TCE_DIR/values-harbor.yml
 
 log "CYAN" "Kubernetes dashboard installation ..."
