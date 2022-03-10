@@ -271,7 +271,7 @@ log_line "YELLOW" "Kubernetes dashboard TOKEN: $K8s_TOKEN"
 HARBOR_PWD_STR=$(cat $TCE_DIR/values-harbor.yml | grep harborAdminPassword)
 IFS=': ' && read -a strarr <<< $HARBOR_PWD_STR
 HARBOR_PWD=${strarr[1]}
-log "YELLOW" "Harbor URL\: https\://harbor.$VM_IP.nip.io and admin password\: $HARBOR_PWD"
+log "YELLOW" "Harbor URL: https://harbor.$VM_IP.nip.io and admin password: $HARBOR_PWD"
 
 log_line "YELLOW" "To push/pull images from the Harbor registry, create a secret and configure the imgPullSecret of the service account"
 log_line "YELLOW" "kubectl -n <NAMESPACE> create secret docker-registry regcred \""
