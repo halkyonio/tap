@@ -201,11 +201,6 @@ port:
   https: 443
 logLevel: info
 enableContourHttpProxy: true
-#tlsCertificate:
-# tls.crt: |
-#   "$(cat $TCE_DIR/certs/${REG_SERVER}/tls.crt)"
-# tls.key: |
-#   "$(cat $TCE_DIR/certs/${REG_SERVER}/tls.key)"
 tlsCertificateSecretName: harbor-tls
 EOF
 
