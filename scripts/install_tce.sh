@@ -38,7 +38,7 @@ log_msg() {
 log_line() {
     COLOR=${1}
     MSG="${@:2}"
-    echo "${!COLOR}## ${MSG}${NC}"
+    echo -e "${!COLOR}## ${MSG}${NC}"
 }
 
 log() {
