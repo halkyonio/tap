@@ -194,7 +194,6 @@ spec:
   - k8s-ui.$VM_IP.nip.io
 EOF
 
-helm uninstall k8s-ui -n kubernetes-dashboard
 helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard -f k8s-ui-values.yml
 
 kubectl create serviceaccount dashboard -n kubernetes-dashboard
