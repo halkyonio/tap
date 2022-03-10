@@ -14,6 +14,15 @@
 #
 set -e
 
+KUBE_CFG=${KUBE_CFG:=config}
+VM_IP=${VM_IP:=127.0.0.1}
+CLUSTER_NAME=${CLUSTER_NAME:=toto}
+REG_SERVER=harbor.$VM_IP.nip.io
+
+REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
+TCE_VERSION=v0.11.0
+TCE_DIR=$REMOTE_HOME_DIR/tce
+
 # Defining some colors for output
 RED='\033[0;31m'
 NC='\033[0m' # No Color
@@ -46,18 +55,53 @@ log() {
   echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
 }
 
-KUBE_CFG=${KUBE_CFG:=config}
-VM_IP=${VM_IP:=127.0.0.1}
-CLUSTER_NAME=${CLUSTER_NAME:=toto}
-
-REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
-TCE_VERSION=v0.11.0
-TCE_DIR=$REMOTE_HOME_DIR/tce
+create_openssl_cfg() {
+CFG=$(cat <<EOF
+[req]
+distinguished_name = subject
+x509_extensions    = x509_ext
+prompt             = no
+[subject]
+C  = BE
+ST = Namur
+L  = Florennes
+O  = Red Hat
+OU = Snowdrop
+CN = localhost
+[x509_ext]
+basicConstraints        = critical, CA:TRUE
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always, issuer:always
+keyUsage                = critical, cRLSign, digitalSignature, keyCertSign
+nsComment               = "OpenSSL Generated Certificate"
+subjectAltName          = @alt_names
+[alt_names]
+DNS.1 = $REG_SERVER
+EOF
+)
+echo "$CFG"
+}
 
 log "CYAN" "Set the KUBECONFIG=$HOME/.kube/${KUBE_CFG}"
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG}
 
 SECONDS=0
+
+log "CYAN" "Populate a self signed certificate for "
+mkdir -p $TCE_DIR/certs/${REG_SERVER}
+
+log "CYAN" "Generate the openssl config"
+create_openssl_cfg > req.cnf
+
+log "CYAN" "Create the self signed certificate certificate and client key files"
+openssl req -x509 \
+  -nodes \
+  -days 365 \
+  -newkey rsa:4096 \
+  -keyout $TCE_DIR/certs/${REG_SERVER}/client.key \
+  -out $TCE_DIR/certs/${REG_SERVER}/client.crt \
+  -config req.cnf \
+  -sha256
 
 log "CYAN" "Configure the TCE cluster config file: $TCE_DIR/config.yml"
 cat <<EOF > $TCE_DIR/config.yml
@@ -73,8 +117,18 @@ ProviderConfiguration:
     networking:
       apiServerAddress: $VM_IP
       apiServerPort: 31452
+    containerdConfigPatches:
+    - |-
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REG_SERVER}"]
+        endpoint = ["https://${REG_SERVER}"]
+      [plugins."io.containerd.grpc.v1.cri".registry.configs."${REG_SERVER}".tls]
+        cert_file = "/etc/docker/certs.d/${REG_SERVER}/client.crt"
+        key_file  = "/etc/docker/certs.d/${REG_SERVER}/client.key"
     nodes:
     - role: control-plane
+      extraMounts:
+        - containerPath: /etc/docker/certs.d/${REG_SERVER}
+          hostPath: $TCE_DIR/certs/${REG_SERVER}
       extraPortMappings:
       - containerPort: 80
         hostPort: 80
