@@ -199,5 +199,5 @@ helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dash
 kubectl create serviceaccount dashboard -n kubernetes-dashboard
 kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard
 
-log "RED" "Kubernetes TOKEN"
-kubectl get secret $(kubectl get serviceaccount dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode
+K8s_TOKEN=$(kubectl get secret $(kubectl get serviceaccount dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode)
+log "RED" "Kubernetes TOKEN: $K8s_TOKEN"
