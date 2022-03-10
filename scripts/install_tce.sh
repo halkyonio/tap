@@ -204,8 +204,10 @@ enableContourHttpProxy: true
 tlsCertificate:
   ca.crt: |
     "$(cat $TCE_DIR/certs/${REG_SERVER}/tls.crt)"
+
   tls.crt: |
     "$(cat $TCE_DIR/certs/${REG_SERVER}/tls.crt)"
+
   tls.key: |
     "$(cat $TCE_DIR/certs/${REG_SERVER}/tls.key)"
 EOF
