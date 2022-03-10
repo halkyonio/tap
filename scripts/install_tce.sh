@@ -31,8 +31,14 @@ repeat_char(){
 
 log_msg() {
     COLOR=${1}
-      MSG="${@:2}"
+    MSG="${@:2}"
     echo -e "\n${!COLOR}## ${MSG}${NC}"
+}
+
+log_line() {
+    COLOR=${1}
+    MSG="${@:2}"
+    echo "${!COLOR}## ${MSG}${NC}"
 }
 
 log() {
@@ -200,4 +206,16 @@ kubectl create serviceaccount dashboard -n kubernetes-dashboard
 kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard
 
 K8s_TOKEN=$(kubectl get secret $(kubectl get serviceaccount dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode)
-log "RED" "Kubernetes TOKEN: $K8s_TOKEN"
+log "YELLOW" "Kubernetes TOKEN: $K8s_TOKEN"
+
+HARBOR_PWD_STR=$(cat $TCE_DIR/values-harbor.yml | grep harborAdminPassword)
+IFS=': ' && read -a strarr <<< $HARBOR_PWD_STR
+HARBOR_PWD=${strarr[1]}
+log "YELLOW" "Harbor GUI password: $HARBOR_PWD"
+
+log_line "YELLOW" "To push/pull images from the Harbor registry, create a secret and configure the imgPullSecret of the service account"
+log_line "YELLOW" "kubectl -n <NAMESPACE> create secret docker-registry regcred \""
+log_line "YELLOW" "    --docker-server=harbor.$IP.nip.io \""
+log_line "YELLOW" "    --docker-username=admin \""
+log_line "YELLOW" "    --docker-password=$HARBOR_PWD"
+log_line "YELLOW" "kubectl patch serviceaccount default -n <NAMESPACE> -p '{"imagePullSecrets": [{"name": "regcred"}]}'"
