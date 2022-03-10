@@ -146,7 +146,7 @@ head -n -1 $TCE_DIR/values-harbor.yml> $TCE_DIR/new-values-harbor.yml; mv $TCE_D
 tanzu package install harbor --package-name harbor.community.tanzu.vmware.com --version 2.3.3 -n harbor --values-file $TCE_DIR/values-harbor.yml
 
 log "CYAN" "Kubernetes dashboard installation ..."
-cat <<EOF > $HOME/k8s-ui-values.yml
+cat <<EOF > $TCE_DIR/k8s-ui-values.yml
 ingress:
   enabled: true
   annotations:
@@ -194,7 +194,7 @@ spec:
   - k8s-ui.$VM_IP.nip.io
 EOF
 
-helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard -f k8s-ui-values.yml
+helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard -f $TCE_DIR/k8s-ui-values.yml
 
 kubectl create serviceaccount dashboard -n kubernetes-dashboard
 kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard
