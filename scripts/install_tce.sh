@@ -91,7 +91,7 @@ log "CYAN" "Populate a self signed certificate for "
 mkdir -p $TCE_DIR/certs/${REG_SERVER}
 
 log "CYAN" "Generate the openssl config"
-create_openssl_cfg > req.cnf
+create_openssl_cfg > $TCE_DIR/certs/req.cnf
 
 log "CYAN" "Create the self signed certificate certificate and client key files"
 openssl req -x509 \
@@ -100,7 +100,7 @@ openssl req -x509 \
   -newkey rsa:4096 \
   -keyout $TCE_DIR/certs/${REG_SERVER}/tls.key \
   -out $TCE_DIR/certs/${REG_SERVER}/tls.crt \
-  -config req.cnf \
+  -config $TCE_DIR/certs/req.cnf \
   -sha256
 
 log "CYAN" "Configure the TCE cluster config file: $TCE_DIR/config.yml"
