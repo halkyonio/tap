@@ -67,7 +67,7 @@ ST = Namur
 L  = Florennes
 O  = Red Hat
 OU = Snowdrop
-CN = localhost
+CN = $REG_SERVER
 [x509_ext]
 basicConstraints        = critical, CA:TRUE
 subjectKeyIdentifier    = hash
