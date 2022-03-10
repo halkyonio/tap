@@ -57,6 +57,8 @@ TCE_DIR=$REMOTE_HOME_DIR/tce
 log "CYAN" "Set the KUBECONFIG=$HOME/.kube/${KUBE_CFG}"
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG}
 
+SECONDS=0
+
 log "CYAN" "Configure the TCE cluster config file: $TCE_DIR/config.yml"
 cat <<EOF > $TCE_DIR/config.yml
 ClusterName: $CLUSTER_NAME
@@ -220,3 +222,6 @@ log_line "YELLOW" "    --docker-server=harbor.$IP.nip.io \""
 log_line "YELLOW" "    --docker-username=admin \""
 log_line "YELLOW" "    --docker-password=$HARBOR_PWD"
 log_line "YELLOW" "kubectl patch serviceaccount default -n <NAMESPACE> -p '{"imagePullSecrets": [{"name": "regcred"}]}'"
+
+ELAPSED="Elapsed: $(($SECONDS / 3600))hrs $((($SECONDS / 60) % 60))min $(($SECONDS % 60))sec" && echo $ELAPSED
+log "YELLOW" "Elapsed time to create TCE and install the packages: $ELAPSED"
