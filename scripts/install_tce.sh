@@ -37,10 +37,13 @@ export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
 VM_IP=${VM_IP:-127.0.0.1}
 CLUSTER_NAME=${CLUSTER_NAME:-toto}
+
+REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
 TCE_VERSION=v0.11.0
+TCE_DIR="$REMOTE_HOME_DIR/tce"
 
 log "CYAN" "Configure the TCE cluster"
-cat <<EOF > $HOME/tce/config.yml
+cat <<EOF > $TCE_DIR/config.yml
 ClusterName: $CLUSTER_NAME
 KubeconfigPath: ""
 ExistingClusterKubeconfig: ""
@@ -74,7 +77,7 @@ WorkerNodeCount: "0"
 EOF
 
 log "CYAN" "Create the $CLUSTER_NAME TCE cluster"
-tanzu uc create $CLUSTER_NAME -f $HOME/tce/config.yml
+tanzu uc create $CLUSTER_NAME -f $TCE_DIR/config.yml
 
 log "CYAN" "Check the latest image available of the repo for $TCE_VERSION "
 REPO_VERSION=$(crane ls projects.registry.vmware.com/tce/main | grep $TCE_VERSION | tail -1)
@@ -95,22 +98,22 @@ log "CYAN" "Cert manager installation ..."
 tanzu package install cert-manager --package-name cert-manager.community.tanzu.vmware.com --version 1.6.1 -n tce --wait=false
 
 log "CYAN" "Contour installation ..."
-cat <<EOF > $HOME/tce/values-contour.yaml
+cat <<EOF > $TCE_DIR/values-contour.yaml
 envoy:
   service:
     type: ClusterIP
   hostPorts:
     enable: true
 EOF
-tanzu package install contour --package-name contour.community.tanzu.vmware.com --version 1.20.1 -f $HOME/tce/values-contour.yaml --wait=false
+tanzu package install contour --package-name contour.community.tanzu.vmware.com --version 1.20.1 -f $TCE_DIR/values-contour.yaml --wait=false
 
 log "CYAN" "Knative installation ..."
-cat <<EOF > $HOME/tce/values-knative.yml
+cat <<EOF > $TCE_DIR/values-knative.yml
 domain:
   type: real
   name: $VM_IP.nip.io
 EOF
-tanzu package install knative --package-name knative-serving.community.tanzu.vmware.com --version 1.0.0 -f $HOME/tce/values-knative.yml --wait=false
+tanzu package install knative --package-name knative-serving.community.tanzu.vmware.com --version 1.0.0 -f $TCE_DIR/values-knative.yml --wait=false
 
 log "CYAN" "Kpack installation ..."
 tanzu package install kpack --package-name kpack.community.tanzu.vmware.com --version 0.5.1 --wait=false
@@ -119,7 +122,7 @@ log "CYAN" "Cartographer installation ..."
 tanzu package install cartographer --package-name cartographer.community.tanzu.vmware.com --version 0.2.2 --wait=false
 
 log "CYAN" "Harbor installation ..."
-cat <<EOF > $HOME/tce/values-harbor.yml
+cat <<EOF > $TCE_DIR/values-harbor.yml
 namespace: harbor
 hostname: harbor.$VM_IP.nip.io
 port:
@@ -128,10 +131,10 @@ logLevel: info
 enableContourHttpProxy: true
 EOF
 
-$HOME/tce/harbor/config/scripts/generate-passwords.sh >> $HOME/tce/values-harbor.yml
-head -n -1 $HOME/tce/values-harbor.yml> $HOME/tce/new-values-harbor.yml; mv $HOME/tce/new-values-harbor.yml $HOME/tce/values-harbor.yml
+$TCE_DIR/harbor/config/scripts/generate-passwords.sh >> $TCE_DIR/values-harbor.yml
+head -n -1 $TCE_DIR/values-harbor.yml> $TCE_DIR/new-values-harbor.yml; mv $TCE_DIR/new-values-harbor.yml $TCE_DIR/values-harbor.yml
 
-tanzu package install harbor --package-name harbor.community.tanzu.vmware.com --version 2.3.3 -n harbor --values-file $HOME/tce/values-harbor.yml
+tanzu package install harbor --package-name harbor.community.tanzu.vmware.com --version 2.3.3 -n harbor --values-file $TCE_DIR/values-harbor.yml
 
 log "CYAN" "Kubernetes dashboard installation ..."
 cat <<EOF > $HOME/k8s-ui-values.yml
