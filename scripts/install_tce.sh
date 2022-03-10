@@ -67,7 +67,7 @@ ST = Namur
 L  = Florennes
 O  = Red Hat
 OU = Snowdrop
-CN = $REG_SERVER
+CN = Harbor CA
 [x509_ext]
 basicConstraints        = critical, CA:TRUE
 subjectKeyIdentifier    = hash
@@ -77,6 +77,7 @@ nsComment               = "OpenSSL Generated Certificate"
 subjectAltName          = @alt_names
 [alt_names]
 DNS.1 = $REG_SERVER
+DNS.2 = notary.$REG_SERVER
 EOF
 )
 echo "$CFG"
