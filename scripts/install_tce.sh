@@ -4,10 +4,14 @@
 #
 # ./install_tce.sh
 #
+# Example:
+# VM_IP=65.108.148.216 CLUSTER_NAME=toto ./scripts/uninstall_tce.sh
+#
 # Define the following env vars:
 # - REMOTE_HOME_DIR: home directory where files will be installed within the remote VM
 # - VM_IP: IP address of the VM where the cluster is running
 # - CLUSTER_NAME: TCE Kind cluster name
+#
 set -e
 
 # Defining some colors for output
