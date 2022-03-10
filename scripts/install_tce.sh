@@ -202,9 +202,12 @@ port:
 logLevel: info
 enableContourHttpProxy: true
 tlsCertificate:
-  ca.crt: $(cat $TCE_DIR/certs/${REG_SERVER}/tls.crt)
-  tls.crt: $(cat $TCE_DIR/certs/${REG_SERVER}/tls.crt)
-  tls.key: $(cat $TCE_DIR/certs/${REG_SERVER}/tls.key)
+  ca.crt: |
+    "$(cat $TCE_DIR/certs/${REG_SERVER}/tls.crt)"
+  tls.crt: |
+    "$(cat $TCE_DIR/certs/${REG_SERVER}/tls.crt)"
+  tls.key: |
+    "$(cat $TCE_DIR/certs/${REG_SERVER}/tls.key)"
 EOF
 
 $TCE_DIR/harbor/config/scripts/generate-passwords.sh >> $TCE_DIR/values-harbor.yml
