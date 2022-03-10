@@ -36,8 +36,8 @@ KUBE_CFG_FILE=${1:-config}
 CLUSTER_NAME=${CLUSTER_NAME:-toto}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
-log "YELLOW" "Removing the k8s-ui release from helm"
-helm uninstall k8s-ui -n kubernetes-dashboard
+#log "YELLOW" "Removing the k8s-ui release from helm"
+#helm uninstall k8s-ui -n kubernetes-dashboard
 
 log "YELLOW" "Deleting the TCE cluster $CLUSTER_NAME"
 tanzu uc delete $CLUSTER_NAME
