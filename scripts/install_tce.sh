@@ -218,7 +218,7 @@ log "YELLOW" "Harbor URL: https://harbor.$IP.nip.io and admin password: $HARBOR_
 
 log_line "YELLOW" "To push/pull images from the Harbor registry, create a secret and configure the imgPullSecret of the service account"
 log_line "YELLOW" "kubectl -n <NAMESPACE> create secret docker-registry regcred \""
-log_line "YELLOW" "    --docker-server=harbor.$IP.nip.io \""
+log_line "YELLOW" "    --docker-server=harbor.<IP>.nip.io \""
 log_line "YELLOW" "    --docker-username=admin \""
 log_line "YELLOW" "    --docker-password=$HARBOR_PWD"
 log_line "YELLOW" "kubectl patch serviceaccount default -n <NAMESPACE> -p '{"imagePullSecrets": [{"name": "regcred"}]}'"
