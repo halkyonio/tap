@@ -40,14 +40,14 @@ KUBE_CFG=${KUBE_CFG:=config}
 VM_IP=${VM_IP:=127.0.0.1}
 CLUSTER_NAME=${CLUSTER_NAME:=toto}
 
-REMOTE_HOME_DIR=${REMOTE_HOME_DIR:=$(eval echo \$HOME)}
+REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
 TCE_VERSION=v0.11.0
 TCE_DIR=$REMOTE_HOME_DIR/tce
 
 log "CYAN" "Set the KUBECONFIG=$HOME/.kube/${KUBE_CFG}"
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG}
 
-log "CYAN" "Configure the TCE cluster"
+log "CYAN" "Configure the TCE cluster config file: $TCE_DIR/config.yml"
 cat <<EOF > $TCE_DIR/config.yml
 ClusterName: $CLUSTER_NAME
 KubeconfigPath: ""
