@@ -3,7 +3,11 @@
 # Execute this command locally
 #
 # ./install_tce.sh
-
+#
+# Define the following env vars:
+# - REMOTE_HOME_DIR: home directory where files will be installed within the remote VM
+# - VM_IP: IP address of the VM where the cluster is running
+# - CLUSTER_NAME: TCE Kind cluster name
 set -e
 
 # Defining some colors for output
@@ -32,11 +36,11 @@ log() {
   echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
 }
 
-KUBE_CFG=${KUBE_CFG:-config}
-VM_IP=${VM_IP:-127.0.0.1}
-CLUSTER_NAME=${CLUSTER_NAME:-toto}
+KUBE_CFG=${KUBE_CFG:=config}
+VM_IP=${VM_IP:=127.0.0.1}
+CLUSTER_NAME=${CLUSTER_NAME:=toto}
 
-REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
+REMOTE_HOME_DIR=${REMOTE_HOME_DIR:=$HOME}
 TCE_VERSION=v0.11.0
 TCE_DIR="$REMOTE_HOME_DIR/tce"
 
