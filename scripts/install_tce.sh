@@ -67,7 +67,7 @@ ST = Namur
 L  = Florennes
 O  = Red Hat
 OU = Snowdrop
-CN = Harbor CA
+CN = $REG_SERVER
 [x509_ext]
 basicConstraints        = critical, CA:TRUE
 subjectKeyIdentifier    = hash
@@ -148,6 +148,8 @@ openssl req -x509 \
   -out $TCE_DIR/certs/${REG_SERVER}/tls.crt \
   -config $TCE_DIR/certs/req.cnf \
   -sha256
+
+sudo cp $TCE_DIR/certs/${REG_SERVER}/tls.crt /etc/docker/certs.d/${REG_SERVER}/ca.crt
 
 log "CYAN" "Configure the TCE cluster config file: $TCE_DIR/config.yml"
 cat <<EOF > $TCE_DIR/config.yml
