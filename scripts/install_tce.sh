@@ -112,11 +112,12 @@ openssl req -sha512 -new \
 
 # Generate an x509 v3 extension file.
 cat > $TCE_DIR/certs/v3.ext <<-EOF
-authorityKeyIdentifier=keyid,issuer
-basicConstraints=CA:FALSE
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
-extendedKeyUsage = serverAuth
-subjectAltName = @alt_names
+basicConstraints        = critical, CA:TRUE
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always, issuer:always
+keyUsage                = critical, cRLSign, digitalSignature, keyCertSign
+nsComment               = "OpenSSL Generated Certificate"
+subjectAltName          = @alt_names
 
 [alt_names]
 DNS.1=harbor.65.108.148.216.nip.io
@@ -134,6 +135,7 @@ mkdir -p $TCE_DIR/certs/${REG_SERVER}
 cp $TCE_DIR/certs/ca.crt $TCE_DIR/certs/${REG_SERVER}
 cp $TCE_DIR/certs/tls.crt $TCE_DIR/certs/${REG_SERVER}
 cp $TCE_DIR/certs/tls.key $TCE_DIR/certs/${REG_SERVER}
+
 
 # create_openssl_cfg > $TCE_DIR/certs/req.cnf
 
