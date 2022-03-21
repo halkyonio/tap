@@ -358,5 +358,85 @@ log "CYAN" "Patch the service account of the $NAMESPACE_DEMO to define the secre
 kubectl patch serviceaccount default -n $NAMESPACE_DEMO -p '{"secrets": [{"name":"registry-credentials"}]}'
 kubectl patch serviceaccount default -n $NAMESPACE_DEMO -p '{"imagePullSecrets": [{"name":"tap-registry"},{"name":"registry-credentials"}]}'
 
+log "CYAN" "Kubernetes dashboard installation ..."
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+
+kubectl create ns kubernetes-dashboard
+cat <<EOF > $TANZU_TEMP_DIR/k8s-ui-values.yml
+extraArgs:
+  - --auto-generate-certificates=false
+  - --tls-cert-file=extra/tls.crt
+  - --tls-key-file=extra/tls.key
+extraVolumes:
+- name: certs-selfsigned
+  secret:
+    defaultMode: 420
+    secretName: k8s-ui-secret
+extraVolumeMounts:
+- mountPath: /certs/extra
+  name: certs-selfsigned
+  readOnly: true
+
+ingress:
+  enabled: true
+  annotations:
+    projectcontour.io/ingress.class: contour
+  hosts:
+  - k8s-ui.$VM_IP.nip.io
+  tls:
+  - secretName: k8s-ui-secret
+    hosts:
+      - k8s-ui.$VM_IP.nip.io
+service:
+  annotations:
+    projectcontour.io/upstream-protocol.tls: "443"
+EOF
+
+cat <<EOF | kubectl apply -f -
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-selfsigned-ca
+  namespace: kubernetes-dashboard
+spec:
+  isCA: true
+  commonName: k8s-ui.$VM_IP.nip.io
+  secretName: k8s-ui-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: my-ca-issuer
+  namespace: kubernetes-dashboard
+spec:
+  ca:
+    secretName: k8s-ui-secret
+EOF
+
+helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard -f $TANZU_TEMP_DIR/k8s-ui-values.yml
+
+kubectl create serviceaccount dashboard -n kubernetes-dashboard
+kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard
+
+K8s_TOKEN=$(kubectl get secret $(kubectl get serviceaccount dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode)
+CA_CERT=$(kubectl get secret/k8s-ui-secret -n kubernetes-dashboard -o jsonpath="{.data.ca\.crt}" | base64)
+log_line "YELLOW" "Kubernetes dashboard URL: https://k8S-ui.$VM_IP.nip.io"
+log_line "YELLOW" "Kubernetes dashboard TOKEN: $K8s_TOKEN"
+log_line "YELLOW" "CA Root certificate to be imported within the Keystore: $CA_CERT"
+
 popd
 exit
