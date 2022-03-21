@@ -306,6 +306,7 @@ spec:
   - k8s-ui.$VM_IP.nip.io
 EOF
 
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard -f $TCE_DIR/k8s-ui-values.yml
 
 kubectl create serviceaccount dashboard -n kubernetes-dashboard
