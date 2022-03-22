@@ -4,10 +4,11 @@ Table of Contents
 =================
 
 * [Prerequisites](#prerequisites)
-* [Demo 1: Spring Petclinic &amp; TAP GUI](#demo-1-spring-petclinic--tap-gui)
-* [Demo 2: Spring Petclinic &amp; Postgresql](#demo-2-spring-petclinic--postgresql)
-* [Demo 3: Quarkus App + DB](#demo-3-quarkus-app--db)
-* [Demo 4: Web App &amp; VScode](#demo-4-web-app--vscode)
+* [Demo 1: Tanzu Java Web](#demo-1-tanzu-java-web)
+* [Demo 2: Spring Petclinic &amp; TAP GUI](#demo-2-spring-petclinic--tap-gui)
+* [Demo 3: Spring Petclinic &amp; Postgresql](#demo-3-spring-petclinic--postgresql)
+* [Demo 4: Quarkus App + DB](#demo-4-quarkus-app--db)
+* [Demo 5: Web App &amp; VScode](#demo-5-web-app--vscode)
 * [Tearing down the quarkus-app](#tearing-down-the-quarkus-app)
 * [Issues](#issues)
 
@@ -20,7 +21,17 @@ Table of Contents
 - Have a secret created with the registry credentials and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
 - Import the config of the kubernetes cluster using the file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools
 
-### Demo 1: Spring Petclinic & TAP GUI
+### Demo 1: Tanzu Java Web
+
+- Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
+- Download a zipped project from the accelerators such as `Tanzu Java Web App`, change the prefix of the image to be stored and unzip it
+- Upload the project using VisualCode
+- Change the default namespace to use `tap-demo` and add the following line `allow_k8s_contexts('kubernetes-admin@kubernetes')`
+- Launch `Tanzu Live Update`, wait till it runs 
+- Access the `localhost:8080` service like the Knative service
+- Do some code change and check that it has been updated locally or remotely
+
+### Demo 2: Spring Petclinic & TAP GUI
 
 - Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
 - Download a zipped project from the accelerators such as `Spring Petclinic app` and unzip it
@@ -70,7 +81,7 @@ NAME      READY   URL
 tanzu apps workload -n tap-demo delete $APP
 ```
 
-### Demo 2: Spring Petclinic & Postgresql
+### Demo 3: Spring Petclinic & Postgresql
 
 This example extends the previous ad will demonstrate how to bind a Postgresql DB with the Spring application.
 
@@ -134,7 +145,7 @@ kubectl get pod -l "app=spring-tap-petclinic-00002" -o yaml | grep -A 4 volume
       sources: 
 ```
 
-### Demo 3: Quarkus App + DB
+### Demo 4: Quarkus App + DB
 
 This example illustrates how to use the quarkus runtime and a Database service on a platform running TAP. As the current platform is not able to build by default
 the fat-jar used by Quarkus, it has been needed to create a new supply chain able to perform such a build. The scenatio that we will follow part of this demo will
@@ -315,7 +326,7 @@ EOF
 
 Enjoy !!
 
-### Demo 4: Web App & VScode
+### Demo 5: Web App & VScode
 
 Use an existing project such as `Tanzu Java Web app`
 
