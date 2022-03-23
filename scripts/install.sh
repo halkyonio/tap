@@ -139,7 +139,7 @@ log "CYAN" "Set the Cluster Essentials product ID"
 TANZU_CLUSTER_ESSENTIALS_FILE_ID="1105818"
 TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:82dfaf70656b54dcba0d4def85ccae1578ff27054e7533d08320244af7fb0343"
 
-log "CYAN" "Download g ... "
+log "CYAN" "Download the tanzu-cluster-essentials ... "
 pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
 mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd64-$TANZU_CLUSTER_ESSENTIALS_VERSION.tgz -C ./tanzu-cluster-essentials
 
@@ -153,9 +153,11 @@ cd ./tanzu-cluster-essentials
 export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
 ./install.sh
 
-log "CYAN" "Install the kapp, ytt onto your $PATH:"
+log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
 sudo cp ytt /usr/local/bin
-sudo cp ./kapp /usr/local/bin/kapp
+sudo cp kapp /usr/local/bin
+sudo cp imgpkg /usr/local/bin
+sudo cp kbld /usr/local/bin
 cd ..
 
 log "CYAN" "Install the Tanzu client & plug-ins"
@@ -197,9 +199,15 @@ tanzu secret registry add tap-registry \
   --server ${INSTALL_REGISTRY_HOSTNAME} \
   --export-to-all-namespaces --yes --namespace $NAMESPACE_TAP
 
+log "CYAN" "Relocate the images with the Carvel tool imgpkg"
+imgpkg copy --registry-username $REGISTRY_USERNAME \
+            --registry-password $REGISTRY_PASSWORD \
+            -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
+            --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
+
 log "CYAN" "Add Tanzu Application Platform package repository to the k8s cluster"
 tanzu package repository add tanzu-tap-repository \
-  --url registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
+  --url $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages:$TAP_VERSION \
   -n $NAMESPACE_TAP
 
 sleep 10s
