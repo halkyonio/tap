@@ -257,6 +257,52 @@ head -n -1 $TCE_DIR/values-harbor.yml> $TCE_DIR/new-values-harbor.yml; mv $TCE_D
 kubectl create -n harbor secret generic harbor-tls --type=kubernetes.io/tls --from-file=$TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.crt --from-file=$TCE_DIR/certs/harbor.$VM_IP.nip.io/tls.key
 tanzu package install harbor --package-name harbor.community.tanzu.vmware.com --version 2.3.3 -n harbor --values-file $TCE_DIR/values-harbor.yml
 
+log_line "YELLOW" "Deploying the Kubeapps Catalog UI"
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm uninstall kubeapps -n kubeapps
+
+cat <<EOF > kubeapps-values.yml
+packaging:
+  carvel:
+    enabled: true
+featureFlags:
+  operators: true
+EOF
+
+helm install kubeapps -n kubeapps bitnami/kubeapps -f kubeapps-values.yml
+cat <<EOF | kubectl apply -f -
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: kubeapps-grpc
+  namespace: kubeapps
+spec:
+  virtualhost:
+    fqdn: kubeapps.$VM_IP.nip.io
+  routes:
+    - conditions:
+      - prefix: /apis/
+      pathRewritePolicy:
+        replacePrefix:
+        - replacement: /
+      services:
+      - name: kubeapps-internal-kubeappsapis
+        port: 8080
+        protocol: h2c
+    - services:
+      - name: kubeapps
+        port: 80
+EOF
+kubectl create --namespace default serviceaccount kubeapps-operator
+kubectl create clusterrolebinding kubeapps-operator --clusterrole=cluster-admin --serviceaccount=default:kubeapps-operator
+kubectl create clusterrolebinding kubeapps-operator-cluster-admin --clusterrole=cluster-admin --serviceaccount kubeapps:kubeapps-operator
+KUBEAPPS_TOKEN=$(kubectl get --namespace default secret $(kubectl get --namespace default serviceaccount kubeapps-operator -o jsonpath='{range .secrets[*]}{.name}{"\n"}{end}' | grep kubeapps-operator-token) -o jsonpath='{.data.token}' -o go-template='{{.data.token | base64decode}}')
+log_line "YELLOW" "Kubeapps TOKEN: $KUBEAPPS_TOKEN"
+log_line "YELLOW" "Install OLM if not yet done !!"
+log_line "YELLOW" "curl -L https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.20.0/install.sh -o install.sh"
+log_line "YELLOW" "chmod +x install.sh"
+log_line "YELLOW" "./install.sh v0.20.0"
+
 log "CYAN" "Kubernetes dashboard installation ..."
 cat <<EOF > $TCE_DIR/k8s-ui-values.yml
 ingress:
