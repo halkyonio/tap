@@ -88,6 +88,7 @@ using the following variables of the [install.sh](scripts/install.sh) bash scrip
 - **REGISTRY_USERNAME**: username to be used to log on the registry
 - **REGISTRY_PASSWORD**: password to be used to log on the registry
 
+- **TANZU_REG_SERVER**: Tanzu registry from where packages, images can be pulled (e.g: registry.tanzu.vmware.com) 
 - **TANZU_REG_USERNAME**: user to be used to be authenticated against the Tanzu images registry
 - **TANZU_REG_PASSWORD**: password to be used to be authenticated against the Tanzu images registry
 
@@ -97,6 +98,8 @@ Remark: As the script will download the TAP packages, repository using the tool 
 Finally, define the home directory and IP address of the VM hosting TAP and the kubernetes cluster: 
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
 - **VM_IP**: IP address of the VM where the cluster is running
+
+**IMPORTANT**: Set the following `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP as images will be copied from the Tanzu registry to your own container registry
 
 Execute the bash script
 ```bash
