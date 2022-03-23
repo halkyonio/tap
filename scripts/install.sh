@@ -98,7 +98,7 @@ log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide
 )
 
 printf "\n## kubectl krew\nexport PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH\"\n" >> $HOME/.bashrc
-exec $SHELL
+export PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH
 
 log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
 kubectl krew install tree
