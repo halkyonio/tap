@@ -83,8 +83,9 @@ log "GREEN" "Clean up kapp and secretgen controllers"
 kapp delete -a secretgen-controller -n tanzu-cluster-essentials -y
 kapp delete -a kapp-controller -n tanzu-cluster-essentials -y
 
-log "GREEN" "Remove the tanzu-cluster-essentials namespace"
+log "GREEN" "Remove the tanzu-cluster-essentials, tap-demo and tap-install namespace"
 kubectl delete ns tanzu-cluster-essentials
+kubectl delete ns tap-install
 
 log "GREEN" "Removing the Tanzu client and config folders"
 rm -rf $TANZU_TEMP_DIR/cli    # Remove previously downloaded cli files
