@@ -15,8 +15,10 @@
 # - REGISTRY_USERNAME: username to be used to log on the registry
 # - REGISTRY_PASSWORD: password to be used to log on the registry
 # - TANZU_PIVNET_LEGACY_API_TOKEN: Token used by pivnet to login
+# - TANZU_REG_SERVER: registry.tanzu.vmware.com
 # - TANZU_REG_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - TANZU_REG_PASSWORD: password to be used to be authenticated against the Tanzu image registry
+# - COPY_PACKAGES: Copy package image bundles from Tanzu to your favorite image registries
 #
 
 set -e
@@ -53,6 +55,7 @@ export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 # Terminal UI to interact with a Kubernetes cluster
 K9S_VERSION=$(curl --silent "https://api.github.com/repos/derailed/k9s/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
 
+COPY_PACKAGES=${COPY_PACKAGES:-false}
 REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
 DEST_DIR="/usr/local/bin"
 TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
@@ -64,6 +67,7 @@ REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
 TANZU_PIVNET_LEGACY_API_TOKEN=${TANZU_PIVNET_LEGACY_API_TOKEN}
+TANZU_REG_SERVER=${TANZU_REG_SERVER}
 TANZU_REG_USERNAME=${TANZU_REG_USERNAME}
 TANZU_REG_PASSWORD=${TANZU_REG_PASSWORD}
 
@@ -185,27 +189,25 @@ tanzu plugin list
 log "CYAN" "Executing installation Part II of the TAP guide"
 log "CYAN" "Install profiles ..."
 
-export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
-export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
-export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
-
 log "CYAN" "Create a namespace called tap-install for deploying the packages"
 kubectl create ns tap-install
 
-log "CYAN" "Create a registry secret"
-tanzu secret registry add tap-registry \
-  --username ${INSTALL_REGISTRY_USERNAME} \
-  --password ${INSTALL_REGISTRY_PASSWORD} \
-  --server ${INSTALL_REGISTRY_HOSTNAME} \
+log "CYAN" "Create a secret hosting the credentials to access your image registry"
+tanzu secret registry add registry-credentials \
+  --username $REGISTRY_USERNAME \
+  --password $REGISTRY_PASSWORD \
+  --server $REGISTRY_SERVER \
   --export-to-all-namespaces --yes --namespace $NAMESPACE_TAP
 
-log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
-docker login $REGISTRY_SERVER -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD
-docker login $INSTALL_REGISTRY_HOSTNAME -u $INSTALL_REGISTRY_USERNAME -p $INSTALL_REGISTRY_PASSWORD
+if [[ "$COPY_PACKAGES" == "true" ]]; then
+  log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
+  docker login $REGISTRY_SERVER -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD
+  docker login $TANZU_REG_SERVER -u $TANZU_REG_USERNAME -p $TANZU_REG_PASSWORD
 
-log "CYAN" "Relocate the repository image bundle from Tanzu to ghcr.io"
-imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
+  log "CYAN" "Relocate the repository image bundle from Tanzu to ghcr.io"
+  imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
             --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
+fi
 
 log "CYAN" "Deploy the TAP package repository"
 tanzu package repository add tanzu-tap-repository \
@@ -295,7 +297,7 @@ metadata:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: tap-registry
+  name: registry-credentials
   annotations:
     secretgen.carvel.dev/image-pull-secret: ""
 type: kubernetes.io/dockerconfigjson
@@ -363,12 +365,9 @@ subjects:
     name: default
 EOF
 
-log "CYAN" "Create the secret hosting the user's credentials to access the image registry"
-tanzu secret registry add registry-credentials --server $REGISTRY_SERVER --username $REGISTRY_USERNAME --password $REGISTRY_PASSWORD --namespace $NAMESPACE_DEMO
-
 log "CYAN" "Patch the service account of the $NAMESPACE_DEMO to define the secret & imagePullSecret to be used"
 kubectl patch serviceaccount default -n $NAMESPACE_DEMO -p '{"secrets": [{"name":"registry-credentials"}]}'
-kubectl patch serviceaccount default -n $NAMESPACE_DEMO -p '{"imagePullSecrets": [{"name":"tap-registry"},{"name":"registry-credentials"}]}'
+kubectl patch serviceaccount default -n $NAMESPACE_DEMO -p '{"imagePullSecrets": [{"name":"registry-credentials"}]}'
 
 log "CYAN" "Kubernetes dashboard installation ..."
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
