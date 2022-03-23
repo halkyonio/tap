@@ -199,13 +199,17 @@ tanzu secret registry add tap-registry \
   --server ${INSTALL_REGISTRY_HOSTNAME} \
   --export-to-all-namespaces --yes --namespace $NAMESPACE_TAP
 
-log "CYAN" "Relocate the images with the Carvel tool imgpkg"
-imgpkg copy --registry-username $REGISTRY_USERNAME \
-            --registry-password $REGISTRY_PASSWORD \
+log "CYAN" "Login to the Tanzu and our registries"
+docker login $REGISTRY_SERVER -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD
+docker login $INSTALL_REGISTRY_HOSTNAME -u $INSTALL_REGISTRY_USERNAME -p $INSTALL_REGISTRY_PASSWORD
+
+log "CYAN" "Relocate the repository image bundle from Tanzu to ghcr.io"
+imgpkg copy --registry-username $INSTALL_REGISTRY_USERNAME \
+            --registry-password $INSTALL_REGISTRY_PASSWORD \
             -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
             --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
 
-log "CYAN" "Add Tanzu Application Platform package repository to the k8s cluster"
+log "CYAN" "Deploy the TAP package repository"
 tanzu package repository add tanzu-tap-repository \
   --url $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages:$TAP_VERSION \
   -n $NAMESPACE_TAP
