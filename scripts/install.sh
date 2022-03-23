@@ -106,6 +106,7 @@ kubectl krew install ctx
 kubectl krew install ns
 kubectl krew install konfig
 
+printf "\n### kubectl tree\nalias kc='kubectl'\n" >> $HOME/.bashrc
 printf "\n### kubectl tree\nalias ktree='kubectl tree'\n" >> $HOME/.bashrc
 printf "\n### kubectl ns\nalias kubens='kubectl ns'\n" >> $HOME/.bashrc
 printf "\n### kubectl ctx\nalias kubctx='kubectl ctx'\n" >> $HOME/.bashrc
