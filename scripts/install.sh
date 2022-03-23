@@ -81,11 +81,10 @@ TANZU_CLI_VERSION="v0.11.1"
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
 
 log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
-wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
-sudo cp k9s /usr/local/bin
-
 sudo yum install git wget unzip epel-release bash-completion -y
 sudo yum install jq -y
+wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
+sudo cp k9s /usr/local/bin
 
 log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
 (
