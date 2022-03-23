@@ -160,7 +160,7 @@ cd ..
 
 log "CYAN" "Install the Tanzu client & plug-ins"
 log "CYAN" "Download the Tanzu client and extract it"
-TANZU_PRODUCT_FILE_ID="1156163"
+TANZU_PRODUCT_FILE_ID="1156168"
 TANZU_PRODUCT_NAME="tanzu-framework-linux-amd64"
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=$TAP_VERSION --product-file-id=$TANZU_PRODUCT_FILE_ID
 tar -vxf $TANZU_PRODUCT_NAME.tar
