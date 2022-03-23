@@ -87,9 +87,13 @@ log "GREEN" "Remove the tanzu-cluster-essentials, tap-demo and tap-install names
 kubectl delete ns tanzu-cluster-essentials
 kubectl delete ns tap-install
 
-log "GREEN" "Removing the Tanzu client and config folders"
+log "GREEN" "Removing the Tanzu, Carvel clients and config folders"
 rm -rf $TANZU_TEMP_DIR/cli    # Remove previously downloaded cli files
 sudo rm /usr/local/bin/tanzu  # Remove CLI binary (executable)
+sudo rm /usr/local/bin/kapp
+sudo rm /usr/local/bin/imgpkg
+sudo rm /usr/local/bin/kbld
+sudo rm /usr/local/bin/ytt
 rm -rf ~/.config/tanzu/       # current location # Remove config directory
 rm -rf ~/.tanzu/              # old location # Remove config directory
 rm -rf ~/.cache/tanzu         # remove cached catalog.yaml
