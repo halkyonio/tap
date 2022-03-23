@@ -199,14 +199,12 @@ tanzu secret registry add tap-registry \
   --server ${INSTALL_REGISTRY_HOSTNAME} \
   --export-to-all-namespaces --yes --namespace $NAMESPACE_TAP
 
-log "CYAN" "Login to the Tanzu and our registries"
+log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
 docker login $REGISTRY_SERVER -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD
 docker login $INSTALL_REGISTRY_HOSTNAME -u $INSTALL_REGISTRY_USERNAME -p $INSTALL_REGISTRY_PASSWORD
 
 log "CYAN" "Relocate the repository image bundle from Tanzu to ghcr.io"
-imgpkg copy --registry-username $INSTALL_REGISTRY_USERNAME \
-            --registry-password $INSTALL_REGISTRY_PASSWORD \
-            -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
+imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
             --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
 
 log "CYAN" "Deploy the TAP package repository"
