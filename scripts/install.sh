@@ -44,6 +44,12 @@ log_msg() {
     echo -e "\n${!COLOR}## ${MSG}${NC}"
 }
 
+log_line() {
+    COLOR=${1}
+    MSG="${@:2}"
+    echo -e "${!COLOR}## ${MSG}${NC}"
+}
+
 log() {
   MSG="${@:2}"
   echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
