@@ -117,9 +117,9 @@ REPO_HOST="localhost:5000"
 log_msg "CYAN" "Create an image bundle of the package to the local registry"
 imgpkg push -b $REPO_HOST/packages/simple-app:1.0.0 -f package-contents/
 
-log_msg "CYAN" "Save as tar"
-docker pull $REPO_HOST/packages/simple-app:1.0.0
-docker save -o simple-app_1.0.0.tar $REPO_HOST/packages/simple-app:1.0.0
+log_msg "CYAN" "Push simple-app:1.0.0 to ghcr.io"
+docker tag $REPO_HOST/packages/simple-app:1.0.0 ghcr.io/halkyonio/simple-app:1.0.0
+docker push ghcr.io/halkyonio/simple-app:1.0.0
 
 log_msg "CYAN" "Create the Carvel PackageMetadata CR"
 cat > metadata.yml << EOF
@@ -180,9 +180,9 @@ kbld -f my-pkg-repo/packages/ --imgpkg-lock-output my-pkg-repo/.imgpkg/images.ym
 log_msg "CYAN" "Push the package repository image bundle"
 imgpkg push -b $REPO_HOST/packages/my-pkg-repo:1.0.0 -f my-pkg-repo
 
-log_msg "CYAN" "Save as tar"
-docker pull $REPO_HOST/packages/my-pkg-repo:1.0.0
-docker save $REPO_HOST/packages/my-pkg-repo:1.0.0 > my-pkg-repo_1.0.0.tar
+log_msg "CYAN" "Push my-pkg-repo:1.0.0 to ghcr.io"
+docker tag $REPO_HOST/packages/my-pkg-repo:1.0.0 ghcr.io/halkyonio/my-pkg-repo:1.0.0
+docker push ghcr.io/halkyonio/my-pkg-repo:1.0.0
 
 log_msg "CYAN" "Adding a PackageRepository CR"
 cat > repo.yml << EOF
@@ -223,9 +223,6 @@ stringData:
     ---
     hello_msg: "to all my internet friends"
 EOF
-
-log_msg "CYAN" "Copy the files to the target VM"
-scp *.tar -i $HOME/.ssh/id_rsa_snowdrop_openstack_n121-test centos@10.0.76.205:/home/centos
 
 # TO INSTALL THE REPO
 # kapp deploy -a repo -f repo.yml -y
