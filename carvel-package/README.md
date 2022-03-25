@@ -22,6 +22,7 @@ kapp deploy -a pkg-k8d-ui \
   -f $PKG_DIR/0.1.0.yml \
   -f pkg-manifests/rbac.yml \
   -f pkg-manifests/package-install.yml -y
+  
 kc describe packageinstall/kubernetes-dashboard -n pkg-demo
 ```
 - To delete it

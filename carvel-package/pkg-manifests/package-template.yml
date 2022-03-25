@@ -22,7 +22,7 @@ spec:
         - ytt:
             paths:
               - "config/"
-              - values.yml
+              - "config/values.yml"
         - kbld:
             paths:
               - '-'
