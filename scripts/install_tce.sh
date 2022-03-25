@@ -262,6 +262,8 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm uninstall kubeapps -n kubeapps
 
 cat <<EOF > kubeapps-values.yml
+image:
+  tag:
 packaging:
   carvel:
     enabled: true

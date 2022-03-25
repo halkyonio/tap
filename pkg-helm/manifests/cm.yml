@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard
+  namespace: pkg-demo
+data:
+  config.yml: |-
+    ---
+    apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: selfsigned-issuer
+    spec:
+      selfSigned: {}
+    ---
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: my-selfsigned-ca
+      namespace: kubernetes-dashboard
+    spec:
+      isCA: true
+      commonName: k8s-ui.$VM_IP.nip.io
+      secretName: k8s-ui-secret
+      privateKey:
+        algorithm: ECDSA
+        size: 256
+      issuerRef:
+        name: selfsigned-issuer
+        kind: ClusterIssuer
+        group: cert-manager.io
+    ---
+    apiVersion: cert-manager.io/v1
+    kind: Issuer
+    metadata:
+      name: my-ca-issuer
+      namespace: kubernetes-dashboard
+    spec:
+      ca:
+        secretName: k8s-ui-secret

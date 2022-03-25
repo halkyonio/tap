@@ -443,12 +443,28 @@ metadata:
 spec:
   ca:
     secretName: k8s-ui-secret
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dashboard
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dashboard-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: dashboard
+  namespace: kubernetes-dashboard
 EOF
 
 helm install k8s-ui kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard -f $TANZU_TEMP_DIR/k8s-ui-values.yml
-
-kubectl create serviceaccount dashboard -n kubernetes-dashboard
-kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard
 
 K8s_TOKEN=$(kubectl get secret $(kubectl get serviceaccount dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode)
 CA_CERT=$(kubectl get secret/k8s-ui-secret -n kubernetes-dashboard -o jsonpath="{.data.ca\.crt}" | base64 --decode)

@@ -1,0 +1,36 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: kubernetes-dashboard.halkyonio.io.0.1.0
+  namespace: pkg-demo
+spec:
+  version: 0.1.0
+  refName: kubernetes-dashboard.halkyonio.io
+  releaseNotes: |
+    Initial release of the Kubernetes Helm dashboard
+  template:
+    # See this doc page for more information: https://carvel.dev/kapp-controller/docs/v0.34.0/app-spec/
+    spec:
+      fetch:
+      - git:
+          url: https://github.com/kubernetes/dashboard.git
+          ref: origin/master
+          subPath: aio/deploy/helm-chart/kubernetes-dashboard
+      template:
+        - helmTemplate:
+            valuesFrom:
+              - secretRef:
+                  name: dashboard-values
+        - ytt:
+            inline:
+              paths:
+                remove.yml: |
+                  #@ load("@ytt:overlay", "overlay")
+                  #@overlay/match by=overlay.subset({"kind":"Deployment"}),expects="1+"
+                  ---
+                  metadata:
+                    #@overlay/match by=overlay.subset(None),when=1
+                    #@overlay/remove
+                    annotations:
+      deploy:
+        - kapp: {}

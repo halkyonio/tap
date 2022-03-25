@@ -1,0 +1,16 @@
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  name: kubernetes-dashboard
+  namespace: pkg-demo
+spec:
+  serviceAccountName: carvel-package
+  packageRef:
+    refName: kubernetes-dashboard.halkyonio.io
+    versionSelection:
+      constraints: 0.2.0
+  # Values to be included in package's templating step
+  # (currently only included in the first templating step) (optional)
+  #values:
+  #  - secretRef:
+  #      name: dashboard-values

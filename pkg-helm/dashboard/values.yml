@@ -1,0 +1,27 @@
+extraArgs:
+  - --auto-generate-certificates=false
+  - --tls-cert-file=extra/tls.crt
+  - --tls-key-file=extra/tls.key
+extraVolumes:
+  - name: certs-selfsigned
+    secret:
+      defaultMode: 420
+      secretName: k8s-ui-secret
+extraVolumeMounts:
+  - mountPath: /certs/extra
+    name: certs-selfsigned
+    readOnly: true
+
+ingress:
+  enabled: true
+  annotations:
+    projectcontour.io/ingress.class: contour
+  hosts:
+    - k8s-ui.$VM_IP.nip.io
+  tls:
+    - secretName: k8s-ui-secret
+      hosts:
+        - k8s-ui.$VM_IP.nip.io
+service:
+  annotations:
+    projectcontour.io/upstream-protocol.tls: "443"
