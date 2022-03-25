@@ -61,7 +61,8 @@ USEFUL-ERROR-MESSAGE:
 ```bash
 kapp delete -a pkg-k8d-ui -y
 or 
-tanzu package installed delete k8s-ui
+tanzu package installed delete k8s-ui -y
+tanzu package repository delete k8s-ui-repository -y
 ```
 
 # Dummy project to test Carvel Package with Helm
