@@ -21,11 +21,13 @@ kubectl create secret docker-registry ghcr-creds \
 cat <<EOF > k8s-ui-values.yaml 
 vm_ip: 10.0.77.51
 EOF
-
+```
+- Create the secret to be used by the `PackageInstall`
+```bash
 kubectl -n pkg-demo delete secret k8s-ui-values
 kubectl -n pkg-demo create secret generic k8s-ui-values --from-file=values.yaml=k8s-ui-values.yaml
 ```
-- Deploy/install the Kubernetes Dashboard using the Carvel `PAckage, PAckageMetadata and PackageInstall` CR
+- Deploy/install the Kubernetes Dashboard using the Carvel `Package, PackageMetadata and PackageInstall` CR
 ```bash
 kapp deploy -a pkg-k8d-ui \
   -f pkg-manifests/rbac.yml \
@@ -36,7 +38,7 @@ kapp deploy -a pkg-k8d-ui \
 kc describe packageinstall/kubernetes-dashboard -n pkg-demo
 ```
 
-- Using the `tanzu client` now. Add the repo, check the available values and install it
+- Alternatively, you can use `tanzu client` as it will simplify your life. Add the repo, check the available values and install it
 ```bash
 tanzu package repository add k8s-ui-repository --url ghcr.io/halkyonio/packages/kubernetes-dashboard-repo:0.1.0
 
