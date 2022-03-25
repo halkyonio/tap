@@ -1,4 +1,4 @@
-# Dummy project to test Carvel Package and Kubernetes dashboard
+# Carvel Package to install Kubernetes dashboard
 
 - Setup first a kind cluster using the following [bash script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-reg-ingress.sh)
 - Install next the kapp controller and cert manager
@@ -6,7 +6,7 @@
 kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml -y
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.2/cert-manager.yaml
 ```
-- Deploy/install the Kubernetes Dashboard package
+- Create the demo namespace and the secret containing the credentials to access the container registry
 ```bash
 kubectl create ns pkg-demo
 
@@ -16,7 +16,7 @@ kubectl create secret docker-registry ghcr-creds \
   --docker-username=GHCR_USERNAME \
   --docker-password=GHCR_PASSWORD
 ```
-- Create the package values file containing thge parameters
+- Create the package values file containing the `VM_IP` address
 ```bash
 cat <<EOF > k8s-ui-values.yaml 
 vm_ip: 10.0.77.51
@@ -25,7 +25,7 @@ EOF
 kubectl -n pkg-demo delete secret k8s-ui-values
 kubectl -n pkg-demo create secret generic k8s-ui-values --from-file=values.yaml=k8s-ui-values.yaml
 ```
-- Deploy the package
+- Deploy/install the Kubernetes Dashboard using the Carvel `PAckage, PAckageMetadata and PackageInstall` CR
 ```bash
 kapp deploy -a pkg-k8d-ui \
   -f pkg-manifests/rbac.yml \
