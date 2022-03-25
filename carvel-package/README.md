@@ -16,10 +16,9 @@ kubectl create secret docker-registry ghcr-creds \
   --docker-username=GHCR_USERNAME \
   --docker-password=GHCR_PASSWORD
 
-PKG_DIR=_temp/kubernetes-dashboard-repo/packages/kubernetes-dashboard.halkyonio.io/
 kapp deploy -a pkg-k8d-ui \
   -f pkg-manifests/rbac.yml \
-  -f pkg-manifests/package-metadata.yml \  
+  -f pkg-manifests/package-metadata.yml \
   -f pkg-manifests/package-0.1.0.yml \
   -f pkg-manifests/package-install.yml -y
   
