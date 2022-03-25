@@ -20,7 +20,7 @@ spec:
         paths:
           - backend:
               service:
-                name: k8s-ui-kubernetes-dashboard
+                name: kubernetes-dashboard
                 port:
                   number: 443
             path: /
