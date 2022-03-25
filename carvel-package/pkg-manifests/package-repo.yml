@@ -1,0 +1,8 @@
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageRepository
+metadata:
+  name: k8s-ui-repository
+spec:
+  fetch:
+    imgpkgBundle:
+      image: ghcr.io/halkyonio/packages/kubernetes-dashboard-repo:0.1.0
