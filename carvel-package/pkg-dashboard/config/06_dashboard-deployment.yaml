@@ -37,7 +37,7 @@ spec:
             - mountPath: /certs/extra
               name: certs-selfsigned
               readOnly: true
-              # Create on-disk volume to store exec logs
+              #! Create on-disk volume to store exec logs
             - mountPath: /tmp
               name: tmp-volume
           livenessProbe:
@@ -62,7 +62,7 @@ spec:
       serviceAccountName: kubernetes-dashboard
       nodeSelector:
         "kubernetes.io/os": linux
-      # Comment the following tolerations if Dashboard must not be deployed on master
+      #! Comment the following tolerations if Dashboard must not be deployed on master
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule

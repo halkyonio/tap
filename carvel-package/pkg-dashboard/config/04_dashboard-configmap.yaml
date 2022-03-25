@@ -1,4 +1,4 @@
-##@ load("@ytt:data", "data")
+#@ load("@ytt:data", "data")
 ---
 kind: ConfigMap
 apiVersion: v1
