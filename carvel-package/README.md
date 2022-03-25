@@ -35,9 +35,31 @@ kapp deploy -a pkg-k8d-ui \
   
 kc describe packageinstall/kubernetes-dashboard -n pkg-demo
 ```
+
+- Using the `tanzu client` now. Add the repo, check the available values and install it
+```bash
+tanzu package repository add k8s-ui-repository --url ghcr.io/halkyonio/packages/kubernetes-dashboard-repo:0.1.0
+
+tanzu package repository list -A
+tanzu package available list -n default
+
+tanzu package available get kubernetes-dashboard.halkyonio.io/0.1.0 --values-schema
+tanzu package install k8s-ui -p kubernetes-dashboard.halkyonio.io -v 0.1.0 --values-file k8s-ui-values.yaml -n default
+tanzu package installed get k8s-ui
+- Retrieving installation details for k8s-ui... I0325 15:04:09.963841   13445 request.go:665] Waited for 1.035994952s due to client-side throttling, not priority and fairness, request: GET:https://10.0.77.51:6443/apis/sources.knative.dev/v1alpha1?timeout=32s
+- Retrieving installation details for k8s-ui...
+NAME:                    k8s-ui
+PACKAGE-NAME:            kubernetes-dashboard.halkyonio.io
+PACKAGE-VERSION:         0.1.0
+STATUS:                  Reconcile succeeded
+CONDITIONS:              [{ReconcileSucceeded True  }]
+USEFUL-ERROR-MESSAGE:
+```
 - To delete it
 ```bash
 kapp delete -a pkg-k8d-ui -y
+or 
+tanzu package installed delete k8s-ui
 ```
 
 # Dummy project to test Carvel Package with Helm
