@@ -9,8 +9,6 @@ spec:
     refName: kubernetes-dashboard.halkyonio.io
     versionSelection:
       constraints: 0.1.0
-  # Values to be included in package's templating step
-  # (currently only included in the first templating step) (optional)
-  #values:
-  #  - secretRef:
-  #      name: dashboard-values
+  values:
+    - secretRef:
+        name: k8s-ui-values
