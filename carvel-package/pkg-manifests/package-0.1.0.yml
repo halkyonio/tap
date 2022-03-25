@@ -1,0 +1,35 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: kubernetes-dashboard.halkyonio.io.0.1.0
+  namespace: pkg-demo
+spec:
+  version: 0.1.0
+  refName: kubernetes-dashboard.halkyonio.io
+  releaseNotes: |
+    Initial release of the Kubernetes Helm dashboard
+  valuesSchema:
+    openAPIv3:
+      type: object
+      additionalProperties: false
+      properties:
+        vm_ip:
+          type: string
+          description: IP addess of the VM.
+          default: 0.0.0.0
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: ghcr.io/halkyonio/packages/kubernetes-dashboard:0.1.0
+      template:
+      - ytt:
+          paths:
+          - config/
+          - config/values.yml
+      - kbld:
+          paths:
+          - '-'
+          - .imgpkg/images.yml
+      deploy:
+      - kapp: {}

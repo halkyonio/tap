@@ -18,9 +18,9 @@ kubectl create secret docker-registry ghcr-creds \
 
 PKG_DIR=_temp/kubernetes-dashboard-repo/packages/kubernetes-dashboard.halkyonio.io/
 kapp deploy -a pkg-k8d-ui \
-  -f $PKG_DIR/package-metadata.yml \
-  -f $PKG_DIR/0.1.0.yml \
   -f pkg-manifests/rbac.yml \
+  -f pkg-manifests/package-metadata.yml \  
+  -f pkg-manifests/package-0.1.0.yml \
   -f pkg-manifests/package-install.yml -y
   
 kc describe packageinstall/kubernetes-dashboard -n pkg-demo

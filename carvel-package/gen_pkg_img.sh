@@ -74,6 +74,9 @@ kbld -f $PKG_REPO_NAME/packages/ --imgpkg-lock-output $PKG_REPO_NAME/.imgpkg/ima
 log_msg "CYAN" "Push the package repository image bundle"
 imgpkg push -b $REPO_HOST/packages/$PKG_REPO_NAME:$VERSION -f $PKG_REPO_NAME
 
+log_msg "CYAN" "Copy the generated files to $PROJECT_DIR"
+cp $PKG_REPO_NAME/packages/kubernetes-dashboard.halkyonio.io/$VERSION.yml ../pkg-manifests/package-$VERSION.yml
+
 # log_msg "CYAN" "Adding a PackageRepository CR"
 # cat > repo.yml << EOF
 # ---
