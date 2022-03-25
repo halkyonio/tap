@@ -21,6 +21,22 @@ spec:
           type: string
           description: Namespace where the k8S UI should be installed
           default: kubernetes-dashboard
+        image:
+          type: object
+          additionalProperties: false
+          properties:
+            repository:
+              type: string
+              description: Image repository
+              default: kubernetesui/dashboard
+            tag:
+              type: string
+              description: Version of the image to be installed
+              default: v2.5.1
+            pullPolicy:
+              type: string
+              description: Strategy to use to pull the image
+              default: IfNotPresent
   template:
     spec:
       fetch:

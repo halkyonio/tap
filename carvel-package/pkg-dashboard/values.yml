@@ -5,3 +5,11 @@ vm_ip: 0.0.0.0
 
 #@schema/desc "Namespace where the k8S UI should be installed"
 namespace: kubernetes-dashboard
+
+image:
+  #@schema/desc "Image repository"
+  repository: kubernetesui/dashboard
+  #@schema/desc "Version of the image to be installed"
+  tag: v2.5.1
+  #@schema/desc "Strategy to use to pull the image"
+  pullPolicy: IfNotPresent
