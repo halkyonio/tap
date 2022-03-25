@@ -1,8 +1,10 @@
+#@ load("@ytt:data", "data")
+---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: my-ca-issuer
-  namespace: kubernetes-dashboard
+  namespace: #@ data.values.namespace
 spec:
   ca:
     secretName: k8s-ui-secret

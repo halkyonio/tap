@@ -17,6 +17,10 @@ spec:
           type: string
           description: IP address of the VM.
           default: 0.0.0.0
+        namespace:
+          type: string
+          description: Namespace where the k8S UI should be installed
+          default: kubernetes-dashboard
   template:
     spec:
       fetch:

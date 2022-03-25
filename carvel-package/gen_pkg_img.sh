@@ -48,7 +48,7 @@ mkdir -p $TEMP_DIR
 
 pushd $TEMP_DIR
 
-log_msg "CYAN" "Let’s create a directory with the  configuration files"
+log_msg "CYAN" "Let’s create a directory with the k8s manifests and values files"
 mkdir -p package-contents/config/
 cp -r $PROJECT_DIR/pkg-dashboard/config/*.yaml package-contents/config
 cp $PROJECT_DIR/pkg-dashboard/values.yml package-contents/config/values.yml
@@ -57,10 +57,10 @@ log_msg "CYAN" "let’s use kbld to record which container images are used"
 mkdir -p package-contents/.imgpkg
 kbld -f package-contents/config/ --imgpkg-lock-output package-contents/.imgpkg/images.yml
 
-log_msg "CYAN" "Create an image bundle of the package to the local registry"
+log_msg "CYAN" "Create an image bundle using the content of package-contents"
 imgpkg push -b $REPO_HOST/packages/kubernetes-dashboard:$VERSION -f package-contents/
 
-log_msg "CYAN" "In order to create the Package CR with our OpenAPI Schema, we will export from our ytt schema"
+log_msg "CYAN" "In order to create the Package CR with our OpenAPI Schema, we will export the schema"
 ytt -f package-contents/config/values.yml --data-values-schema-inspect -o openapi-v3 > schema-openapi.yml
 
 log_msg "CYAN" "It is time now to create the Package containing the OpenAPI Schema"

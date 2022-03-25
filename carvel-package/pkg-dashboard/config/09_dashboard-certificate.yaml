@@ -6,7 +6,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: my-selfsigned-ca
-  namespace: kubernetes-dashboard
+  namespace: #@ data.values.namespace
 spec:
   isCA: true
   commonName: k8s-ui.(@= data.values.vm_ip @).nip.io

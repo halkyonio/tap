@@ -2,3 +2,6 @@
 ---
 #@schema/desc "IP address of the VM."
 vm_ip: 0.0.0.0
+
+#@schema/desc "Namespace where the k8S UI should be installed"
+namespace: kubernetes-dashboard

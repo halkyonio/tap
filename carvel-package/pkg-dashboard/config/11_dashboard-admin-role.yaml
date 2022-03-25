@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -10,4 +11,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kubernetes-dashboard
-    namespace: kubernetes-dashboard
+    namespace: #@ data.values.namespace

@@ -16,10 +16,11 @@ kubectl create secret docker-registry ghcr-creds \
   --docker-username=GHCR_USERNAME \
   --docker-password=GHCR_PASSWORD
 ```
-- Create the package values file containing the `VM_IP` address
+- Create the package values file containing the different parameters supported by the packages such as: `VM_IP` address, namespace, etc
 ```bash
 cat <<EOF > k8s-ui-values.yaml 
 vm_ip: 10.0.77.51
+namespace: kubernetes-dashboard
 EOF
 ```
 - Create the secret to be used by the `PackageInstall`

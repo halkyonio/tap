@@ -6,7 +6,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: kubernetes-dashboard
-  namespace: kubernetes-dashboard
+  namespace: #@ data.values.namespace
   labels:
     k8s-app: kubernetes-dashboard
   annotations:
