@@ -1,0 +1,20 @@
+#@ load("@ytt:data", "data")
+
+#@yaml/text-templated-strings
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-selfsigned-ca
+  namespace: kubernetes-dashboard
+spec:
+  isCA: true
+  commonName: k8s-ui.(@= data.values.vm_ip @).nip.io
+  secretName: k8s-ui-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io

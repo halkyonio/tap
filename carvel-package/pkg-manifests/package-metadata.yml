@@ -1,0 +1,11 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: PackageMetadata
+metadata:
+  name: kubernetes-dashboard.halkyonio.io
+  namespace: pkg-demo
+spec:
+  displayName: "Kubernetes dashboard"
+  longDescription: "Kubernetes dashboard"
+  shortDescription: "Kubernetes dashboard"
+  categories:
+    - demo

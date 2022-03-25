@@ -1,0 +1,29 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: kubernetes-dashboard.halkyonio.io.0.2.0
+  namespace: pkg-demo
+spec:
+  version: 0.2.0
+  refName: kubernetes-dashboard.halkyonio.io
+  releaseNotes: |
+    Initial release of the Kubernetes Helm dashboard
+  valuesSchema:
+    openAPIv3: #@ yaml.decode(data.values.openapi)["components"]["schemas"]["dataValues"]
+  template:
+    spec:
+      deploy:
+        - kapp: {}
+      fetch:
+        - imgpkgBundle:
+            # TODO
+            image: ghcr.io/halkyonio/TODO
+      template:
+        - ytt:
+            paths:
+              - config
+              - values.yml
+        - kbld:
+            paths:
+              - '-'
+              - .imgpkg/images.yml

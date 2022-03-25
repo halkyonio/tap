@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: my-ca-issuer
+  namespace: kubernetes-dashboard
+spec:
+  ca:
+    secretName: k8s-ui-secret
