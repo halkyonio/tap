@@ -40,7 +40,7 @@ log() {
 
 VERSION=0.1.0
 REPO_HOST="ghcr.io/halkyonio"
-PKG_REPO_NAME="kubernetes-dashboard-repo"
+PKG_REPO_NAME="demo-repo"
 
 TEMP_DIR=$(pwd)/_temp
 PROJECT_DIR=$(pwd)
@@ -76,19 +76,6 @@ imgpkg push -b $REPO_HOST/packages/$PKG_REPO_NAME:$VERSION -f $PKG_REPO_NAME
 
 log_msg "CYAN" "Copy the generated files to $PROJECT_DIR"
 cp $PKG_REPO_NAME/packages/kubernetes-dashboard.halkyonio.io/$VERSION.yml ../pkg-manifests/package-$VERSION.yml
-
-# log_msg "CYAN" "Adding a PackageRepository CR"
-# cat > repo.yml << EOF
-# ---
-# apiVersion: packaging.carvel.dev/v1alpha1
-# kind: PackageRepository
-# metadata:
-#   name: simple-package-repository
-# spec:
-#   fetch:
-#     imgpkgBundle:
-#       image: ${REPO_HOST}/packages/$PKG_REPO_NAME:$VERSION
-# EOF
 
 popd
 

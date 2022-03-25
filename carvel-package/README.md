@@ -41,7 +41,7 @@ kc describe packageinstall/kubernetes-dashboard -n pkg-demo
 
 - Alternatively, you can use `tanzu client` as it will simplify your life. Add the repo, check the available values and install it
 ```bash
-tanzu package repository add k8s-ui-repository --url ghcr.io/halkyonio/packages/kubernetes-dashboard-repo:0.1.0
+tanzu package repository add demo-repo --url ghcr.io/halkyonio/packages/demo-repo:0.1.0
 
 tanzu package repository list
 tanzu package available list -n default
@@ -63,7 +63,7 @@ USEFUL-ERROR-MESSAGE:
 kapp delete -a pkg-k8d-ui -y
 or 
 tanzu package installed delete k8s-ui -y
-tanzu package repository delete k8s-ui-repository -y
+tanzu package repository delete demo-repo -y
 ```
 
 # Dummy project to test Carvel Package with Helm
