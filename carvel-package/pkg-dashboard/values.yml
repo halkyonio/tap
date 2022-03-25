@@ -1,4 +1,4 @@
 #@data/values-schema
 ---
-#@schema/desc "IP addess of the VM."
+#@schema/desc "IP address of the VM."
 vm_ip: 0.0.0.0

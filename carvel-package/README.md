@@ -15,7 +15,18 @@ kubectl create secret docker-registry ghcr-creds \
   --docker-server="ghcr.io" \
   --docker-username=GHCR_USERNAME \
   --docker-password=GHCR_PASSWORD
+```
+- Create the package values file containing thge parameters
+```bash
+cat <<EOF > k8s-ui-values.yaml 
+vm_ip: 10.0.77.51
+EOF
 
+kubectl -n pkg-demo delete secret k8s-ui-values
+kubectl -n pkg-demo create secret generic k8s-ui-values --from-file=values.yaml=k8s-ui-values.yaml
+```
+- Deploy the package
+```bash
 kapp deploy -a pkg-k8d-ui \
   -f pkg-manifests/rbac.yml \
   -f pkg-manifests/package-metadata.yml \

@@ -15,7 +15,7 @@ spec:
       properties:
         vm_ip:
           type: string
-          description: IP addess of the VM.
+          description: IP address of the VM.
           default: 0.0.0.0
   template:
     spec:

@@ -1,3 +1,7 @@
+#@ load("@ytt:data", "data")
+
+#@yaml/text-templated-strings
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -11,7 +15,7 @@ metadata:
       projectcontour.io/ingress.class: contour
 spec:
   rules:
-    - host: k8s-ui.10.0.77.51.nip.io
+    - host: k8s-ui.(@= data.values.vm_ip @).nip.io
       http:
         paths:
           - backend:
@@ -23,6 +27,6 @@ spec:
             pathType: ImplementationSpecific
   tls:
     - hosts:
-        - k8s-ui.10.0.77.51.nip.io
+        - k8s-ui.(@= data.values.vm_ip @).nip.io
       secretName: k8s-ui-secret
 
