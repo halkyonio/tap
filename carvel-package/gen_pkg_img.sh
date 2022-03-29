@@ -60,7 +60,7 @@ kbld -f package-contents/config/ --imgpkg-lock-output package-contents/.imgpkg/i
 log_msg "CYAN" "Create an image bundle using the content of package-contents"
 imgpkg push -b $REPO_HOST/packages/kubernetes-dashboard:$VERSION -f package-contents/
 
-log_msg "CYAN" "In order to create the Package CR with our OpenAPI Schema, we will export the schema"
+log_msg "CYAN" "Export the OpenAPI Schema"
 ytt -f package-contents/config/values.yml --data-values-schema-inspect -o openapi-v3 > schema-openapi.yml
 
 log_msg "CYAN" "It is time now to create the Package containing the OpenAPI Schema"
@@ -69,9 +69,9 @@ mkdir -p $PKG_REPO_NAME/.imgpkg $PKG_REPO_NAME/packages/kubernetes-dashboard.hal
 log_msg "CYAN" "Copy the CR YAMLs from the previous step in to the proper packages subdirectory"
 ytt -f $PROJECT_DIR/pkg-manifests/package-template.yml --data-value-file openapi=schema-openapi.yml -v version="$VERSION" > $PKG_REPO_NAME/packages/kubernetes-dashboard.halkyonio.io/$VERSION.yml
 cp $PROJECT_DIR/pkg-manifests/package-metadata.yml $PKG_REPO_NAME/packages/kubernetes-dashboard.halkyonio.io
-kbld -f $PKG_REPO_NAME/packages/ --imgpkg-lock-output $PKG_REPO_NAME/.imgpkg/images.yml
 
-log_msg "CYAN" "Push the package repository image bundle"
+log_msg "CYAN" "Bundle the packages and push the package repository image bundle"
+kbld -f $PKG_REPO_NAME/packages/ --imgpkg-lock-output $PKG_REPO_NAME/.imgpkg/images.yml
 imgpkg push -b $REPO_HOST/packages/$PKG_REPO_NAME:$VERSION -f $PKG_REPO_NAME
 
 log_msg "CYAN" "Copy the generated files to $PROJECT_DIR"
