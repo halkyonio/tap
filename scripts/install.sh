@@ -120,7 +120,7 @@ kubectl krew install konfig
 printf "\n### kubectl tree\nalias kc='kubectl'\n" >> $HOME/.bashrc
 printf "\n### kubectl tree\nalias ktree='kubectl tree'\n" >> $HOME/.bashrc
 printf "\n### kubectl ns\nalias kubens='kubectl ns'\n" >> $HOME/.bashrc
-printf "\n### kubectl ctx\nalias kubctx='kubectl ctx'\n" >> $HOME/.bashrc
+printf "\n### kubectl ctx\nalias kubectx='kubectl ctx'\n" >> $HOME/.bashrc
 printf "\n### kubectl konfig\nalias konfig='kubectl konfig'\n" >> $HOME/.bashrc
 source $HOME/.bashrc
 
