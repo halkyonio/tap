@@ -1,4 +1,4 @@
-# Setup K8S Config locally on the Developer machine
+# Setup K8S Config locally on the Developer machine to access VM
 
 konfig import -p -s _temp/config.yml
 kubectx kubernetes-admin@kubernetes
@@ -7,6 +7,8 @@ kubectx kubernetes-admin@kubernetes
 CLOUD=openstack && VM=k121-centos7-tap && ssh-vm $CLOUD $VM
 
 ## Open UI & Get Tokens
+
+alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --incognito"
 
 VM_IP=10.0.77.51
 chrome http://tap-gui.$VM_IP.nip.io/
