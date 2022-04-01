@@ -3,15 +3,15 @@
 - Install the secretgen controller: https://github.com/vmware-tanzu/carvel-secretgen-controller
 - Create within a namespace a secret containing the registry credentials and export it to `All the Namespaces`
 ```bash
-kc create ns demo
-kc create ns demo1
+kubectl create ns demo
+kubectl create ns demo1
 
-kc -n demo delete secret/reg-creds-docker
-kc -n demo delete secretexport.secretgen.carvel.dev/reg-creds-docker
+kubectl -n demo delete secret/reg-creds-docker
+kubectl -n demo delete secretexport.secretgen.carvel.dev/reg-creds-docker
 
-kc -n demo1 delete secret/my-reg-creds
-kc -n demo1 delete sa/default
-kc -n demo1 delete deployment/my-k8s-ui
+kubectl -n demo1 delete secret/my-reg-creds
+kubectl -n demo1 delete sa/default
+kubectl -n demo1 delete deployment/my-k8s-ui
 
 cat <<EOF | kubectl apply -f
 ---
@@ -128,7 +128,7 @@ export REG_SERVER=registry.local:5000
 export REG_USERNAME=admin
 export REG_PASSWORD=snowdrop
 
-kc delete secret local-reg-creds --namespace kube-system 
+kubectl delete secret local-reg-creds --namespace kube-system 
 
 kubectl create secret docker-registry local-reg-creds \
   --namespace kube-system \
@@ -136,13 +136,20 @@ kubectl create secret docker-registry local-reg-creds \
   --docker-username=$REG_USERNAME \
   --docker-password=$REG_PASSWORD
 ```
+Alternatively, you can also create a secret using an existing docker cfg file
+```bash
+kubectl create secret generic local-reg-creds \
+    --namespace kube-system \
+    --from-file=.dockerconfigjson=$HOME/.docker/config.json \
+    --type=kubernetes.io/dockerconfigjson
+```
 Create the `ClusterPullSecret`
 ```bash
-kc create ns demo
-kc delete secret --all -n demo  
-kc delete sa --all -n demo
+kubectl create ns demo
+kubectl delete secret --all -n demo  
+kubectl delete sa --all -n demo
 
-kc delete ClusterPullSecret/local-reg-creds
+kubectl delete ClusterPullSecret/local-reg-creds
 cat <<EOF | kubectl apply -f -
 apiVersion: ops.alexellis.io/v1
 kind: ClusterPullSecret
@@ -156,7 +163,7 @@ EOF
 ```
 Deploy a Hello application
 ```bash
-kc delete deployment/my-hello -n demo
+kubectl delete deployment/my-hello -n demo
 cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
