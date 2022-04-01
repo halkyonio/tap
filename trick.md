@@ -43,8 +43,8 @@ spec:
 EOF
 ```
 
-- Next, create a Secret placeHolder (= `.dockerconfigjson: e30k) and the annotation `secretgen.carvel.dev/image-pull-secret: ""`
-- Create a serviceAccount which includes the property `imagePullSecrets` pointing to the secret placeholder
+- Next, create a Secret placeHolder (= `.dockerconfigjson: e30k`) and set the following annotation `secretgen.carvel.dev/image-pull-secret: ""`
+- Create a serviceAccount which includes the property `imagePullSecrets` and which is using the secret placeholder
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -67,7 +67,11 @@ kind: ServiceAccount
 metadata:
   name: default
   namespace: demo1  
----
+EOF
+
+- Finaly, create a pod, deployment using the serviceAccount
+```bash
+cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -90,3 +94,6 @@ spec:
         name: hello
 EOF
 ```
+**REMARK**:
+- No docker rate limit should occur anymore !!
+- The `SecretPlaceHolder` can also be filled with several registry accounts - see last example [here](https://github.com/vmware-tanzu/carvel-secretgen-controller/blob/develop/docs/secret-export.md)
