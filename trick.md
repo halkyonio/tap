@@ -1,4 +1,4 @@
-# How to export a Registry Docker Secret to all the namespaces
+# How to export the dockerconfigjson as a Secret to all the namespaces
 
 - Install the secretgen controller: https://github.com/vmware-tanzu/carvel-secretgen-controller
 - Create within a namespace a secret containing the registry credentials and export it to `All the Namespaces`
@@ -103,5 +103,80 @@ EOF
 **REMARKS**:
 - No docker rate limit should occur anymore ;-)
 - The `SecretPlaceHolder` can also be filled with several registry accounts - see last example [here](https://github.com/vmware-tanzu/carvel-secretgen-controller/blob/develop/docs/secret-export.md)
-- Another solution would to create from an existing Docker secret, a new one within the target secret and patch the SA with the property `imagePullSecret`
-  as proposed here: https://github.com/alexellis/registry-creds/
+
+# Using the ClusterPullSecret controller 
+
+Another solution would to be to create from an existing Docker secret, a new one within the target namespace and to patch the SA with the property `imagePullSecret`
+using the ClusterPullSecret [controller](https://github.com/alexellis/registry-creds/)
+
+Create first a Kind k8s cluster with a secured registry and install the controller
+```bash
+bash <( curl -s https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind-tls-secured-reg.sh)
+kubectl apply -f https://raw.githubusercontent.com/alexellis/registry-creds/master/manifest.yaml
+```
+Pull and push a hello application image to the local privatre registry
+```bash
+docker pull gcr.io/google-samples/hello-app:1.0
+docker tag tag gcr.io/google-samples/hello-app:1.0 localhost:5000/hello-app:1.0
+docker login localhost:5000 -u admin -p snowdrop 
+docker push localhost:5000/hello-app:1.0
+```
+
+Create a docker-registry secret containing the credentials to access locally the images registry
+```bash
+export REG_SERVER=registry.local:5000
+export REG_USERNAME=admin
+export REG_PASSWORD=snowdrop
+
+kc delete secret local-reg-creds --namespace kube-system 
+
+kubectl create secret docker-registry local-reg-creds \
+  --namespace kube-system \
+  --docker-server=$REG_SERVER \
+  --docker-username=$REG_USERNAME \
+  --docker-password=$REG_PASSWORD
+```
+Create the `ClusterPullSecret`
+```bash
+kc create ns demo
+kc delete secret --all -n demo  
+kc delete sa --all -n demo
+
+kc delete ClusterPullSecret/local-reg-creds
+cat <<EOF | kubectl apply -f -
+apiVersion: ops.alexellis.io/v1
+kind: ClusterPullSecret
+metadata:
+  name: local-reg-creds
+spec:
+  secretRef:
+    name: local-reg-creds
+    namespace: kube-system
+EOF
+```
+Deploy a Hello application
+```bash
+kc delete deployment/my-hello -n demo
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: my-hello
+  name: my-hello
+  namespace: demo
+spec:
+  selector:
+    matchLabels:
+      app: my-hello
+  template:
+    metadata:
+      labels:
+        app: my-hello
+    spec:
+      containers:
+      - image: registry.local:5000/hello-app:1.0
+        imagePullPolicy: Always
+        name: my-hello
+EOF
+```
