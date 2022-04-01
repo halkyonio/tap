@@ -1,7 +1,7 @@
 # How to export a Registry Docker Secret to all the namespaces
 
 - Install the secretgen controller: https://github.com/vmware-tanzu/carvel-secretgen-controller
-- Create within a namespace a secret containing theregistry credentials and export it to `All the Namespaces`
+- Create within a namespace a secret containing the registry credentials and export it to `All the Namespaces`
 ```bash
 kc create ns demo
 kc create ns demo1
@@ -25,8 +25,8 @@ stringData:
     {
       "auths": {
         "index.docker.io": {
-          "username": "cmoulliard",
-          "password": "aGxecQquG7",
+          "username": "xxxxxx",
+          "password": "uuuuuu",
           "auth": ""
         }
       }
