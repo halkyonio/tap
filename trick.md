@@ -13,6 +13,7 @@ kc -n demo1 delete secret/my-reg-creds
 kc -n demo1 delete sa/default
 kc -n demo1 delete deployment/my-k8s-ui
 
+cat <<EOF | kubectl apply -f
 ---
 apiVersion: v1
 kind: Secret
@@ -99,6 +100,8 @@ spec:
         name: hello
 EOF
 ```
-**REMARK**:
-- No docker rate limit should occur anymore !!
+**REMARKS**:
+- No docker rate limit should occur anymore ;-)
 - The `SecretPlaceHolder` can also be filled with several registry accounts - see last example [here](https://github.com/vmware-tanzu/carvel-secretgen-controller/blob/develop/docs/secret-export.md)
+- Another solution would to create from an existing Docker secret, a new one within the target secret and patch the SA with the property `imagePullSecret`
+  as proposed here: https://github.com/alexellis/registry-creds/
