@@ -43,7 +43,8 @@ spec:
 EOF
 ```
 
-- Next, create a Secret placeHolder (= `.dockerconfigjson: e30k`) and set the following annotation `secretgen.carvel.dev/image-pull-secret: ""`
+- Next, create a Secret placeHolder (= `.dockerconfigjson: e30k`) and set the following annotation `secretgen.carvel.dev/image-pull-secret: ""`. This secret object will be then
+  updated by the SecretGen controller and will include the content of the `.dockerconfigjson` coming from the secret exported to all the namespace
 - Create a serviceAccount which includes the property `imagePullSecrets` and which is using the secret placeholder
 
 ```bash
