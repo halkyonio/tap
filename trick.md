@@ -45,8 +45,6 @@ EOF
 
 - Next, create a Secret placeHolder (= `.dockerconfigjson: e30k`) and set the following annotation `secretgen.carvel.dev/image-pull-secret: ""`. This secret object will be then
   updated by the SecretGen controller and will include the content of the `.dockerconfigjson` coming from the secret exported to all the namespace
-- Create a serviceAccount which includes the property `imagePullSecrets` and which is using the secret placeholder
-
 ```bash
 cat <<EOF | kubectl apply -f -
 ---
@@ -60,6 +58,12 @@ metadata:
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: e30K
+EOF  
+```
+- Create a serviceAccount which includes the property `imagePullSecrets` and which is using the secret placeholder
+
+```bash
+cat <<EOF | kubectl apply -f -
 ---
 apiVersion: v1
 imagePullSecrets:
@@ -69,8 +73,8 @@ metadata:
   name: default
   namespace: demo1  
 EOF
-
-- Finaly, create a pod, deployment using the serviceAccount
+```
+- Finally, create a pod, deployment using the serviceAccount
 ```bash
 cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
