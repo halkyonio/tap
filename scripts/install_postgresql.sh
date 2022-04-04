@@ -11,7 +11,7 @@
 # - REGISTRY_SERVER: Tanzu image registry hostname
 # - REGISTRY_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - REGISTRY_PASSWORD: password to be used to be authenticated against the Tanzu image registry
-# - TARGET_NAMESPACE: Namespace where the postgresql instance should be created
+# - NAMESPACE_DEMO: Namespace where the postgresql instance should be created
 
 set -e
 
@@ -53,7 +53,7 @@ POSTGRES_API_VERSION=v1
 POSTGRES_KIND=Postgres
 POSTGRES_RESOURCE_NAME=postgres
 
-KUBE_CFG_FILE=${1:-config}
+KUBE_CFG_FILE=${KUBE_CFG_FILE:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
 log "CYAN" "Pull the postgres-operator-chart from Pivotal registry"
@@ -68,7 +68,7 @@ log "CYAN" "Create the secret to allow to pull images from pivotal registry with
 kubectl -n $NAMESPACE_DEMO create secret docker-registry regsecret --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD
 
 log "CYAN" "Install the tanzu postgresql chart"
-helm install tanzu-postgresql ./postgresql/postgres-operator --wait -n $NAMESPACE_DEMO
+helm install tanzu-postgresql ./postgresql/postgres-operator --namespace $NAMESPACE_DEMO --wait
 
 log "CYAN" "Create the kubernetes storageclass and needed PV"
 cat << 'EOF' | kubectl apply -f -

@@ -8,9 +8,7 @@
 # ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./uninstall_postgresql.sh
 #
 # Define the following env vars:
-
-
-NAMESPACE_DEMO=tap-demo
+# - NAMESPACE_DEMO: Namespace where the postgresql instance should be created
 
 # Defining some colors for output
 RED='\033[0;31m'
@@ -38,8 +36,9 @@ log() {
   echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
 }
 
-KUBE_CFG_FILE=${1:-config}
+KUBE_CFG_FILE=${KUBE_CFG_FILE:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
+NAMESPACE_DEMO=${NAMESPACE_DEMO:-tap-demo}
 
 log "YELLOW" "Deleting the regsecret secret"
 kubectl -n $NAMESPACE_DEMO delete secret regsecret --ignore-not-found
@@ -66,12 +65,28 @@ sudo rm -rf /tmp/pv100
 sudo rm -rf /tmp/pv101
 
 log "YELLOW" "Removing RBAC"
-kubectl delete ClusterResource/postgresql
-kubectl delete ClusterRoleBinding/postgresqlcluster
-kubectl delete ClusterRole/resource-claims-postgresql
-kubectl delete ClusterRole/postgresqlcluster-reader
+kubectl delete ClusterRoleBinding/postgres-operator-cluster-role-binding
+kubectl delete ClusterRole/podspecable-binding
+kubectl delete ClusterRole/postgres-editor
+kubectl delete ClusterRole/postgres-operator-cluster-role
+kubectl delete ClusterRole/postgres-viewer
+kubectl delete ClusterRole/postgresbackup-viewer-role
+kubectl delete ClusterRole/postgresbackupschedule-editor-role
+kubectl delete ClusterRole/postgresbackupschedule-viewer-role
+kubectl delete ClusterRole/postgresrestore-editor-role
+kubectl delete ClusterRole/postgresrestore-viewer-role
+kubectl delete ClusterRole/postgresversion-editor-role
+kubectl delete ClusterRole/postgresversion-viewer-role
 
-#log "YELLOW" "Removing ResourceClaim"
-#kubectl delete ResourceClaim/quarkus-app -n tap-demo
+log "YELLOW" "Some misc resources"
+kubectl delete PostgresVersion/postgres-11
+kubectl delete PostgresVersion/postgres-12
+kubectl delete PostgresVersion/postgres-13
+kubectl delete PostgresVersion/postgres-14
+
+kubectl delete MutatingWebhookConfiguration/postgres-operator-mutating-webhook-configuration
+kubectl delete ValidatingWebhookConfiguration/postgres-operator-validating-webhook-configuration
+
+kubectl delete secret/regsecret -n $NAMESPACE_DEMO
 
 
