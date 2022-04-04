@@ -6,7 +6,7 @@ Table of Contents
 
 # Using the ClusterPullSecret controller
 
-Another solution would to be to create from an existing Docker secret, a new one within the target namespace and to patch the SA with the property `imagePullSecret`
+This solution relies on a Controller able using an existing kubernetes Docker secret to create a new one within the target namespaces and to patch the SA with the property `imagePullSecret`
 using the ClusterPullSecret [controller](https://github.com/alexellis/registry-creds/)
 
 Create first a Kind k8s cluster with a secured registry and install the controller
@@ -14,7 +14,7 @@ Create first a Kind k8s cluster with a secured registry and install the controll
 bash <( curl -s https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind-tls-secured-reg.sh)
 kubectl apply -f https://raw.githubusercontent.com/alexellis/registry-creds/master/manifest.yaml
 ```
-Pull and push a hello application image to the local privatre registry
+Pull and push a hello application image to the local private registry
 ```bash
 docker pull gcr.io/google-samples/hello-app:1.0
 docker tag tag gcr.io/google-samples/hello-app:1.0 localhost:5000/hello-app:1.0
