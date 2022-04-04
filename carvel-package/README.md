@@ -1,7 +1,8 @@
 # Carvel Package to install Kubernetes dashboard
 
 - Setup first a kind cluster using the following [bash script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-reg-ingress.sh)
-- Install next the kapp controller and cert manager
+- Generate the images containing the content of the Kubernetes dashboard repository and packages using the bash script: `./package_kubernetes_dashboard.sh`
+- Install next the kapp controller and certificate manager (which is needed when the kubernetes dashboard is installed to populate a selfsigned certificate)
 ```bash
 kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml -y
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.2/cert-manager.yaml
