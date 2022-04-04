@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NAMESPACE_DEMO=$1
+NAMESPACE_DEMO=${1:-tap-demo}
 
 cat <<EOF | kubectl -n $NAMESPACE_DEMO create -f -
 apiVersion: v1
