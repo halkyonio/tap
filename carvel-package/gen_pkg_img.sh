@@ -79,10 +79,13 @@ log_msg "CYAN" "Copy the PackageMetadata CR within the $PKG_DIR_NAME directory"
 cp $PROJECT_DIR/pkg-manifests/package-metadata.yml metadata.yml
 
 log_msg "CYAN" "Bundle the package and push it to the repository"
-
 mkdir -p $TEMP_DIR/repo/.imgpkg
+
+# Generate the ImagesLock file matching the image version and the SHA
 kbld -f $TEMP_DIR/packages/ --imgpkg-lock-output $TEMP_DIR/repo/.imgpkg/images.yml
+# Copy the packages within the repo
 rsync -a --exclude='.imgpkg/' -r $TEMP_DIR/packages/ $TEMP_DIR/repo/packages
+# Create and push the repository image
 imgpkg push -b $IMG_REPO_HOST/packages/$REPOSITORY_NAME:$PKG_VERSION -f $TEMP_DIR/repo
 
 popd
