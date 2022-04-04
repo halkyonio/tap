@@ -8,8 +8,10 @@
 # ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./install_postgresql.sh
 #
 # Define the following env vars:
-# - TANZU_REG_USERNAME: user to be used to be authenticated against the Tanzu image registry
-# - TANZU_REG_PASSWORD: password to be used to be authenticated against the Tanzu image registry
+# - REGISTRY_SERVER: Tanzu image registry hostname
+# - REGISTRY_USERNAME: user to be used to be authenticated against the Tanzu image registry
+# - REGISTRY_PASSWORD: password to be used to be authenticated against the Tanzu image registry
+# - TARGET_NAMESPACE: Namespace where the postgresql instance should be created
 
 set -e
 
@@ -43,7 +45,7 @@ REGISTRY_SERVER=${REGISTRY_SERVER:-registry.pivotal.io}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
-NAMESPACE_DEMO="tap-demo"
+NAMESPACE_DEMO=${NAMESPACE_DEMO:-tap-demo}
 
 POSTGRESQL_VERSION=1.5.0
 POSTGRES_API_GROUP=sql.tanzu.vmware.com
