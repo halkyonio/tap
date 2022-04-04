@@ -294,9 +294,6 @@ done
 log "CYAN" "List the TAP packages installed"
 tanzu package available list -n $NAMESPACE_TAP
 
-log "CYAN" "Set up the developer namespace: $NAMESPACE_DEMO, its RBAC and a secret able to access: tanzu registry & registry defined bvy the user: $REGISTRY_SERVER"
-source ./populate_namespace_tap.sh $NAMESPACE_DEMO
-
 log "CYAN" "Kubernetes dashboard installation ..."
 tanzu package repository add demo-repo --url ghcr.io/halkyonio/packages/demo-repo:0.1.0 -n tap-install
 
