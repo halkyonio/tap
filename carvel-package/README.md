@@ -1,7 +1,7 @@
 # Hoq to create a Carvel Package and to deploy Kubernetes dashboard
 
 - Setup first a kind cluster using the following [bash script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-reg-ingress.sh)
-- Generate the images containing the content of the Kubernetes dashboard repository and packages using the bash script: `./package_kubernetes_dashboard.sh`
+- Generate the images containing the content of the Kubernetes dashboard repository and packages using the bash script: `./gen_pkg_img.sh`
 - Install next the kapp controller and certificate manager (which is needed when the kubernetes dashboard is installed to populate a selfsigned certificate)
 ```bash
 kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml -y
@@ -33,9 +33,10 @@ kubectl -n pkg-demo create secret generic k8s-ui-values --from-file=values.yaml=
 ```bash
 kapp deploy -a pkg-k8d-ui \
   -f pkg-manifests/rbac.yml \
+  -f pkg-manifests/package-install.yml \
   -f pkg-manifests/package-metadata.yml \
-  -f pkg-manifests/package-0.1.0.yml \
-  -f pkg-manifests/package-install.yml -y
+  -f _temp/kubernetes-dashboard/0.1.0/package.yml \
+  -y
   
 kc describe packageinstall/kubernetes-dashboard -n pkg-demo
 ```

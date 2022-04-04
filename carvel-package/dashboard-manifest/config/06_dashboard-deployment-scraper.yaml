@@ -23,7 +23,8 @@ spec:
           type: RuntimeDefault
       containers:
         - name: dashboard-metrics-scraper
-          image: kubernetesui/metrics-scraper:v1.0.7
+          image: #@ data.values.scrapper.image.repository + ":" + data.values.scrapper.image.tag
+          imagePullPolicy: #@ data.values.scrapper.image.pullPolicy
           ports:
             - containerPort: 8000
               protocol: TCP

@@ -2,10 +2,7 @@
 #
 # Execute this command locally
 #
-# ./install
-#
-# or remotely
-# ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./install.sh
+# ./gen_pkg_img.sh
 #
 # Define the following env vars:
 # - XXXX: blabla
@@ -38,44 +35,55 @@ log() {
   echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
 }
 
-VERSION=0.1.0
 REPO_HOST="ghcr.io/halkyonio"
-PKG_REPO_NAME="demo-repo"
+PKG_DIR_NAME="kubernetes-dashboard"
+PKG_FQN="kubernetes-dashboard.halkyonio.io"
+PKG_VERSION=0.1.0
 
-TEMP_DIR=$(pwd)/_temp
 PROJECT_DIR=$(pwd)
-mkdir -p $TEMP_DIR
+TEMP_DIR=$(pwd)/_temp
 
-pushd $TEMP_DIR
+mkdir -p $TEMP_DIR/$PKG_DIR_NAME
 
-log_msg "CYAN" "Let’s create a directory with the k8s manifests and values files"
-mkdir -p package-contents/config/
-cp -r $PROJECT_DIR/pkg-dashboard/config/*.yaml package-contents/config
-cp $PROJECT_DIR/pkg-dashboard/values.yml package-contents/config/values.yml
+pushd $TEMP_DIR/$PKG_DIR_NAME
+
+log_msg "CYAN" "Let’s create the Carvel package bundle folders (config, .imgpkg)"
+mkdir -p $PKG_VERSION/bundle/{config,.imgpkg}
+
+log_msg "CYAN" "Copy the k8s dashboard manifests and values files"
+cp -r $PROJECT_DIR/dashboard-manifest/config/*.yaml $PKG_VERSION/bundle/config
+cp $PROJECT_DIR/dashboard-manifest/values.yml $PKG_VERSION/bundle/config/values.yml
 
 log_msg "CYAN" "let’s use kbld to record which container images are used"
-mkdir -p package-contents/.imgpkg
-kbld -f package-contents/config/ --imgpkg-lock-output package-contents/.imgpkg/images.yml
+kbld -f $PKG_VERSION/bundle/config/ --imgpkg-lock-output $PKG_VERSION/bundle/.imgpkg/images.yml
 
 log_msg "CYAN" "Create an image bundle using the content of package-contents"
-imgpkg push -b $REPO_HOST/packages/kubernetes-dashboard:$VERSION -f package-contents/
+imgpkg push -b $REPO_HOST/packages/kubernetes-dashboard:$PKG_VERSION -f $PKG_VERSION/bundle/
 
 log_msg "CYAN" "Export the OpenAPI Schema"
-ytt -f package-contents/config/values.yml --data-values-schema-inspect -o openapi-v3 > schema-openapi.yml
+ytt -f $PKG_VERSION/bundle/config/values.yml --data-values-schema-inspect -o openapi-v3 > schema-openapi.yml
 
-log_msg "CYAN" "It is time now to create the Package containing the OpenAPI Schema"
-mkdir -p $PKG_REPO_NAME/.imgpkg $PKG_REPO_NAME/packages/kubernetes-dashboard.halkyonio.io
+#log_msg "CYAN" "It is time now to create the folders of the Package"
+#mkdir -p $PKG_DIR_NAME/.imgpkg $PKG_DIR_NAME/packages/kubernetes-dashboard.halkyonio.io
 
-log_msg "CYAN" "Copy the CR YAMLs from the previous step in to the proper packages subdirectory"
-ytt -f $PROJECT_DIR/pkg-manifests/package-template.yml --data-value-file openapi=schema-openapi.yml -v version="$VERSION" > $PKG_REPO_NAME/packages/kubernetes-dashboard.halkyonio.io/$VERSION.yml
-cp $PROJECT_DIR/pkg-manifests/package-metadata.yml $PKG_REPO_NAME/packages/kubernetes-dashboard.halkyonio.io
+log_msg "CYAN" "Generate the Package CR and copy it within the $PKG_DIR_NAME/$PKG_VERSION directory"
+ytt -f $PROJECT_DIR/pkg-manifests/package-template.yml \
+    --data-value-file openapi=schema-openapi.yml \
+    -v version="$PKG_VERSION" \
+    > $PKG_VERSION/package.yml
 
-log_msg "CYAN" "Bundle the packages and push the package repository image bundle"
-kbld -f $PKG_REPO_NAME/packages/ --imgpkg-lock-output $PKG_REPO_NAME/.imgpkg/images.yml
-imgpkg push -b $REPO_HOST/packages/$PKG_REPO_NAME:$VERSION -f $PKG_REPO_NAME
+log_msg "CYAN" "Remove the file generated containing the OpenAPI schema values"
+rm schema-openapi.yml
 
-log_msg "CYAN" "Copy the generated files to $PROJECT_DIR"
-cp $PKG_REPO_NAME/packages/kubernetes-dashboard.halkyonio.io/$VERSION.yml ../pkg-manifests/package-$VERSION.yml
+log_msg "CYAN" "Copy the PackageMetadata CR within the $PKG_DIR_NAME directory"
+cp $PROJECT_DIR/pkg-manifests/package-metadata.yml metadata.yml
+
+log_msg "CYAN" "Bundle the package and push it to the repository"
+kbld -f ./ --imgpkg-lock-output .imgpkg/images.yml
+imgpkg push -b $REPO_HOST/packages/$PKG_DIR_NAME:$PKG_VERSION -f $PKG_DIR_NAME
+
+# log_msg "CYAN" "Copy the generated files to $PROJECT_DIR"
+# cp $PKG_DIR_NAME/packages/kubernetes-dashboard.halkyonio.io/$PKG_VERSION.yml ../pkg-manifests/package-$PKG_VERSION.yml
 
 popd
 

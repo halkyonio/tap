@@ -1,0 +1,23 @@
+#@data/values-schema
+---
+#@schema/desc "IP address of the VM."
+vm_ip: 0.0.0.0
+
+#@schema/desc "Namespace where the k8S UI should be installed"
+namespace: kubernetes-dashboard
+
+image:
+  dashboard:
+    #@schema/desc "Dashboard image repository"
+    repository: kubernetesui/dashboard
+    #@schema/desc "Dashboard version of the image to be installed"
+    tag: v2.5.1
+    #@schema/desc "Dashboard strategy to use to pull the image"
+    pullPolicy: IfNotPresent
+  scrapper:
+    #@schema/desc "Scrapper image repository"
+    repository: kubernetesui/metrics-scraper
+    #@schema/desc "Scrapper version of the image to be installed"
+    tag: v1.0.7
+    #@schema/desc "Scrapper strategy to use to pull the image"
+    pullPolicy: IfNotPresent
