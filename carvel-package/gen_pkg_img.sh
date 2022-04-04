@@ -37,6 +37,7 @@ log() {
 
 IMG_REPO_HOST=${1:-ghcr.io/halkyonio}
 
+REPOSITORY_NAME="demo-repo"
 PKG_DIR_NAME="kubernetes-dashboard"
 PKG_FQN="kubernetes-dashboard.halkyonio.io"
 PKG_VERSION=0.1.0
@@ -66,9 +67,6 @@ rm -rf $PKG_VERSION/bundle/.imgpkg
 log_msg "CYAN" "Export the OpenAPI Schema"
 ytt -f $PKG_VERSION/bundle/config/values.yml --data-values-schema-inspect -o openapi-v3 > schema-openapi.yml
 
-#log_msg "CYAN" "It is time now to create the folders of the Package"
-#mkdir -p $PKG_DIR_NAME/.imgpkg $PKG_DIR_NAME/packages/kubernetes-dashboard.halkyonio.io
-
 log_msg "CYAN" "Generate the Package CR and copy it within the $PKG_DIR_NAME/$PKG_VERSION directory"
 ytt -f $PROJECT_DIR/pkg-manifests/package-template.yml \
     --data-value-file openapi=schema-openapi.yml \
@@ -85,7 +83,7 @@ log_msg "CYAN" "Bundle the package and push it to the repository"
 cd ..
 mkdir -p $TEMP_DIR/.imgpkg
 kbld -f $PKG_DIR_NAME --imgpkg-lock-output $TEMP_DIR/.imgpkg/images.yml
-imgpkg push -b $IMG_REPO_HOST/packages/$PKG_DIR_NAME:$PKG_VERSION -f ./
+imgpkg push -b $IMG_REPO_HOST/packages/$REPOSITORY_NAME:$PKG_VERSION -f ./
 
 popd
 
