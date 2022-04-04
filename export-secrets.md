@@ -2,12 +2,16 @@ Table of Contents
 =================
 
 * [Using the ClusterPullSecret controller](#using-the-clusterpullsecret-controller)
+  * [Instructions](#instructions)
 * [The Carvel Secretgen approach](#the-carvel-secretgen-approach)
+  * [Instructions](#instructions-1)
 
 # Using the ClusterPullSecret controller
 
 This solution relies on a Controller able using an existing kubernetes Docker secret to create a new one within the target namespaces and to patch the SA with the property `imagePullSecret`
 using the ClusterPullSecret [controller](https://github.com/alexellis/registry-creds/)
+
+## Instructions
 
 Create first a Kind k8s cluster with a secured registry and install the controller
 ```bash
@@ -97,6 +101,8 @@ To import it within a namespace it is needed to create a kubernetes Secret of ty
 where the content of the data is `.dockerconfigjson: e30K`.
 
 **REMARK**: As the controller do not change the ServiceAccount within the namespace where the secret is created to define the imagePullSecrets parameter, that should be created then manually
+
+## Instructions
 
 - Install the secretgen controller: https://github.com/vmware-tanzu/carvel-secretgen-controller
 - Create within a namespace a secret containing the registry credentials and export it to `All the Namespaces`
