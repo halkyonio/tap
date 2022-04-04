@@ -35,7 +35,7 @@ log() {
   echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
 }
 
-IMG_REPO_HOST="ghcr.io/halkyonio"
+IMG_REPO_HOST=${1:-ghcr.io/halkyonio}
 
 PKG_DIR_NAME="kubernetes-dashboard"
 PKG_FQN="kubernetes-dashboard.halkyonio.io"
