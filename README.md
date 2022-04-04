@@ -11,6 +11,7 @@ Table of Contents
    * [Review what it has been installed](#review-what-it-has-been-installed)
    * [Change TAP configuration](#change-tap-configuration)
 * [Demo](#demo)
+* [Tanzu community Edition](#tanzu-community-edition)
 * [Clean](#clean)
 * [References](#references)
 
@@ -193,6 +194,11 @@ tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-fil
 ## Demo
 
 See demo page & instructions [here](demo.md) to deploy a Quarkus application using a new Supply Chain, the Quarkus Buildpack builder image, etc.
+
+## Tanzu community Edition
+
+As a part of the technology proposed by TAP is currently packaged/proposed by the project [https://tanzucommunityedition.com](tanzucommunityedition.com), you can have a look to install & play with it 
+as described [here](TCE-README.md).
 
 ## Clean
 

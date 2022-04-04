@@ -13,7 +13,7 @@ Table of Contents
 
 ## Introduction
 
-This page describes how to install TCE which is a small application able to create a K8S cluster top of docker using Kind.
+This page describes how to install Tanzu community Edition (aka: TCE) which is a small application able to create a K8S cluster top of docker using Kind.
 Next, we will install the needed packaged such as (cartographer, fluxcd, kpack, ...) able to build a github project and deploy it
 
 References: 
