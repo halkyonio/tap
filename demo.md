@@ -26,6 +26,7 @@ Table of Contents
 - Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
 - Download a zipped project from the accelerators such as `Tanzu Java Web App`, change the prefix of the image to be stored and unzip it
 - Upload the project using VisualCode
+- Create on the TAP cluster, a `tap-demo-1` namespace, secret & RBAC using the bash script `./scripts/populate_namespace_tap.sh tap-demo-1`.  
 - Change the default namespace to use `tap-demo` and add the following line `allow_k8s_contexts('kubernetes-admin@kubernetes')`
 - Launch `Tanzu Live Update`, wait till it runs 
 - Access the `localhost:8080` service like the Knative service
@@ -35,25 +36,26 @@ Table of Contents
 
 - Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
 - Download a zipped project from the accelerators such as `Spring Petclinic app` and unzip it
+- Create on the TAP cluster, a `tap-demo-2` namespace, secret & RBAC using the bash script `./scripts/populate_namespace_tap.sh tap-demo-2`.
 - Look to the code and next create a `workload`
 
 ```bash
 PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
 tanzu apps workload create $APP \
+   -n tap-demo-2 \
    --git-repo https://github.com/halkyonio/$APP.git \
    --git-branch main  \
    --type web \
    --label app.kubernetes.io/part-of=$APP \
-   -n tap-demo \
    -y
 ```
 
 - Tail to check the build process or status of the workload/component
 
 ```bash
-tanzu apps -n tap-demo workload tail $APP --since 10m --timestamp
-tanzu apps -n tap-demo workload get $APP
+tanzu apps -n tap-demo-2 workload tail $APP --since 10m --timestamp
+tanzu apps -n tap-demo-2 workload get $APP
 # $APP: Ready
 ---
 lastTransitionTime: "2022-02-28T09:06:34Z"
@@ -85,10 +87,10 @@ tanzu apps workload -n tap-demo delete $APP
 
 This example extends the previous ad will demonstrate how to bind a Postgresql DB with the Spring application.
 
-- First, install the Postgresql DB operator and create an instance within the `tap-demo` namespace using this command:
+- First, install the Postgresql DB operator and create an instance within the `tap-demo-3` namespace using this command:
 
 ```bash
-./scripts/install_postgresql.sh
+./scripts/install_postgresql.sh tap-demo-3
 ```
 
 - Wait a few moments to be sure that the DB is up and running
@@ -99,23 +101,24 @@ tanzu service instance list -owide -A
 NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
 tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db
 ```
-
+- Create on the TAP cluster, a `tap-demo-3` namespace, secret & RBAC using the bash script `./scripts/populate_namespace_tap.sh tap-demo-3`.
 - Use `Workload` of the [git repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
 
 ```bash
 PROJECT=../spring-tap-petclinic
-tanzu apps workload create -n tap-demo spring-tap-petclinic \
+tanzu apps workload create spring-tap-petclinic \
+     -n tap-demo-3 \
      -f $PROJECT/config/workload.yaml \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
-     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
+     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo-3:postgres-db"
 ```
 
 - Check the status of the workload, if a new build succeeded and application has been redeployed
 
 ```bash
-tanzu apps workload get -n tap-demo spring-tap-petclinic
+tanzu apps workload get -n tap-demo-3 spring-tap-petclinic
 ...
 NAME                                                     STATUS      RESTARTS   AGE
 spring-tap-petclinic-build-10-build-pod                  Succeeded   0          5h18m
@@ -125,7 +128,7 @@ spring-tap-petclinic-00015-deployment-75575545fd-k4b27   Running     0          
 - Review some resources such as `ServiceBinding` and pod to verify if the postgresql user Secret has been mounted as a volume within the pod of the application
 
 ```bash
-kubectl get pod -l "app=spring-tap-petclinic-00002" -o yaml | grep -A 4 volume
+kubectl get pod -l "app=spring-tap-petclinic-00002" -n tap-demo-3 -o yaml | grep -A 4 volume
     volumeMounts:
     - mountPath: /bindings/db
       name: binding-d9cb99c4e655c91104670a7cc22c8bff9585d79a

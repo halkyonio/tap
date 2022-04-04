@@ -17,8 +17,67 @@ chrome http://k8s-ui.$VM_IP.nip.io/
 # Tilt
 chrome http://localhost:10350/
 
-# Get and copy the Kubeapps token
-kubectl get --namespace default secret $(kubectl get --namespace default serviceaccount kubeapps-operator -o jsonpath='{range .secrets[*]}{.name}{"\n"}{end}' | grep kubeapps-operator-token) -o jsonpath='{.data.token}' -o go-template='{{.data.token | base64decode}}' | pbcopy
+# Install kubeapps and get the Kubeapps token
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm uninstall kubeapps -n kubeapps
+cat <<EOF > ./tanzu/kubeapps-values.yml
+dashboard:
+  image:
+    registry: ghcr.io
+    repository: halkyonio/dashboard
+    tag: dev1
+kubeops:
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: halkyonio/kubeops
+    tag: dev1
+kubeappsapis:
+  image:
+    registry: ghcr.io
+    repository: halkyonio/kubeapps-apis
+    tag: dev1
+  enabledPlugins:
+    - resources
+    - kapp-controller-packages
+    - helm-packages
+packaging:
+  helm:
+    enabled: true
+  carvel:
+    enabled: true
+featureFlags:
+  operators: false
+EOF
+kc create ns kubeapps
+helm install kubeapps -n kubeapps bitnami/kubeapps -f ./tanzu/kubeapps-values.yml
+cat <<EOF | kubectl apply -f - 
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: kubeapps-grpc
+  namespace: kubeapps
+spec:
+  virtualhost:
+    fqdn: kubeapps.10.0.77.51.nip.io
+  routes:
+    - conditions:
+      - prefix: /apis/
+      pathRewritePolicy:
+        replacePrefix:
+        - replacement: /
+      services:
+      - name: kubeapps-internal-kubeappsapis
+        port: 8080
+        protocol: h2c
+    - services:
+      - name: kubeapps
+        port: 80
+EOF
+kubectl create --namespace default serviceaccount kubeapps-operator
+kubectl create clusterrolebinding kubeapps-operator --clusterrole=cluster-admin --serviceaccount=default:kubeapps-operator
+
+kubectl get -n default secret $(kubectl get -n default serviceaccount kubeapps-operator -o jsonpath='{range .secrets[*]}{.name}{"\n"}{end}' | grep kubeapps-operator-token) -o jsonpath='{.data.token}' -o go-template='{{.data.token | base64decode}}' | pbcopy
 -->
 eyJhbGciOiJSUzI1NiIsImtpZCI6InR3WWZ3bS1NcVVzdGxTUC01aWFpUUs0LUo2VUxzQ0JtQWoyakg3c0dKNjQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Imt1YmVhcHBzLW9wZXJhdG9yLXRva2VuLWdseGNuIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6Imt1YmVhcHBzLW9wZXJhdG9yIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiZjUzOTdlZWUtYjA3OS00OTVlLWIwYzItZGY4YjJlM2ExZjViIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmRlZmF1bHQ6a3ViZWFwcHMtb3BlcmF0b3IifQ.LYf6gDAdN12rwv-DCEIlo87Ec63G_vP10i1FX02AXP86xOrVKZlO7qdYsFbX_VcLBCCa7fMYTucK9Jo6x9O3SvoBfPb-oVcrKWjj6xZZNRBRD7zfSuG3yJdII_xRrZm7xdZ92wpI18zk8OGSmWAGZdgdeF9zOVlMRdoTRPcfGnLP3VgrrhU_thkkEEzSXukD-IN6MUXmv-HfGGxJVr-I-XAqH3R_n4Q8XkwN1Cv_U5opkAaoc3cMrKVCHn4pJ5ySLJK_c3v2V306xEJFj58WLCPJ6SSrQocb2PWVee0rTQzhU3ertMKomZlOJb54hhQzGcmfEfhGYZCSr6Hb72ZyPg
 
@@ -36,21 +95,25 @@ tanzu package installed list -A
 
 tanzu secret registry list -A
 
-tanzu package repository delete demo-repo -y
-tanzu package repository add demo-repo --url ghcr.io/halkyonio/packages/demo-repo:0.1.0
+tanzu package repository delete demo-repo -n tap-install -y
+tanzu package repository add demo-repo --url ghcr.io/halkyonio/packages/demo-repo:0.1.0 -n tap-install
 
 # Get and copy the K8s dashboard token
 kubectl get secret $(kubectl get sa/kubernetes-dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode | pbcopy
 
 # Demo 1
 
+./scripts/populate_namespace_tap.sh tap-demo-1
 Open VScode, present, do some changes and access the Spring Boot app
 
+tanzu apps -n tap-demo-1 workload get tanzu-java-web-app
+
 chrome http://localhost:8080
-chrome http://tanzu-java-web-app.tap-demo.$VM_IP.nip.io
+chrome http://tanzu-java-web-app.tap-demo-1.$VM_IP.nip.io
 
 # Demo 2
 
+./scripts/populate_namespace_tap.sh tap-demo-2
 PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
 tanzu apps workload create $APP \
@@ -58,35 +121,40 @@ tanzu apps workload create $APP \
    --git-branch main  \
    --type web \
    --label app.kubernetes.io/part-of=$APP \
-   -n tap-demo1 \
+   -n tap-demo-2 \
    -y
 
-tanzu apps -n tap-demo1 workload tail $APP --since 1m --timestamp
-tanzu apps -n tap-demo1 workload get $APP
-kc get -n tap-demo1 workload $APP -o yaml
-ktree -n tap-demo1 workload $APP
+tanzu apps -n tap-demo-2 workload tail $APP --since 1m --timestamp
+tanzu apps -n tap-demo-2 workload get $APP
+kc get -n tap-demo-2 workload $APP -o yaml
+ktree -n tap-demo-2 workload $APP
 
-chrome http://spring-tap-petclinic.tap-demo1.$VM_IP.nip.io
+chrome http://spring-tap-petclinic.tap-demo-2.$VM_IP.nip.io
 and show tap-ui + app live view
 
-tanzu apps -n tap-demo1 workload delete $APP
+tanzu apps -n tap-demo-2 workload delete $APP
 
 # Demo 3
+
+! Use the bash script to install PostgreSQL - install_postgresql.sh
+
+./scripts/populate_namespace_tap.sh tap-demo-3
 
 tanzu service instance list -owide -A
 
 PROJECT=$HOME/code/tanzu/tap/spring-tap-petclinic
-tanzu apps -n tap-demo workload create $APP \
+tanzu apps workload create $APP \
+     -n tap-demo-3 \
      -f $PROJECT/config/workload.yaml \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
-     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
+     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo-3:postgres-db"
 
-tanzu apps -n tap-demo workload get $APP
-kc get -n tap-demo workload $APP -o yaml
-tanzu apps -n tap-demo workload tail $APP --since 60m --timestamp
-kubectl get pod -l "app=spring-tap-petclinic-00002" -o yaml | grep -A 4 volume
+tanzu apps -n tap-demo-3 workload get $APP
+kc get -n tap-demo-3 workload $APP -o yaml
+tanzu apps -n tap-demo-3 workload tail $APP --since 60m --timestamp
+kubectl get pod -l "app=spring-tap-petclinic-00002" -n tap-demo-3 -o yaml | grep -A 4 volume
 
 ## Optional - Get the K8S CA CERT to trust it for Google Chrome ==> "thisisunsafe"
 
