@@ -197,7 +197,7 @@ See demo page & instructions [here](demo.md) to deploy a Quarkus application usi
 
 ## Tanzu community Edition
 
-As a part of the technology proposed by TAP is currently packaged/proposed by the project [https://tanzucommunityedition.com](tanzucommunityedition.com), you can have a look to install & play with it 
+As a part of the technology proposed by TAP is currently packaged/proposed by the project [https://tanzucommunityedition.io](https://tanzucommunityedition.io), you can have a look to install & play with it 
 as described [here](TCE-README.md).
 
 ## Clean
