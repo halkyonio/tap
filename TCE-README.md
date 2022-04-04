@@ -88,6 +88,16 @@ brew install imgpkg
 brew install crane
 ```
 
+## TCE installation - all in one
+
+Use the following bash script to install TCE tools and packages such as: Knative, Contour, cartographer, fluxCD, Harbor, ... 
+
+```bash
+./scripts/tce/install_tce.sh
+```
+
+**REMARK**: To uninstall it, use `./scripts/tce/uninstall_tce.sh`
+
 ## TCE installation
 
 Install TCE and download the [Snapshot](https://github.com/vmware-tanzu/community-edition#latest-daily-build) of TCE of March 8th as it proposed now: cartographer + kpack
