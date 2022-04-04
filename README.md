@@ -11,8 +11,8 @@ Table of Contents
    * [Review what it has been installed](#review-what-it-has-been-installed)
    * [Change TAP configuration](#change-tap-configuration)
 * [Demo](#demo)
-* [Tanzu community Edition](#tanzu-community-edition)
 * [Clean](#clean)
+* [Tanzu community Edition](#tanzu-community-edition)
 * [References](#references)
 
 ## What is TAP
@@ -195,11 +195,6 @@ tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-fil
 
 See demo page & instructions [here](demo.md) to deploy a Quarkus application using a new Supply Chain, the Quarkus Buildpack builder image, etc.
 
-## Tanzu community Edition
-
-As a part of the technology proposed by TAP is currently packaged/proposed by the project [https://tanzucommunityedition.io](https://tanzucommunityedition.io), you can have a look to install & play with it 
-as described [here](TCE-README.md).
-
 ## Clean
 
 To delete TAP, execute the following bash script able to delete the packages, repository, workload and installed controllers
@@ -209,6 +204,11 @@ $ ./scripts/uninstall.sh
 ```
 
 That's all !
+
+## Tanzu community Edition
+
+As a part of the technology proposed by TAP is currently packaged/proposed by the project [https://tanzucommunityedition.io](https://tanzucommunityedition.io), you can have a look to install & play with it
+as described [here](TCE-README.md).
 
 ## References
 
