@@ -33,7 +33,9 @@ TAP rely on some key components such as:
 
 ## Packages
 
-See list of TAP packages [here](./packages.md)
+See the following file to get an overview about the TAP packages [here](./packages.md).
+
+To discover how to build your own Carvel package and repository to install it, check this [page](carvel-package/README.md).
 
 ## Prerequisites
 
