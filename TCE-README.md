@@ -13,8 +13,10 @@ Table of Contents
 
 ## Introduction
 
-This page describes how to install Tanzu community Edition (aka: TCE) which is a small application able to create a K8S cluster top of docker using Kind.
-Next, we will install the needed packaged such as (cartographer, fluxcd, kpack, ...) able to build a github project and deploy it
+This page describes how to install Tanzu community Edition (aka: TCE). TCE is a standalone client designed around a pluggable architecture
+, able to manage different types of kubernetes clusters such as (Kind or TKG) like the packages and/or repository about the components to be installed.
+
+**REMARK**: For a complete list of the `plugins` available, use the command `tanzu plugins list`.
 
 References: 
 
@@ -100,7 +102,9 @@ Use the following bash script to install TCE tools and packages such as: Knative
 
 ## TCE installation
 
-Install TCE and download the [Snapshot](https://github.com/vmware-tanzu/community-edition#latest-daily-build) of TCE of March 8th as it proposed now: cartographer + kpack
+Install TCE and download a version `>= 0.11` or a [snapshot](https://github.com/vmware-tanzu/community-edition#latest-daily-build) as it supports to install now: cartographer, kpack
+and more will come soon: FluxCD, kubeapps, ...
+
 ```bash
 mkdir tce && cd tce/
 TCE_OS_VERSION="tce-linux-amd64-v0.11.0-dev.1"
