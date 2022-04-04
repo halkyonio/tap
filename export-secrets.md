@@ -2,7 +2,7 @@ Table of Contents
 =================
 
 * [Using the ClusterPullSecret controller](#using-the-clusterpullsecret-controller)
-* [How to export the dockerconfigjson as a Secret to all the namespaces](#how-to-export-the-dockerconfigjson-as-a-secret-to-all-the-namespaces)
+* [The Carvel Secretgen approach](#the-carvel-secretgen-approach)
 
 # Using the ClusterPullSecret controller
 
@@ -88,7 +88,15 @@ spec:
 EOF
 ```
 
-# How to export the dockerconfigjson as a Secret to all the namespaces
+# The Carvel Secretgen approach
+
+The  Carvel Secretgen controller allows to export the `dockerconfigjson` file content as a kubernetes secret to all the namespaces or the namespaces specified
+using a `SecretExport` CRD. 
+
+To import it within a namespace it is needed to create a kubernetes Secret of type `kubernetes.io/dockerconfigjson` containing as annotation `secretgen.carvel.dev/image-pull-secret: ""` and 
+where the content of the data is `.dockerconfigjson: e30K`.
+
+**REMARK**: As the controller do not change the ServiceAccount within the namespace where the secret is created to define the imagePullSecrets parameter, that should be created then manually
 
 - Install the secretgen controller: https://github.com/vmware-tanzu/carvel-secretgen-controller
 - Create within a namespace a secret containing the registry credentials and export it to `All the Namespaces`
