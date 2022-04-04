@@ -44,6 +44,7 @@ PKG_VERSION=0.1.0
 PROJECT_DIR=$(pwd)
 TEMP_DIR=$(pwd)/_temp
 
+rm -rf $TEMP_DIR
 mkdir -p $TEMP_DIR/$PKG_DIR_NAME
 
 pushd $TEMP_DIR/$PKG_DIR_NAME
@@ -60,6 +61,7 @@ kbld -f $PKG_VERSION/bundle/config/ --imgpkg-lock-output $PKG_VERSION/bundle/.im
 
 log_msg "CYAN" "Create an image bundle using the content of package-contents"
 imgpkg push -b $IMG_REPO_HOST/packages/kubernetes-dashboard:$PKG_VERSION -f $PKG_VERSION/bundle/
+rm -rf $PKG_VERSION/bundle/.imgpkg
 
 log_msg "CYAN" "Export the OpenAPI Schema"
 ytt -f $PKG_VERSION/bundle/config/values.yml --data-values-schema-inspect -o openapi-v3 > schema-openapi.yml
@@ -80,8 +82,10 @@ log_msg "CYAN" "Copy the PackageMetadata CR within the $PKG_DIR_NAME directory"
 cp $PROJECT_DIR/pkg-manifests/package-metadata.yml metadata.yml
 
 log_msg "CYAN" "Bundle the package and push it to the repository"
-kbld -f ./ --imgpkg-lock-output .imgpkg/images.yml
-imgpkg push -b $IMG_REPO_HOST/packages/$PKG_DIR_NAME:$PKG_VERSION -f $PKG_DIR_NAME
+cd ..
+mkdir -p $TEMP_DIR/.imgpkg
+kbld -f $PKG_DIR_NAME --imgpkg-lock-output $TEMP_DIR/.imgpkg/images.yml
+imgpkg push -b $IMG_REPO_HOST/packages/$PKG_DIR_NAME:$PKG_VERSION -f ./
 
 popd
 
