@@ -1,4 +1,4 @@
-# Carvel Package to install Kubernetes dashboard
+# Hoq to create a Carvel Package and to deploy Kubernetes dashboard
 
 - Setup first a kind cluster using the following [bash script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-reg-ingress.sh)
 - Generate the images containing the content of the Kubernetes dashboard repository and packages using the bash script: `./package_kubernetes_dashboard.sh`
