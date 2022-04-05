@@ -209,7 +209,6 @@ kapp delete -a example
 kapp delete -a supplychain
 ```
 
-
 ## Install the K8s dashboard (optional)
 
 Setup the Issuer & Certificate resources used by the certificate Manager to generate a selfsigned certificate and dnsNames `k8s-ui.$IP.nip.io` using Letscencrypt.
