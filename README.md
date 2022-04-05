@@ -21,8 +21,9 @@ Tanzu Application Platform 1.0 - https://docs.vmware.com/en/Tanzu-Application-Pl
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software 
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
-By supporting the [Supply Chain choreograph])(https://cartographer.sh/docs/v0.2.0/) pattern it allows
-to decouple the path to be done to move a microservice to Production (build, scan, CI/CD, test, ...) from the microservices created by the developers.
+By supporting the [Supply Chain choreograph](https://cartographer.sh/docs/v0.2.0/) pattern TAP allows
+to decouple the path to be done to move a microservice to a kubernetes Production environment (build, scan, CI/CD, test, ...)
+from the development lifecycle process followed by the developers.
 
 TAP rely on some key components such as:
 - `Knative`serving and eventing,
