@@ -1,21 +1,21 @@
 Table of Contents
 =================
 
-* [What is TAP](#what-is-tap)
+* [What is Tanzu Application Platform - TAP](#what-is-tanzu-application-platform---tap)
 * [Packages](#packages)
 * [Prerequisites](#prerequisites)
 * [Instructions](#instructions)
-   * [Introduction](#introduction)
-   * [How to install TAP](#how-to-install-tap)
-   * [How to remove TAP](#how-to-remove-tap)
-   * [Review what it has been installed](#review-what-it-has-been-installed)
-   * [Change TAP configuration](#change-tap-configuration)
+    * [Introduction](#introduction)
+    * [How to install TAP](#how-to-install-tap)
+    * [How to remove TAP](#how-to-remove-tap)
+    * [Review what it has been installed](#review-what-it-has-been-installed)
+    * [Change TAP configuration](#change-tap-configuration)
 * [Demo](#demo)
 * [Clean](#clean)
 * [Tanzu community Edition](#tanzu-community-edition)
 * [References](#references)
 
-## What is TAP
+## What is Tanzu Application Platform - TAP
 
 Tanzu Application Platform 1.0 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform) 
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software 
