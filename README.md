@@ -17,8 +17,11 @@ Table of Contents
 
 ## What is TAP
 
-Tanzu Application Platform 1.0 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is a packaged set of components that helps developers, architects and
-operators to more easily build, deploy, and manage applications on a Kubernetes platform. By supporting the [Supply Chain choreograph])(https://cartographer.sh/docs/v0.2.0/) pattern it allows
+Tanzu Application Platform 1.0 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform) 
+a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software 
+quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
+
+By supporting the [Supply Chain choreograph])(https://cartographer.sh/docs/v0.2.0/) pattern it allows
 to decouple the path to be done to move a microservice to Production (build, scan, CI/CD, test, ...) from the microservices created by the developers.
 
 TAP rely on some key components such as:
