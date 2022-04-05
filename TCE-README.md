@@ -8,7 +8,7 @@ Table of Contents
 * [TCE installation](#tce-installation)
     * [Create a K8s cluster](#create-a-k8s-cluster)
     * [Configure/install the needed packages](#configureinstall-the-needed-packages)
-    * [Demo](#demo)
+* [Demo](#demo)
 * [Install, upgrade needed tools (optional)](#install-upgrade-needed-tools-optional)
 * [Install the K8s dashboard (optional)](#install-the-k8s-dashboard-optional)
 
@@ -95,7 +95,7 @@ tanzu package install kpack --package-name kpack.community.tanzu.vmware.com --ve
 tanzu package install cartographer --package-name cartographer.community.tanzu.vmware.com --version 0.2.2 --wait=false
 ```
 
-### Demo
+## Demo
 
 We will now use the cartographer and a simple supply-chain [example](https://github.com/vmware-tanzu/cartographer/blob/main/examples/basic-sc/README.md) to build an image from the source and next deploy a knative service
 ```bash
