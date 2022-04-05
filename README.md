@@ -218,8 +218,8 @@ That's all !
 
 ## Tanzu community Edition
 
-As a part of the technology proposed by TAP is currently packaged/proposed by the project [https://tanzucommunityedition.io](https://tanzucommunityedition.io), you can have a look to install & play with it
-as described [here](TCE-README.md).
+As, a part of the technology proposed by TAP is currently packaged/proposed by the [https://tanzucommunityedition.io](https://tanzucommunityedition.io), 
+we recommend you to look to [this project](https://github.com/halkyonio/tce) to play with it.
 
 ## References
 
