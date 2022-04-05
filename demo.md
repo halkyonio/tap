@@ -8,7 +8,6 @@ Table of Contents
 * [Demo 2: Spring Petclinic &amp; TAP GUI](#demo-2-spring-petclinic--tap-gui)
 * [Demo 3: Spring Petclinic &amp; Postgresql](#demo-3-spring-petclinic--postgresql)
 * [Demo 4: Quarkus App + DB](#demo-4-quarkus-app--db)
-* [Demo 5: Web App &amp; VScode](#demo-5-web-app--vscode)
 * [Tearing down the quarkus-app](#tearing-down-the-quarkus-app)
 * [Issues](#issues)
 
@@ -151,7 +150,7 @@ kubectl get pod -l "app=spring-tap-petclinic-00002" -n tap-demo-3 -o yaml | grep
 ### Demo 4: Quarkus App + DB
 
 This example illustrates how to use the quarkus runtime and a Database service on a platform running TAP. As the current platform is not able to build by default
-the fat-jar used by Quarkus, it has been needed to create a new supply chain able to perform such a build. The scenatio that we will follow part of this demo will
+the fat-jar used by Quarkus, it has been needed to create a new supply chain able to perform such a build. The scenario that we will follow part of this demo will
 do:
 
 - Git clone a github [quarkus application](https://github.com/halkyonio/quarkus-tap-petclinic) using Fluxcd
@@ -163,6 +162,10 @@ In order to use the Quarkus Buildpacks builder image, it is needed that first we
 
 ```bash
 export REGISTRY_URL="ghcr.io/halkyonio"
+docker pull codejive/buildpacks-quarkus-builder:jvm
+docker pull codejive/buildpacks-quarkus-run:jvm
+docker pull codejive/buildpacks-quarkus-build:jvm
+
 docker tag codejive/buildpacks-quarkus-builder:jvm $REGISTRY_URL/buildpacks-quarkus-builder:jvm
 docker tag codejive/buildpacks-quarkus-run:jvm $REGISTRY_URL/buildpacks-quarkus-run:jvm
 docker tag codejive/buildpacks-quarkus-build:jvm $REGISTRY_URL/buildpacks-quarkus-build:jvm
@@ -175,15 +178,16 @@ docker push $REGISTRY_URL/buildpacks-quarkus-build:jvm
 When done, we can install the Quarkus supply chain and templates files as an application using kapp
 
 ```bash
+./scripts/populate_namespace_tap.sh tap-demo-4
 pushd supplychain/quarkus-sc
-kapp deploy --yes -a quarkus-supply-chain -n tap-demo \
+kapp deploy --yes -a quarkus-supply-chain -n tap-demo-4 \
   -f <(ytt --ignore-unknown-comments -f ./values.yaml -f helpers.lib.yml -f ./k8s -f ./templates -f supply-chain.yaml)
 ```
 
 When done, deploy the `quarkus-app` workload using either `kapp`
 
 ```bash
-kapp deploy --yes -a quarkus-app -n tap-demo \
+kapp deploy --yes -a quarkus-app -n tap-demo-4 \
   -f <(ytt --ignore-unknown-comments -f workload.yaml -f ./values.yaml)
 ```
 
@@ -191,19 +195,19 @@ or create the workload using the `Tanzu client`
 
 ```bash
 tanzu apps workload create quarkus-app \
-  -n tap-demo \
+  -n tap-demo-4 \
   --git-repo https://github.com/halkyonio/quarkus-tap-petclinic.git \
   --git-branch main \
   --type quarkus \
-  --label app.kubernetes.io/part-of=spring-petclinic-app \
+  --label app.kubernetes.io/part-of=quarkus-petclinic-app \
   -y
-tanzu apps workload -n tap-demo tail quarkus-app --since 10m --timestamp
+tanzu apps workload -n tap-demo-4 tail quarkus-app --since 10m --timestamp
 ```
 
 Observe the build/deployment of the application
 
 ```bash
-tanzu apps workload get quarkus-app -n tap-demo
+tanzu apps workload get quarkus-app -n tap-demo-4
 # quarkus-app: Ready
 ---
 lastTransitionTime: "2022-02-09T15:58:01Z"
@@ -216,93 +220,77 @@ Workload pods
 NAME                            STATE       AGE
 quarkus-app-build-1-build-pod   Succeeded   2m20s
 
-or using the tree plugin 
+or using the kubectl tree plugin 
 
-## List the supply chain resources created to build
-kubectl tree workload quarkus-app -n tap-demo
+## List the supply chain resources created to perform the build
+kubectl tree workload quarkus-app -n tap-demo-4
 NAMESPACE  NAME                                     READY  REASON               AGE  
-tap-demo   Workload/quarkus-app                     True   Ready                2m55s
-tap-demo   ├─App/quarkus-app                        -                           102s 
-tap-demo   ├─GitRepository/quarkus-app              True   GitOperationSucceed  2m49s
-tap-demo   └─Image/quarkus-app                      True                        2m40s
-tap-demo     ├─Build/quarkus-app-build-1            -                           2m40s
-tap-demo     │ └─Pod/quarkus-app-build-1-build-pod  False  PodCompleted         2m39s
-tap-demo     └─SourceResolver/quarkus-app-source    True                        2m40s
-
-## List what knative service populates (as created by App)
-kubectl tree ksvc quarkus-app -n tap-demo
-NAMESPACE  NAME                                                                         READY  REASON  AGE
-tap-demo   Service/quarkus-app                                                          True           13m
-tap-demo   ├─Configuration/quarkus-app                                                  True           13m
-tap-demo   │ └─Revision/quarkus-app-00001                                               True           13m
-tap-demo   │   ├─Deployment/quarkus-app-00001-deployment                                -              13m
-tap-demo   │   │ └─ReplicaSet/quarkus-app-00001-deployment-7f6f79f45                    -              13m
-tap-demo   │   │   └─Pod/quarkus-app-00001-deployment-7f6f79f45-4rlbm                   True           13m
-tap-demo   │   ├─Image/quarkus-app-00001-cache-workload                                 -              13m
-tap-demo   │   └─PodAutoscaler/quarkus-app-00001                                        True           13m
-tap-demo   │     ├─Metric/quarkus-app-00001                                             True           13m
-tap-demo   │     └─ServerlessService/quarkus-app-00001                                  True           13m
-tap-demo   │       ├─Endpoints/quarkus-app-00001                                        -              13m
-tap-demo   │       │ └─EndpointSlice/quarkus-app-00001-56lq5                            -              13m
-tap-demo   │       ├─Service/quarkus-app-00001                                          -              13m
-tap-demo   │       └─Service/quarkus-app-00001-private                                  -              13m
-tap-demo   │         └─EndpointSlice/quarkus-app-00001-private-d2ckh                    -              13m
-tap-demo   └─Route/quarkus-app                                                          True           13m
-tap-demo     ├─Endpoints/quarkus-app                                                    -              13m
-tap-demo     │ └─EndpointSlice/quarkus-app-7k427                                        -              13m
-tap-demo     ├─Ingress/quarkus-app                                                      True           13m
-tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo                     -              13m
-tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.<TAP_DNS_HOSTNAME>  -              13m
-tap-demo     │ ├─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.svc                 -              13m
-tap-demo     │ └─HTTPProxy/quarkus-app-contour-quarkus-app.tap-demo.svc.cluster.local   -              13m
-tap-demo     └─Service/quarkus-app                                                      -              13m
+tap-demo-4   Workload/quarkus-app                     True   Ready                2m55s
+tap-demo-4   ├─App/quarkus-app                        -                           102s 
+tap-demo-4   ├─GitRepository/quarkus-app              True   GitOperationSucceed  2m49s
+tap-demo-4   └─Image/quarkus-app                      True                        2m40s
+tap-demo-4     ├─Build/quarkus-app-build-1            -                           2m40s
+tap-demo-4     │ └─Pod/quarkus-app-build-1-build-pod  False  PodCompleted         2m39s
+tap-demo-4     └─SourceResolver/quarkus-app-source    True                        2m40s
 ```
 
-we can see that the service has been deployed:
-
+wait till the deployment is done and get then the URL fo the service
 ```bash
-kubectl get ksvc/quarkus-app -n tap-demo
-NAME          URL                                              LATESTCREATED       LATESTREADY         READY   REASON
-quarkus-app   http://quarkus-app.tap-demo.<TAP_DNS_HOSTNAME>   quarkus-app-00001   quarkus-app-00001   True   
+kubectl get ksvc/quarkus-app -n tap-demo-4
+NAME          URL                                               LATESTCREATED       LATESTREADY         READY   REASON
+quarkus-app   http://quarkus-app.tap-demo-4.<VM_IP>.nip.io   quarkus-app-00001   quarkus-app-00001   True
 ```
 
-Open the URL within your browser: `http://quarkus-app.tap-demo.<TAP_DNS_HOSTNAME>/` to access the service
-And now, do the job to bind the microservice to a postgresql DB
+And now, do the job to bind the microservice to a postgresql DB ;-)
 
 Obtain a service reference by running:
 
 ```bash
 tanzu service instance list -owide -A
 NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
-tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db
+tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:tap-demo-4:postgres-db
 ```
 
 Finally, do the binding
 
 ```bash
-tanzu apps workload update -n tap-demo quarkus-app --git-branch service-binding --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo:postgres-db"
+tanzu apps workload update -n tap-demo-4 quarkus-app --git-branch service-binding --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo-3:postgres-db"
 ```
 
-Create a `ResouceClaim` able to let the Service toolkit to find the secret from the target Service
-**Remark**: This manifest could become part of the Quatkus supply chain
+Create the `ResouceClaim` and `ResourceClaimPolicy` CRDs in order to find the Service claimed. As the service is running in another namespace, it is then needed
+to create a ResourceClaim to expose it to all the namespaces.
 
+Before to execute the following command, be sure that no other `ResourceClaim` exists on the platform !!
 ```bash
 cat <<EOF | kubectl apply -f -
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ResourceClaimPolicy
+metadata:
+  name: postgres-db-cross-namespace
+  namespace: tap-demo-3
+spec:
+  consumingNamespaces:
+  - '*'
+  subject:
+    group: sql.tanzu.vmware.com
+    kind: Postgres 
+---    
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ResourceClaim
 metadata:
   name: quarkus-app
-  namespace: tap-demo
+  namespace: tap-demo-4
 spec:
   ref:
     apiVersion: sql.tanzu.vmware.com/v1
     kind: Postgres
     name: postgres-db
-    namespace: tap-demo  
+    namespace: tap-demo-3  
 EOF
 ```
+**TODO**: These manifest could become part of the Quarkus supply chain like the ServiceBinding to avoid to have to create them manually
 
-Create the ServiceBinding to tell to the SBO to get the secret from the `ResourceClaim` and mout it to the `ksvc`
+Create the ServiceBinding to tell to the ServiceBinding Operator how to get the secret from the `ResourceClaim` to mount it to the `ksvc`
 **Remark**: This manifest could become part of the Quarkus supply chain
 
 ```bash
@@ -313,7 +301,7 @@ metadata:
   labels:
     apps.tanzu.vmware.com/workload-type: quarkus
   name: quarkus-app
-  namespace: tap-demo
+  namespace: tap-demo-4
 spec:
   name: postgresql
   service:
@@ -328,43 +316,6 @@ EOF
 ```
 
 Enjoy !!
-
-### Demo 5: Web App & VScode
-
-Use an existing project such as `Tanzu Java Web app`
-
-- Open the project using VSCode where the [Tanzu extension](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-vscode-extension-install.html) has been installed
-- Do some changes locally and launch tilt (or using extension). Wait till project is refreshed and script tilt re-executed.
-- Access the component & service
-
-```bash
-http://$APP.tap-demo.<TAP_DNS_HOSTNAME>/
-```
-
-- Delete the component
-
-```bash
-tanzu apps workload delete $APP -n tap-demo --yes
-```
-
-### Tearing down the demo app and supply-chain
-
-Spring Petclinic app
-
-```bash
-tanzu apps workload -n tap-demo delete spring-tap-petclinic -y
-```
-
-Quarkus App and Supply chain
-
-```bash
-kubectl delete ResourceClaim/quarkus-app -n tap-demo
-kubectl delete servicebinding/quarkus-app -n tap-demo
-tanzu apps workload -n tap-demo delete quarkus-app -y
-
-kapp delete -a quarkus-supply-chain -n tap-demo -y
-popd
-```
 
 ### Issues
 
