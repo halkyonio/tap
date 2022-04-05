@@ -5,11 +5,11 @@ Table of Contents
 * [Packages](#packages)
 * [Prerequisites](#prerequisites)
 * [Instructions](#instructions)
-    * [Introduction](#introduction)
-    * [How to install TAP](#how-to-install-tap)
-    * [How to remove TAP](#how-to-remove-tap)
-    * [Review what it has been installed](#review-what-it-has-been-installed)
-    * [Change TAP configuration](#change-tap-configuration)
+  * [Introduction](#introduction)
+  * [How to install TAP](#how-to-install-tap)
+  * [How to remove TAP](#how-to-remove-tap)
+  * [Review what it has been installed](#review-what-it-has-been-installed)
+  * [Change TAP configuration](#change-tap-configuration)
 * [Demo](#demo)
 * [Clean](#clean)
 * [Tanzu community Edition](#tanzu-community-edition)
@@ -17,15 +17,18 @@ Table of Contents
 
 ## What is Tanzu Application Platform - TAP
 
-Tanzu Application Platform 1.0 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform) 
-a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software 
+Tanzu Application Platform 1.0 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
+a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
 By supporting the [Supply Chain choreograph](https://cartographer.sh/docs/v0.2.0/) pattern TAP allows
 to decouple the path to be done to move a microservice to a kubernetes Production environment (build, scan, CI/CD, test, ...)
 from the development lifecycle process followed by the developers.
 
+![vision.png](assets/vision.png)
+
 TAP rely on some key components such as:
+
 - `Knative`serving and eventing,
 - `kpack` controller able to build images using `Buildpacks`,
 - `Contour` to route the traffic internally or externally using `Ingress`
@@ -34,7 +37,7 @@ TAP rely on some key components such as:
 - `Tekton pipelines` and `FluxCD` to fetch the sources (git, ...)
 - `Convention` controller able to change the `Workloads` according to METADATA (framework, runtime, ...)
 - `Service Binding`,
-- `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...). 
+- `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...).
 
 ## Packages
 
@@ -47,8 +50,9 @@ To discover how to build your own Carvel package and repository, check this [pag
 The following [installation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-prerequisites.html) guide explains what the prerequisites are.
 
 TL&DR; It is needed to:
+
 - Have a [Tanzu account](https://network.tanzu.vmware.com/) to download the software or access the [Tanzu registry](registry.tanzu.vmware.com),
-- Accept the needed [EULA](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#eulas) 
+- Accept the needed [EULA](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#eulas)
 - Access a k8s cluster >= 1.21 with Cluster Admin Role and kubectl installed
 - Have a Linux VM machine with 8 CPUs and 8 GB or RAM
 
@@ -64,17 +68,15 @@ then it is needed to use an external repository (ghcr.io, docker.io) !
 To simplify your life, we have designed a [bash script](scripts/install.sh) which allow to install the following software:
 
 1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Tools & Controllers)
-    - [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins
-    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
 
-    - [Kapp controller](https://carvel.dev/kapp-controller/),
-    - [Secretgen controller](https://github.com/vmware-tanzu/carvel-secretgen-controller)
-
+   - [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins
+   - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
+   - [Kapp controller](https://carvel.dev/kapp-controller/),
+   - [Secretgen controller](https://github.com/vmware-tanzu/carvel-secretgen-controller)
 2. Repository
 
    A repository is an image bundle containing different K8s manifests, templates, files able to install/configure the TAP packages.
    Such a repository are managed using the Tanzu command `tanzu package repository ...`
-
 3. TAP Packages
 
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
@@ -94,21 +96,23 @@ using the following variables of the [install.sh](scripts/install.sh) bash scrip
 - **REGISTRY_OWNER**: docker username, ghcr.io ORG owner
 - **REGISTRY_USERNAME**: username to be used to log on the registry
 - **REGISTRY_PASSWORD**: password to be used to log on the registry
-
-- **TANZU_REG_SERVER**: Tanzu registry from where packages, images can be pulled (e.g: registry.tanzu.vmware.com) 
+- **TANZU_REG_SERVER**: Tanzu registry from where packages, images can be pulled (e.g: registry.tanzu.vmware.com)
 - **TANZU_REG_USERNAME**: user to be used to be authenticated against the Tanzu images registry
 - **TANZU_REG_PASSWORD**: password to be used to be authenticated against the Tanzu images registry
 
 Remark: As the script will download the TAP packages, repository using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then you must also configure the following variable:
+
 - **TANZU_PIVNET_LEGACY_API_TOKEN**: Token used by pivnet CLI to login to the Tanzu products website
 
-Finally, define the home directory and IP address of the VM hosting TAP and the kubernetes cluster: 
+Finally, define the home directory and IP address of the VM hosting TAP and the kubernetes cluster:
+
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
 - **VM_IP**: IP address of the VM where the cluster is running
 
 **IMPORTANT**: Set the following `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP as images will be copied from the Tanzu registry to your own container registry
 
 Execute the bash script
+
 ```bash
 REMOTE_HOME_DIR=<REMOTE_HOME_PATH>
 VM_IP=<VM_IP>
@@ -135,9 +139,11 @@ ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
 ### How to remove TAP
 
 Define first the following variable within the [uninstall.sh](scripts/uninstall.sh) bash script
+
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
 
 Next, execute locally or remotely this bash script:
+
 ```bash
 REMOTE_HOME_DIR=<HOME_DIR> ./uninstall.sh
 
@@ -146,7 +152,7 @@ ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<HOME_DIR> 'bash -s' 
 
 ### Review what it has been installed
 
-- Check the status of the TAP packages installed and if all the packages are well deployed 
+- Check the status of the TAP packages installed and if all the packages are well deployed
 
 ```bash
 tanzu package installed list -n tap-install
@@ -182,6 +188,7 @@ tanzu package installed get -n tap-install <package_name>
 ### Change TAP configuration
 
 - If some parameters should be changed, you can first check the list of the available values for a package:
+
 ```bash
 tanzu package available get ootb-supply-chain-basic.tanzu.vmware.com/0.5.1 -n tap-install --values-schema
 ```
