@@ -36,11 +36,11 @@ TAP rely on some key components such as:
 
 See the following file to get an overview about the TAP packages [here](./packages.md).
 
-To discover how to build your own Carvel package and repository to install it, check this [page](carvel-package/README.md).
+To discover how to build your own Carvel package and repository, check this [page](carvel-package/README.md).
 
 ## Prerequisites
 
-The following [installation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#prereqs) guide explain what the prerequisites.
+The following [installation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-prerequisites.html) guide explains what the prerequisites are.
 
 TL&DR; It is needed to:
 - Have a [Tanzu account](https://network.tanzu.vmware.com/) to download the software or access the [Tanzu registry](registry.tanzu.vmware.com),
