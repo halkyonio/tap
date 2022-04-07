@@ -92,6 +92,35 @@ This example extends the previous ad will demonstrate how to bind a Postgresql D
 ./scripts/install_postgresql.sh tap-demo-3
 ```
 
+**Remark**: In order to let the Service Toolkit to access the resources of the Postgresql DB, to claim them, it has been needed to create the following RBAC during the installation of the Postgresql database
+```yaml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: resource-claims-postgresql
+  labels:
+    resourceclaims.services.apps.tanzu.vmware.com/controller: "true"
+rules:
+  - apiGroups:
+    - sql.tanzu.vmware.com
+    resources:
+    - postgres
+    verbs: ["get", "list", "watch", "update"]
+```
+Next, the Postgresql service has been registered as such
+```yaml
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterResource
+metadata:
+  name: postgresql
+spec:
+  shortDescription: It's a PostgreSQL cluster!
+  resourceRef:
+    group: sql.tanzu.vmware.com
+    kind: postgres
+```
+
 - Wait a few moments to be sure that the DB is up and running
 - Obtain a service reference by running:
 
@@ -288,10 +317,9 @@ spec:
     namespace: tap-demo-3  
 EOF
 ```
-**TODO**: These manifest could become part of the Quarkus supply chain like the ServiceBinding to avoid to have to create them manually
+**TODO**: These manifest could become part of the Quarkus supply chain like the ServiceBinding to avoid having to create them manually
 
 Create the ServiceBinding to tell to the ServiceBinding Operator how to get the secret from the `ResourceClaim` to mount it to the `ksvc`
-**Remark**: This manifest could become part of the Quarkus supply chain
 
 ```bash
 cat <<'EOF' | kubectl apply -f -
@@ -314,6 +342,7 @@ spec:
     name: quarkus-app
 EOF
 ```
+**TODO**: This manifest could become part of the Quarkus supply chain
 
 Enjoy !!
 
