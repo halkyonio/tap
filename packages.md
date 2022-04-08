@@ -3,9 +3,9 @@
 The following table list the packages installed using TAP - light profile. The information is coming from the official documentation [page](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-components.html)
 like also from what the `Tanzu community edition` references [here](https://github.com/vmware-tanzu/community-edition#packages).
 
-**REMARK**: To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you have access to TAP, then execute the following [list-tap-packages.sh](scripts/list-tap-packages.sh)
+**REMARK**: To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you have access to TAP, then execute the following [list-tap-packages.sh](scripts/list-packages.sh)
 ```bash
-./list-tap-packages.sh
+./list-packages.sh
 ```
 | Name | Package name | Version |
 | ---- | ------------ | -------- |
@@ -29,6 +29,6 @@ like also from what the `Tanzu community edition` references [here](https://gith
 | [spring-boot-conventions](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-components.html#install-spring-boot-conv) | spring-boot-conventions.tanzu.vmware.com | 0.3.0 |
 | [tap]() | tap.tanzu.vmware.com | 1.0.0 |
 | [tap-gui](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-tap-gui-about.html) | tap-gui.tanzu.vmware.com | 1.0.1 |
-| tap-telemetry | tap-telemetry.tanzu.vmware.com | 0.1.2 |
+| [tap-telemetry](https://tanzu.vmware.com/legal/telemetry) | tap-telemetry.tanzu.vmware.com | 0.1.2 |
 | [tekton-pipelines](https://tekton.dev/) | tekton.tanzu.vmware.com | 0.30.0 |
 
