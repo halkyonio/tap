@@ -83,8 +83,8 @@ NAMESPACE_DEMO="tap-demo"
 NAMESPACE_TAP="tap-install"
 
 PIVNET_CLI_VERSION="3.0.1"
-TANZU_CLUSTER_ESSENTIALS_VERSION="1.0.0"
-TAP_VERSION="1.0.2"
+TANZU_CLUSTER_ESSENTIALS_VERSION="1.1.0"
+TAP_VERSION="1.0.3"
 TANZU_CLI_VERSION="v0.11.1"
 
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
@@ -112,10 +112,10 @@ printf "\n## kubectl krew\nexport PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH\"\n
 log "CYAN" "To be able to play with kubectl krew, re-start your shell session ;-)"
 
 log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
-kubectl krew install tree
-kubectl krew install ctx
-kubectl krew install ns
-kubectl krew install konfig
+${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
+${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
+${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
+${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
 
 printf "\n### kubectl tree\nalias kc='kubectl'\n" >> $HOME/.bashrc
 printf "\n### kubectl tree\nalias ktree='kubectl tree'\n" >> $HOME/.bashrc
@@ -146,9 +146,9 @@ fi
 pushd $TANZU_TEMP_DIR
 
 # Download Cluster Essentials for VMware Tanzu
-log "CYAN" "Set the Cluster Essentials product ID"
-TANZU_CLUSTER_ESSENTIALS_FILE_ID="1105818"
-TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:82dfaf70656b54dcba0d4def85ccae1578ff27054e7533d08320244af7fb0343"
+log "CYAN" "Set the Cluster Essentials product ID for version $TANZU_CLUSTER_ESSENTIALS_VERSION"
+TANZU_CLUSTER_ESSENTIALS_FILE_ID="1191987"
+TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:ab0a3539da241a6ea59c75c0743e9058511d7c56312ea3906178ec0f3491f51d"
 
 log "CYAN" "Download the tanzu-cluster-essentials ... "
 pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
@@ -162,7 +162,7 @@ export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
 export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
 cd ./tanzu-cluster-essentials
 export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
-./install.sh
+./install.sh -y
 
 log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
 sudo cp ytt /usr/local/bin
@@ -171,7 +171,7 @@ sudo cp imgpkg /usr/local/bin
 sudo cp kbld /usr/local/bin
 cd ..
 
-log "CYAN" "Install the Tanzu client & plug-ins"
+log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION"
 log "CYAN" "Download the Tanzu client and extract it"
 TANZU_PRODUCT_FILE_ID="1156168"
 TANZU_PRODUCT_NAME="tanzu-framework-linux-amd64"

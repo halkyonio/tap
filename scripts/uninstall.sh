@@ -94,6 +94,9 @@ sudo rm /usr/local/bin/kapp
 sudo rm /usr/local/bin/imgpkg
 sudo rm /usr/local/bin/kbld
 sudo rm /usr/local/bin/ytt
+
 rm -rf ~/.config/tanzu/       # current location # Remove config directory
 rm -rf ~/.tanzu/              # old location # Remove config directory
 rm -rf ~/.cache/tanzu         # remove cached catalog.yaml
+
+rm -rf ~/tanzu                # folder where tanzu files have been uploaded, values.yaml populated ...
