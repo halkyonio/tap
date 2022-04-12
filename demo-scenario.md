@@ -4,17 +4,17 @@ konfig import -p -s _temp/config.yml
 kubectx kubernetes-admin@kubernetes
 
 # SSH to the VM
-CLOUD=openstack && VM=k121-centos7-tap && ssh-vm $CLOUD $VM
+pass-team
+CLOUD=openstack && VM=k121-centos8-01 && ssh-vm $CLOUD $VM
 
 ## Open UI & Get Tokens
 
 alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --incognito"
 
-VM_IP=10.0.77.51
+VM_IP=10.0.76.43
 chrome http://tap-gui.$VM_IP.nip.io/
-chrome http://kubeapps.$VM_IP.nip.io/#/login
 chrome http://k8s-ui.$VM_IP.nip.io/
-# Tilt
+// Tilt
 chrome http://localhost:10350/
 
 # Install kubeapps and get the Kubeapps token
@@ -23,20 +23,14 @@ helm uninstall kubeapps -n kubeapps
 cat <<EOF > ./tanzu/kubeapps-values.yml
 dashboard:
   image:
-    registry: ghcr.io
-    repository: halkyonio/dashboard
-    tag: dev1
+    repository: bitnami/kubeapps-dashboard
 kubeops:
   enabled: true
   image:
-    registry: ghcr.io
-    repository: halkyonio/kubeops
-    tag: dev1
+    repository: bitnami/kubeapps-kubeops
 kubeappsapis:
   image:
-    registry: ghcr.io
-    repository: halkyonio/kubeapps-apis
-    tag: dev1
+    repository: bitnami/kubeapps-apis
   enabledPlugins:
     - resources
     - kapp-controller-packages
@@ -59,7 +53,7 @@ metadata:
   namespace: kubeapps
 spec:
   virtualhost:
-    fqdn: kubeapps.10.0.77.51.nip.io
+    fqdn: kubeapps.$VM_IP.nip.io
   routes:
     - conditions:
       - prefix: /apis/
@@ -79,7 +73,9 @@ kubectl create clusterrolebinding kubeapps-operator --clusterrole=cluster-admin 
 
 kubectl get -n default secret $(kubectl get -n default serviceaccount kubeapps-operator -o jsonpath='{range .secrets[*]}{.name}{"\n"}{end}' | grep kubeapps-operator-token) -o jsonpath='{.data.token}' -o go-template='{{.data.token | base64decode}}' | pbcopy
 -->
-eyJhbGciOiJSUzI1NiIsImtpZCI6InR3WWZ3bS1NcVVzdGxTUC01aWFpUUs0LUo2VUxzQ0JtQWoyakg3c0dKNjQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Imt1YmVhcHBzLW9wZXJhdG9yLXRva2VuLWdseGNuIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6Imt1YmVhcHBzLW9wZXJhdG9yIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiZjUzOTdlZWUtYjA3OS00OTVlLWIwYzItZGY4YjJlM2ExZjViIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmRlZmF1bHQ6a3ViZWFwcHMtb3BlcmF0b3IifQ.LYf6gDAdN12rwv-DCEIlo87Ec63G_vP10i1FX02AXP86xOrVKZlO7qdYsFbX_VcLBCCa7fMYTucK9Jo6x9O3SvoBfPb-oVcrKWjj6xZZNRBRD7zfSuG3yJdII_xRrZm7xdZ92wpI18zk8OGSmWAGZdgdeF9zOVlMRdoTRPcfGnLP3VgrrhU_thkkEEzSXukD-IN6MUXmv-HfGGxJVr-I-XAqH3R_n4Q8XkwN1Cv_U5opkAaoc3cMrKVCHn4pJ5ySLJK_c3v2V306xEJFj58WLCPJ6SSrQocb2PWVee0rTQzhU3ertMKomZlOJb54hhQzGcmfEfhGYZCSr6Hb72ZyPg
+eyJhbGciOiJSUzI1NiIsImtpZCI6ImU3enRQN0x6Y0RzNXBRVUlFTXpYRkE3N3lXcWlLVGlCS3FDQk9TUTh0Y1EifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Imt1YmVhcHBzLW9wZXJhdG9yLXRva2VuLTduN3RnIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6Imt1YmVhcHBzLW9wZXJhdG9yIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiMjNiMGQ1NmQtZDRmMy00YWU2LWJhZTctMTEwMGJmYWIxMzAzIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmRlZmF1bHQ6a3ViZWFwcHMtb3BlcmF0b3IifQ.QbxquvgJGFoSUMFz1a0pt9mVatwF0e6DmId-KxVv2xLwBPIebmUa0_j3YVgQhMOjsaz1kFZ_G0mMm4quT07HVkQoIa0L5aKNxL1iUgjfcxvRzu-P8eB4HWzUBtbVzBCWf3_mukxL7DW_y99TsoaflN4FZDAb8UKJSoYs2_Z2-N35JtSSeXwE6hz3B__GZXAHzML6j8Lu3UFPsB4ygGhL0IYogngoJQYfX7qRmWeinf_lX96leBZytUdwChwv-OIY_wvJrwrEoUWpcSX7mL8sp_gIk3iCahQV44KUtVbe4F_m_ZrLfTT2AB1AOBUdwveEsUorMXKvHOmIq1wSfgLOuQ
+// Kubeapps (optional)
+chrome http://kubeapps.$VM_IP.nip.io/#/login
 
 ## Demo 0
 
