@@ -37,4 +37,4 @@ like also from what the `Tanzu community edition` references [here](https://gith
 | [tap-telemetry](https://tanzu.vmware.com/legal/telemetry)                                                                                      | tap-telemetry.tanzu.vmware.com               | 0.1.4        |
 | [tekton-pipelines](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tekton-tekton-about.html)                                | tekton.tanzu.vmware.com                      | 0.33.2       |
 
-#ref1: https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/1.0/acc-docs/GUID-index.html
+<a name="ref1">ref1</a>: https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/1.0/acc-docs/GUID-index.html
