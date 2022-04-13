@@ -84,8 +84,8 @@ NAMESPACE_TAP="tap-install"
 
 PIVNET_CLI_VERSION="3.0.1"
 TANZU_CLUSTER_ESSENTIALS_VERSION="1.1.0"
-TAP_VERSION="1.0.3"
-TANZU_CLI_VERSION="v0.11.1"
+TAP_VERSION="1.1.0"
+TANZU_CLI_VERSION="v0.11.2"
 
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
@@ -173,7 +173,7 @@ cd ..
 
 log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION"
 log "CYAN" "Download the Tanzu client and extract it"
-TANZU_PRODUCT_FILE_ID="1156168"
+TANZU_PRODUCT_FILE_ID="1190781"
 TANZU_PRODUCT_NAME="tanzu-framework-linux-amd64"
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=$TAP_VERSION --product-file-id=$TANZU_PRODUCT_FILE_ID
 tar -vxf $TANZU_PRODUCT_NAME.tar
