@@ -36,7 +36,7 @@ like also from what the `Tanzu community edition` references [here](https://gith
 | [tap-auth][20]                 | tap-auth.tanzu.vmware.com                    | 1.1.0        |
 | [tap-gui][21]                  | tap-gui.tanzu.vmware.com                     | 1.1.0        |
 | [tap-telemetry][22]            | tap-telemetry.tanzu.vmware.com               | 0.1.4        |
-| [tekton-pipelines][21]         | tekton.tanzu.vmware.com                      | 0.33.2       |
+| [tekton-pipelines][23]         | tekton.tanzu.vmware.com                      | 0.33.2       |
 
 [1]: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html
 [2]: https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/index.html
@@ -56,7 +56,7 @@ like also from what the `Tanzu community edition` references [here](https://gith
 [16]: https://docs.vmware.com/en/Services-Toolkit-for-VMware-Tanzu-Application-Platform/0.6/svc-tlk/GUID-overview.html
 [17]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-source-controller-about.html
 [18]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-spring-boot-conventions-about.html
-[19]: https://docs.pivotal.io/api-portal">Tanzu API portal for VMware Tanzu
+[19]: https://docs.pivotal.io/api-portal
 [20]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-authn-authz-overview.html
 [21]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tap-gui-about.html
 [22]: https://tanzu.vmware.com/legal/telemetry
