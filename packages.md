@@ -19,7 +19,7 @@ like also from what the `Tanzu community edition` references [here](https://gith
 | [appliveview-conventions][4]   | Discover instances to be displayed using the Application Live View  | conventions.appliveview.tanzu.vmware.com     | 1.1.0        |
 | [buildservice][6]              | Build, maintain, and update portable OCI images | buildservice.tanzu.vmware.com                | 1.5.0        |
 | [cartographer][7]              | Supply Chain Choreographer to create pre-approved paths to production by integrating Kubernetes resources with the elements of their existing toolchains, for example, Jenkins | cartographer.tanzu.vmware.com                | 0.3.0        |
-| [cert-manager][8]              | Manager certificates and issuers (Let'sencryp, selfsigned) | cert-manager.tanzu.vmware.com                | 1.5.3+tap.2  |
+| [cert-manager][8]              | Manager certificates and issuers (Let's Encrypt, selfsigned) | cert-manager.tanzu.vmware.com                | 1.5.3+tap.2  |
 | [cnrs][9]                      | Knative platform | cnrs.tanzu.vmware.com                        | 1.2.0        |
 | [contour][10]                  | Ingress controller for Kubernetes | contour.tanzu.vmware.com                     | 1.18.2+tap.2 |
 | [conventions-controller][5]    | Convention Service provides a means for people in operational roles to express their hard-won knowledge and opinions about how applications should run on Kubernetes as a convention | controller.conventions.apps.tanzu.vmware.com | 0.6.3        |
