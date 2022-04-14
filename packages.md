@@ -27,7 +27,7 @@ like also from what the `Tanzu community edition` references [here](https://gith
 | [fluxcd-source-controller][12] | Kubernetes operator, specialised in artifacts acquisition from external sources such as Git, Helm repositories and S3 buckets | fluxcd.source.controller.tanzu.vmware.com    | 0.16.4       |
 | [ootb-delivery-basic][13]      | reusable ClusterDelivery object that is responsible for delivering to an environment the Kubernetes configuration that has been produced by the Out of the Box Supply Chains, including Basic, Testing, ... | ootb-delivery-basic.tanzu.vmware.com         | 0.7.0        |
 | [ootb-supply-chain-basic][14]  | Supply Chains that tie together a series of Kubernetes resources that drive a developer-provided workload from source code to a Kubernetes configuration ready to be deployed to a cluste | ootb-supply-chain-basic.tanzu.vmware.com     | 0.7.0        |
-| [ootb-templates][29]           | Graph of resources choreographed by the Cartographer controllers | ootb-templates.tanzu.vmware.com              | 0.7.0        |
+| [ootb-templates][15]           | Graph of resources choreographed by the Cartographer controllers | ootb-templates.tanzu.vmware.com              | 0.7.0        |
 | [service-bindings][16]         | Bind a Service to a resource according to the  Service Binding Specification  | service-bindings.labs.vmware.com             | 0.7.1        |
 | [services-toolkit ][17]        | Discover services and claim them | services-toolkit.tanzu.vmware.com            | 0.6.0        |
 | [source-controller][18]        | Common interface for artifact acquisition (Git, ...) | controller.source.apps.tanzu.vmware.com      | 0.3.3        |
@@ -59,6 +59,6 @@ like also from what the `Tanzu community edition` references [here](https://gith
 [19]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-spring-boot-conventions-about.html
 [20]: https://docs.pivotal.io/api-portal
 [21]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-authn-authz-overview.html
-[21]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tap-gui-about.html
+[22]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tap-gui-about.html
 [23]: https://tanzu.vmware.com/legal/telemetry
 [24]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tekton-tekton-about.html
