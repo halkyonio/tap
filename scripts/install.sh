@@ -193,6 +193,14 @@ export TANZU_CLI_NO_INIT=true
 tanzu plugin install --local cli all
 tanzu plugin list
 
+log "CYAN" "Install the RBAC/AUTH plugin"
+TAP_AUTH_FILE_ID="1192815"
+TAP_AUTH_NAME="tap-auth"
+TAP_AUTH_VERSION="1.0.1-beta.1"
+pivnet download-product-files --product-slug=$TAP_AUTH_NAME --release-version=$TAP_AUTH_VERSION --product-file-id=$TAP_AUTH_FILE_ID
+tar -vxf $TAP_AUTH_NAME-plugin_$TAP_AUTH_VERSION.tar.gz
+tanzu plugin install rbac --local linux-amd64
+
 log "CYAN" "Executing installation Part II of the TAP guide"
 log "CYAN" "Install profiles ..."
 
