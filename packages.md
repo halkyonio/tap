@@ -25,6 +25,7 @@ like also from what the `Tanzu community edition` references [here](https://gith
 | [conventions-controller][5]    | Convention Service provides a means for people in operational roles to express their hard-won knowledge and opinions about how applications should run on Kubernetes as a convention | controller.conventions.apps.tanzu.vmware.com | 0.6.3        |
 | [developer-conventions][11]    | Set of conventions that enable your workloads to support live-update and debug operations | developer-conventions.tanzu.vmware.com       | 0.6.0        |
 | [fluxcd-source-controller][12] | Kubernetes operator, specialised in artifacts acquisition from external sources such as Git, Helm repositories and S3 buckets | fluxcd.source.controller.tanzu.vmware.com    | 0.16.4       |
+| [learning-center][25]          | Learning Center for Tanzu Application Platform. Guided technical workshop | learningcenter.tanzu.vmware.com | 0.2.0 |
 | [ootb-delivery-basic][13]      | reusable ClusterDelivery object that is responsible for delivering to an environment the Kubernetes configuration that has been produced by the Out of the Box Supply Chains, including Basic, Testing, ... | ootb-delivery-basic.tanzu.vmware.com         | 0.7.0        |
 | [ootb-supply-chain-basic][14]  | Supply Chains that tie together a series of Kubernetes resources that drive a developer-provided workload from source code to a Kubernetes configuration ready to be deployed to a cluste | ootb-supply-chain-basic.tanzu.vmware.com     | 0.7.0        |
 | [ootb-templates][15]           | Graph of resources choreographed by the Cartographer controllers | ootb-templates.tanzu.vmware.com              | 0.7.0        |
@@ -32,11 +33,12 @@ like also from what the `Tanzu community edition` references [here](https://gith
 | [services-toolkit ][17]        | Discover services and claim them | services-toolkit.tanzu.vmware.com            | 0.6.0        |
 | [source-controller][18]        | Common interface for artifact acquisition (Git, ...) | controller.source.apps.tanzu.vmware.com      | 0.3.3        |
 | [spring-boot-conventions][19]  | Conventions applied to any Spring Boot application | spring-boot-conventions.tanzu.vmware.com     | 0.4.0        |
-| [tap-api][20]                  | API consumers to find APIs they can use in their own applications | na                                           | na           |
+| [tap-api][20]                  | API consumers to find APIs they can use in their own applications | api-portal.tanzu.vmware.com  | 1.0.15       |
 | [tap-auth][21]                 | Tool and roles to manage RBAC | tap-auth.tanzu.vmware.com                    | 1.1.0        |
 | [tap-gui][22]                  | Portal for Developers designed around Backstage to view applications, supply chains | tap-gui.tanzu.vmware.com                     | 1.1.0        |
 | [tap-telemetry][23]            | Tool to collect telmetry | tap-telemetry.tanzu.vmware.com               | 0.1.4        |
 | [tekton-pipelines][24]         | Framework for creating CI/CD systems | tekton.tanzu.vmware.com                      | 0.33.2       |
+| [workshops][26]                | Workshop Building Tutorial | workshops.learningcenter.tanzu.vmware.com | 0.2.0 |
 
 [1]: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html
 [2]: https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/index.html
@@ -51,7 +53,7 @@ like also from what the `Tanzu community edition` references [here](https://gith
 [11]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-developer-conventions-about.html
 [12]: https://github.com/fluxcd/source-controller
 [13]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-scc-ootb-delivery-basic.html
-[14]:https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-scc-ootb-supply-chain-basic.html
+[14]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-scc-ootb-supply-chain-basic.html
 [15]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-scc-ootb-templates.html
 [16]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-service-bindings-about.html
 [17]: https://docs.vmware.com/en/Services-Toolkit-for-VMware-Tanzu-Application-Platform/0.6/svc-tlk/GUID-overview.html
@@ -62,3 +64,5 @@ like also from what the `Tanzu community edition` references [here](https://gith
 [22]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tap-gui-about.html
 [23]: https://tanzu.vmware.com/legal/telemetry
 [24]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tekton-tekton-about.html
+[25]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-learning-center-install-learning-center.html
+[26]: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-learning-center-getting-started-workshops.html
