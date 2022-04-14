@@ -10,35 +10,35 @@ like also from what the `Tanzu community edition` references [here](https://gith
 ```
 
 
-| Name                                | Package name                                 | Version      |
-| ------------------------------------- | ---------------------------------------------- | -------------- |
-| [tap][01] | tap.tanzu.vmware.com                         | 1.1.0        |
-| [accelerator](#ref02)               | accelerator.apps.tanzu.vmware.com            | 1.1.2        |
-| [appliveview](#ref03)               | backend.appliveview.tanzu.vmware.com         | 1.1.0        |
-| [appliveview-connector](#ref04)     | connector.appliveview.tanzu.vmware.com       | 1.1.0        |
-| [appliveview-conventions](#ref04)   | conventions.appliveview.tanzu.vmware.com     | 1.1.0        |
-| [buildservice](#ref05)              | buildservice.tanzu.vmware.com                | 1.5.0        |
-| [cartographer](#ref06)              | cartographer.tanzu.vmware.com                | 0.3.0        |
-| [cert-manager](#ref07)              | cert-manager.tanzu.vmware.com                | 1.5.3+tap.2  |
-| [cnrs](#ref08)                      | cnrs.tanzu.vmware.com                        | 1.2.0        |
-| [contour](#ref09)                   | contour.tanzu.vmware.com                     | 1.18.2+tap.2 |
-| [conventions-controller](#ref04)    | controller.conventions.apps.tanzu.vmware.com | 0.6.3        |
-| [developer-conventions](#ref10)     | developer-conventions.tanzu.vmware.com       | 0.6.0        |
-| [fluxcd-source-controller](#ref11)  | fluxcd.source.controller.tanzu.vmware.com    | 0.16.4       |
-| [ootb-delivery-basic](#ref12)       | ootb-delivery-basic.tanzu.vmware.com         | 0.7.0        |
-| [ootb-supply-chain-basic](#ref13)   | ootb-supply-chain-basic.tanzu.vmware.com     | 0.7.0        |
-| [ootb-templates](#ref28)            | ootb-templates.tanzu.vmware.com              | 0.7.0        |
-| [service-bindings](#ref15)          | service-bindings.labs.vmware.com             | 0.7.1        |
-| [services-toolkit ](#ref16)         | services-toolkit.tanzu.vmware.com            | 0.6.0        |
-| [source-controller](#ref17)         | controller.source.apps.tanzu.vmware.com      | 0.3.3        |
-| [spring-boot-conventions](#ref18)   | spring-boot-conventions.tanzu.vmware.com     | 0.4.0        |
-| [tap-api](#ref19)                   | na                                           | na           |
-| [tap-auth](#ref20)                  | tap-auth.tanzu.vmware.com                    | 1.1.0        |
-| [tap-gui](#ref21)                   | tap-gui.tanzu.vmware.com                     | 1.1.0        |
-| [tap-telemetry](#22)                | tap-telemetry.tanzu.vmware.com               | 0.1.4        |
-| [tekton-pipelines](#ref21)          | tekton.tanzu.vmware.com                      | 0.33.2       |
+| Name                               | Package name                                 | Version      |
+| ------------------------------------ | ---------------------------------------------- | -------------- |
+| [tap][1]                           | tap.tanzu.vmware.com                         | 1.1.0        |
+| [accelerator](#ref02)              | accelerator.apps.tanzu.vmware.com            | 1.1.2        |
+| [appliveview](#ref03)              | backend.appliveview.tanzu.vmware.com         | 1.1.0        |
+| [appliveview-connector](#ref04)    | connector.appliveview.tanzu.vmware.com       | 1.1.0        |
+| [appliveview-conventions](#ref04)  | conventions.appliveview.tanzu.vmware.com     | 1.1.0        |
+| [buildservice](#ref05)             | buildservice.tanzu.vmware.com                | 1.5.0        |
+| [cartographer](#ref06)             | cartographer.tanzu.vmware.com                | 0.3.0        |
+| [cert-manager](#ref07)             | cert-manager.tanzu.vmware.com                | 1.5.3+tap.2  |
+| [cnrs](#ref08)                     | cnrs.tanzu.vmware.com                        | 1.2.0        |
+| [contour](#ref09)                  | contour.tanzu.vmware.com                     | 1.18.2+tap.2 |
+| [conventions-controller](#ref04)   | controller.conventions.apps.tanzu.vmware.com | 0.6.3        |
+| [developer-conventions](#ref10)    | developer-conventions.tanzu.vmware.com       | 0.6.0        |
+| [fluxcd-source-controller](#ref11) | fluxcd.source.controller.tanzu.vmware.com    | 0.16.4       |
+| [ootb-delivery-basic](#ref12)      | ootb-delivery-basic.tanzu.vmware.com         | 0.7.0        |
+| [ootb-supply-chain-basic](#ref13)  | ootb-supply-chain-basic.tanzu.vmware.com     | 0.7.0        |
+| [ootb-templates](#ref28)           | ootb-templates.tanzu.vmware.com              | 0.7.0        |
+| [service-bindings](#ref15)         | service-bindings.labs.vmware.com             | 0.7.1        |
+| [services-toolkit ](#ref16)        | services-toolkit.tanzu.vmware.com            | 0.6.0        |
+| [source-controller](#ref17)        | controller.source.apps.tanzu.vmware.com      | 0.3.3        |
+| [spring-boot-conventions](#ref18)  | spring-boot-conventions.tanzu.vmware.com     | 0.4.0        |
+| [tap-api](#ref19)                  | na                                           | na           |
+| [tap-auth](#ref20)                 | tap-auth.tanzu.vmware.com                    | 1.1.0        |
+| [tap-gui](#ref21)                  | tap-gui.tanzu.vmware.com                     | 1.1.0        |
+| [tap-telemetry](#22)               | tap-telemetry.tanzu.vmware.com               | 0.1.4        |
+| [tekton-pipelines](#ref21)         | tekton.tanzu.vmware.com                      | 0.33.2       |
 
-[01]: Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html
+[1]: Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html
 
 <a name="ref02">ref02</a>: https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/index.html
 
