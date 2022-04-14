@@ -38,7 +38,7 @@ like also from what the `Tanzu community edition` references [here](https://gith
 | [tap-telemetry](#22)                | tap-telemetry.tanzu.vmware.com               | 0.1.4        |
 | [tekton-pipelines](#ref21)          | tekton.tanzu.vmware.com                      | 0.33.2       |
 
-[01] Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html
+[01]: Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html
 
 <a name="ref02">ref02</a>: https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/index.html
 
