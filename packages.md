@@ -39,27 +39,49 @@ like also from what the `Tanzu community edition` references [here](https://gith
 
 
 <a name="ref01">ref02</a>: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html
+
 <a name="ref02">ref02</a>: https://docs.vmware.com/en/Application-Accelerator-for-VMware-Tanzu/index.html
+
 <a name="ref03">ref03</a>: https://docs.vmware.com/en/Application-Live-View-for-VMware-Tanzu/1.1/docs/GUID-index.html
+
 <a name="ref04">ref04</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-convention-service-about.html
+
 <a name="ref05">ref05</a>: https://docs.vmware.com/en/VMware-Tanzu-Build-Service/index.html
+
 <a name="ref06">ref06</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-scc-about.html
+
 <a name="ref07">ref07</a>: https://cert-manager.io/docs/
+
 <a name="ref08">ref08</a>: https://docs.vmware.com/en/Cloud-Native-Runtimes-for-VMware-Tanzu/index.html
+
 <a name="ref09">ref09</a>: https://projectcontour.io/
+
 <a name="ref10">ref10</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-developer-conventions-about.html
+
 <a name="ref11">ref11</a>: https://github.com/fluxcd/source-controller
+
 <a name="ref12">ref12</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-scc-ootb-delivery-basic.html
+
 <a name="ref13">ref13</a>:https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-scc-ootb-supply-chain-basic.html
+
 <a name="ref14">ref14</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-scc-ootb-templates.html
+
 <a name="ref15">ref15</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-service-bindings-about.html
+
 <a name="ref16">ref16</a>: https://docs.vmware.com/en/Services-Toolkit-for-VMware-Tanzu-Application-Platform/0.6/svc-tlk/GUID-overview.html
+
 <a name="ref17">ref17</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-source-controller-about.html
+
 <a name="ref18">ref18</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-spring-boot-conventions-about.html
+
 <a name="ref19">ref19</a>: https://docs.pivotal.io/api-portal">Tanzu API portal for VMware Tanzu
+
 <a name="ref20">ref20</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-authn-authz-overview.html
+
 <a name="ref21">ref21</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tap-gui-about.html
+
 <a name="ref22">ref22</a>: https://tanzu.vmware.com/legal/telemetry
+
 <a name="ref23">ref23</a>: https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-tekton-tekton-about.html
 
 
