@@ -139,6 +139,7 @@ tanzu apps -n tap-demo-2 workload delete $APP
 tanzu service instance list -owide -A
 
 PROJECT=$HOME/code/tanzu/tap/spring-tap-petclinic
+APP=spring-tap-petclinic
 tanzu apps workload create $APP \
      -n tap-demo-3 \
      -f $PROJECT/config/workload.yaml \
