@@ -17,11 +17,13 @@ Table of Contents
 
 ## What is Tanzu Application Platform - TAP
 
-Tanzu Application Platform 1.0 - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
+Tanzu Application Platform - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
-By supporting the [Supply Chain choreograph](https://cartographer.sh/docs/v0.2.0/) pattern, TAP allows
+TAP 1.0 has been released in January 2022 and different releases are regularly produced - see [releases note](https://network.pivotal.io/products/tanzu-application-platform/releases). 
+
+By supporting the [Supply Chain choreograph](https://cartographer.sh/) pattern, TAP allows
 to decouple the path to move a microservice to different kubernetes environments (build, scan, CI/CD, test, ...)
 from the development lifecycle process followed by the developers.
 
