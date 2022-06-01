@@ -107,22 +107,31 @@ log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide
   ./"${KREW}" install krew
 )
 
-printf "\n## kubectl krew\nexport PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH\"\n" >> $HOME/.bashrc
-#export PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH
-log "CYAN" "To be able to play with kubectl krew, re-start your shell session ;-)"
-
 log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
 ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
 ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
 ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
 ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
 
-printf "\n### kubectl tree\nalias kc='kubectl'\n" >> $HOME/.bashrc
-printf "\n### kubectl tree\nalias ktree='kubectl tree'\n" >> $HOME/.bashrc
-printf "\n### kubectl ns\nalias kubens='kubectl ns'\n" >> $HOME/.bashrc
-printf "\n### kubectl ctx\nalias kubectx='kubectl ctx'\n" >> $HOME/.bashrc
-printf "\n### kubectl konfig\nalias konfig='kubectl konfig'\n" >> $HOME/.bashrc
-source $HOME/.bashrc
+log "CYAN" "Creating some nice aliases, export PATH"
+cat <<EOF > ${REMOTE_HOME_DIR}/.bash_aliases
+### kubectl krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+### kubectl shortcut -> kc
+alias kc='kubectl'
+### kubectl shortcut -> k
+alias k='kubectl'
+### kubectl tree
+alias ktree='kubectl tree'
+### kubectl ns
+alias kubens='kubectl ns'
+### kubectl ctx
+alias kubectx='kubectl ctx'
+### kubectl konfig
+alias konfig='kubectl konfig'
+EOF
+source ${REMOTE_HOME_DIR}/.bashrc
 
 log "CYAN" "Installing Helm"
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
@@ -220,6 +229,7 @@ if [[ "$COPY_PACKAGES" == "true" ]]; then
   docker login $TANZU_REG_SERVER -u $TANZU_REG_USERNAME -p $TANZU_REG_PASSWORD
 
   log "CYAN" "Relocate the repository image bundle from Tanzu to ghcr.io"
+  echo " imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
   imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
             --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
 fi
