@@ -48,6 +48,12 @@ NAMESPACE_TAP_DEMO="tap-demo"
 DEST_DIR="/usr/local/bin"
 TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
 
+log "GREEN" "Remove previously downloaded tar.gz files"
+rm -rf $REMOTE_HOME_DIR/k9s_Linux_x86_64.tar.gz*
+rm $REMOTE_HOME_DIR/get_helm.sh
+rm $REMOTE_HOME_DIR/k9s
+rm $REMOTE_HOME_DIR/pivnet
+
 log "GREEN" "Delete the workload(s) created under the namespace: $NAMESPACE_TAP_DEMO"
 tanzu apps workload list -n $NAMESPACE_TAP_DEMO | awk '(NR>1)' | while read name app status age;
 do
@@ -95,8 +101,11 @@ sudo rm /usr/local/bin/imgpkg
 sudo rm /usr/local/bin/kbld
 sudo rm /usr/local/bin/ytt
 
-rm -rf ~/.config/tanzu/       # current location # Remove config directory
-rm -rf ~/.tanzu/              # old location # Remove config directory
-rm -rf ~/.cache/tanzu         # remove cached catalog.yaml
+rm -rf $REMOTE_HOME_DIR/.config/tanzu/       # current location # Remove config directory
+rm -rf $REMOTE_HOME_DIR/.tanzu/              # old location # Remove config directory
+rm -rf $REMOTE_HOME_DIR/.cache/tanzu         # remove cached catalog.yaml
 
-rm -rf ~/tanzu                # folder where tanzu files have been uploaded, values.yaml populated ...
+rm -rf $REMOTE_HOME_DIR/tanzu                # folder where tanzu files have been uploaded, values.yaml populated ...
+
+log "GREEN" "Removing the aliases file"
+rm $REMOTE_HOME_DIR/.bashrc_aliases
