@@ -131,7 +131,6 @@ alias kubectx='kubectl ctx'
 ### kubectl konfig
 alias konfig='kubectl konfig'
 EOF
-source ${REMOTE_HOME_DIR}/.bashrc
 
 log "CYAN" "Installing Helm"
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
