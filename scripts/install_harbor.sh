@@ -3,7 +3,7 @@
 VM_IP=${VM_IP:=127.0.0.1}
 REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
 TMP_DIR=$REMOTE_HOME_DIR/tmp
-IP_AND_DOMAIN_NAME="$VM_IP.nip.io"
+VM_IP_AND_DOMAIN_NAME="$VM_IP.nip.io"
 
 DIR=`dirname $0` # to get the location where the script is located
 
@@ -59,7 +59,7 @@ ST = Namur
 L  = Florennes
 O  = Red Hat
 OU = Snowdrop
-CN = "harbor.$IP_AND_DOMAIN_NAME"
+CN = "harbor.$VM_IP_AND_DOMAIN_NAME"
 [x509_ext]
 basicConstraints        = critical, CA:TRUE
 subjectKeyIdentifier    = hash
@@ -68,41 +68,14 @@ keyUsage                = critical, cRLSign, digitalSignature, keyCertSign
 nsComment               = "OpenSSL Generated Certificate"
 subjectAltName          = @alt_names
 [alt_names]
-DNS.1 = "harbor.$IP_AND_DOMAIN_NAME"
-DNS.2 = "notary.$IP_AND_DOMAIN_NAME"
+DNS.1 = "harbor.$VM_IP_AND_DOMAIN_NAME"
+DNS.2 = "notary.$VM_IP_AND_DOMAIN_NAME"
 EOF
 )
 echo "$CFG"
 }
 
-log "CYAN" "Populate a self signed certificate ..."
-mkdir -p $TMP_DIR/certs/harbor.$IP_AND_DOMAIN_NAME
-
-log "CYAN" "Generate the openssl stuff"
-create_openssl_cfg > $TMP_DIR/certs/req.cnf
-
-log "CYAN" "Create the self signed certificate certificate and client key files"
-openssl req -x509 \
-  -nodes \
-  -days 365 \
-  -newkey rsa:4096 \
-  -keyout $TMP_DIR/certs/harbor.${IP_AND_DOMAIN_NAME}/tls.key \
-  -out $TMP_DIR/certs/harbor.${IP_AND_DOMAIN_NAME}/tls.crt \
-  -config $TMP_DIR/certs/req.cnf \
-  -sha256
-
-#log_line "CYAN" "Copy the tls.crt under /usr/local/share/ca-certificates/harbor.$VM_IP.nip.io.crt and update the the ca-certificates"
-log_line "CYAN" "Copy the tls.crt to /etc/pki/ca-trust/source/anchors/ and trust the certificate"
-sudo cp $TMP_DIR/certs/harbor.${IP_AND_DOMAIN_NAME}/tls.crt /etc/pki/ca-trust/source/anchors/harbor.${IP_AND_DOMAIN_NAME}.crt
-sudo update-ca-trust
-
-log_line "CYAN" "Copy the tls.crt to /etc/docker/certs.d/harbor.${IP_AND_DOMAIN_NAME} and restart docker daemon"
-sudo mkdir -p /etc/docker/certs.d/harbor.${IP_AND_DOMAIN_NAME}
-sudo cp $TMP_DIR/certs/harbor.${IP_AND_DOMAIN_NAME}/tls.crt /etc/docker/certs.d/harbor.${IP_AND_DOMAIN_NAME}/ca.crt
-sudo systemctl restart docker
-
-log_line "CYAN" "Log CA content"
-openssl x509 -noout -text -in /etc/pki/ca-trust/source/anchors/harbor.${IP_AND_DOMAIN_NAME}.crt
+log_line "RED" "Generate first the selfsigned certificate using the bash gen-selfsigned-cert.sh file !!!"
 
 log_line "CYAN" "Add TCE repository containing the Harbor package"
 tanzu package repository add tce-repo --url projects.registry.vmware.com/tce/main:v0.12.0 -n tce-repository --create-namespace
