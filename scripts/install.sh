@@ -55,6 +55,25 @@ log() {
   echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
 }
 
+check_os() {
+  PLATFORM='unknown'
+  unamestr=$(uname)
+  if [[ "$unamestr" == 'Linux' ]]; then
+     PLATFORM='linux'
+  elif [[ "$unamestr" == 'Darwin' ]]; then
+     PLATFORM='darwin'
+  fi
+  log "CYAN" "OS type: $PLATFORM"
+}
+
+check_distro() {
+  DISTRO=$( cat /etc/*-release | tr [:upper:] [:lower:] | grep -Poi '(debian|ubuntu|red hat|centos|fedora)' | uniq )
+  if [ -z $DISTRO ]; then
+      DISTRO='unknown'
+  fi
+  log "CYAN" "Detected Linux distribution: $DISTRO"
+}
+
 KUBE_CFG_FILE=${1:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
@@ -90,8 +109,17 @@ TANZU_CLI_VERSION="v0.11.4"
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
 
+# Check OS TYPE and/or linux distro
+check_os
+check_distro
+
 log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
-sudo yum install git wget unzip epel-release bash-completion -y
+if [[ $DISTRO == 'fedora' ]]; then
+  sudo yum install git wget unzip bash-completion openssl -y
+else
+  sudo yum install git wget unzip epel-release bash-completion -y
+fi
+
 sudo yum install jq -y
 wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
 sudo cp k9s /usr/local/bin
