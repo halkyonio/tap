@@ -19,3 +19,5 @@ spec:
   persistentVolumeReclaimPolicy: Recycle
   volumeMode: Filesystem
 EOF
+
+sudo chmod -R 777 /tmp/${PV_NAME}
