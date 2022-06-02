@@ -15,6 +15,7 @@ Instructions to deploy Harbor on a k8s cluster using the Helm chart
 
 - k8s cluster >= 1.20
 - Ingress nginx controller installed
+- Persistent Volumes: 3x 1Gi, 2x5Gi, 2x50Gi or use a dynamic `local-path-provisioner` such [as](https://github.com/rancher/local-path-provisioner/) 
 
 ## Instructions
 
@@ -34,6 +35,23 @@ expose:
       core: registry.harbor.$VM_IP.nip.io
       notary: notary.harbor.$VM_IP.nip.io
 externalURL: https://registry.harbor.$VM_IP.nip.io
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      storageClass: local-path
+      size: 50Gi
+    chartmuseum:
+      storageClass: local-path
+    jobservice:
+      storageClass: local-path  
+    database:
+      storageClass: local-path  
+    redis:
+      storageClass: local-path
+    trivy:
+      storageClass: local-path  
 EOF
 
 helm install harbor harbor/harbor -n harbor --create-namespace -f $TEMP_DIR/values.yml
@@ -50,9 +68,9 @@ osascript -e 'quit app "Docker"'; open -a Docker
 # Linux
 sudo mkdir -p /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
 sudo cp $TEMP_DIR/ca.crt /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
-sudo systemctl docker restart
+sudo systemctl restart docker
 ```
-Tag, push an image and launch a Kubernetes's pod
+Tag, push an image and launch a Kubernetes's pod to test the image from harbor registry
 ```bash
 docker login registry.harbor.$VM_IP.nip.io -u admin -p Harbor12345
 docker pull gcr.io/google-samples/hello-app:1.0
@@ -78,6 +96,9 @@ helm uninstall harbor -n harbor
 kubectl delete pvc/harbor-chartmuseum -n harbor
 kubectl delete pvc/harbor-jobservice -n harbor
 kubectl delete pvc/harbor-registry -n harbor
+kubectl delete pvc/data-harbor-redis-0 -n harbor
+kubectl delete pvc/data-harbor-trivy-0 -n harbor
+kubectl delete pvc/database-data-harbor-database-0 -n harbor
 ```
 
 ## Optional
