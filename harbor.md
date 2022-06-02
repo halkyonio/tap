@@ -1,3 +1,12 @@
+Table of Contents
+=================
+
+* [Harbor](#harbor)
+    * [Prerequisites](#prerequisites)
+    * [Instructions](#instructions)
+    * [Remove Harbor](#remove-harbor)
+    * [Optional](#optional)
+
 # Harbor
 
 Instructions to deploy Harbor on a k8s cluster using the Helm chart
@@ -11,11 +20,6 @@ Instructions to deploy Harbor on a k8s cluster using the Helm chart
 
 ```bash
 helm repo add harbor https://helm.goharbor.io
-
-helm uninstall harbor -n harbor
-kubectl delete pvc/harbor-chartmuseum -n harbor
-kubectl delete pvc/harbor-jobservice -n harbor
-kubectl delete pvc/harbor-registry -n harbor
 
 VM_IP=192.168.1.90
 TEMP_DIR=_temp/harbor
@@ -66,6 +70,16 @@ kubectl -n default create secret docker-registry harbor-creds \
     --docker-password=Harbor12345
 kubectl patch serviceaccount default -n default -p '{"imagePullSecrets": [{"name": "harbor-creds"}]}'
 ```
+
+## Remove Harbor
+
+```bash
+helm uninstall harbor -n harbor
+kubectl delete pvc/harbor-chartmuseum -n harbor
+kubectl delete pvc/harbor-jobservice -n harbor
+kubectl delete pvc/harbor-registry -n harbor
+```
+
 ## Optional
 
 To get the chart files locally
