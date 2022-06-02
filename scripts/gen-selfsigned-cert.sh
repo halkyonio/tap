@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Script generating a selfsigned cert and keys for the server "harbor.$VM_IP.nip.io"
+# Script generating a selfsigned cert and keys for the server "${REGISTRY_HOSTNAME}.$VM_IP.nip.io"
 # Copying the files to /etc/pki/ca-trust/source/anchors/ and /etc/docker/certs.d/ to trust them
 #
 # Execute this command locally
@@ -18,9 +18,9 @@
 #
 VM_IP=${VM_IP:=127.0.0.1}
 REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
-TMP_DIR=$REMOTE_HOME_DIR/tmp
-CERT_DIR=$TMP_DIR/certs
+CERT_DIR=$PWD/certs
 VM_IP_AND_DOMAIN_NAME="$VM_IP.nip.io"
+REGISTRY_HOSTNAME=${REGISTRY_HOSTNAME:-registry.harbor}
 
 # Defining some colors for output
 RED='\033[0;31m'
@@ -62,6 +62,16 @@ repeat(){
 	for i in $range ; do echo -n "${str}"; done
 }
 
+check_os() {
+  platform='unknown'
+  unamestr=$(uname)
+  if [[ "$unamestr" == 'Linux' ]]; then
+     platform='linux'
+  elif [[ "$unamestr" == 'Darwin' ]]; then
+     platform='darwin'
+  fi
+}
+
 create_openssl_cfg() {
 CFG=$(cat <<EOF
 [req]
@@ -74,7 +84,7 @@ ST = Namur
 L  = Florennes
 O  = Red Hat
 OU = Snowdrop
-CN = "harbor.$VM_IP_AND_DOMAIN_NAME"
+CN = "${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}"
 [x509_ext]
 basicConstraints        = critical, CA:TRUE
 subjectKeyIdentifier    = hash
@@ -83,32 +93,39 @@ keyUsage                = critical, cRLSign, digitalSignature, keyCertSign
 nsComment               = "OpenSSL Generated Certificate"
 subjectAltName          = @alt_names
 [alt_names]
-DNS.1 = "harbor.$VM_IP_AND_DOMAIN_NAME"
+DNS.1 = "${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}"
 EOF
 )
 echo "$CFG"
 }
 
+check_os
+
 log "YELLOW" "Clean-up previously created cert, key files ..."
-rm -rf $CERT_DIR
-sudo rm -rf /etc/pki/ca-trust/source/anchors/harbor.${VM_IP_AND_DOMAIN_NAME}.crt
-sudo rm -rf /etc/docker/certs.d/harbor.${VM_IP_AND_DOMAIN_NAME}
+rm -rf ${CERT_DIR}
+if [[ $platform == 'linux' ]]; then
+   sudo rm -rf /etc/pki/ca-trust/source/anchors/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}.crt
+   sudo rm -rf /etc/docker/certs.d/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}
+elif [[ $platform == 'darwin' ]]; then
+   rm -rf $REMOTE_HOME_DIR/.docker/certs.d/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}
+   mkdir -p $REMOTE_HOME_DIR/.docker/certs.d/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}
+fi
 
 log "CYAN" "Creating the certs folder"
-mkdir -p $CERT_DIR/harbor.$VM_IP_AND_DOMAIN_NAME
+mkdir -p ${CERT_DIR}/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}
 
 log "CYAN" "Generate the openssl config"
-create_openssl_cfg > $CERT_DIR/req.cnf
+create_openssl_cfg > ${CERT_DIR}/req.cnf
 
-log "CYAN" "Generate the CA certificate and private key."
-openssl req -x509 \
- -nodes \
- -sha512 \
- -days 3650 \
- -newkey rsa:4096 \
- -subj "/C=CN/ST=Namur/L=Florennes/O=RedHat/OU=Snowdrop/CN=$VM_IP_AND_DOMAIN_NAME" \
- -keyout $CERT_DIR/ca.key \
- -out $CERT_DIR/ca.crt
+#log "CYAN" "Generate the CA certificate and private key."
+#openssl req -x509 \
+# -nodes \
+# -sha512 \
+# -days 3650 \
+# -newkey rsa:4096 \
+# -subj "/C=CN/ST=Namur/L=Florennes/O=RedHat/OU=Snowdrop/CN=${VM_IP_AND_DOMAIN_NAME}" \
+# -keyout ${CERT_DIR}/ca.key \
+# -out ${CERT_DIR}/ca.crt
 
 log "CYAN" "Create the self signed certificate and server key."
 openssl req -x509 \
@@ -116,16 +133,22 @@ openssl req -x509 \
   -days 365 \
   -newkey rsa:4096 \
   -sha256 \
-  -keyout $CERT_DIR/harbor.${VM_IP_AND_DOMAIN_NAME}/tls.key \
-  -out $CERT_DIR/harbor.${VM_IP_AND_DOMAIN_NAME}/tls.crt \
-  -config $CERT_DIR/req.cnf
+  -keyout ${CERT_DIR}/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/tls.key \
+  -out ${CERT_DIR}/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/tls.crt \
+  -config ${CERT_DIR}/req.cnf
 
-log_line "CYAN" "Copy the tls.crt to /etc/pki/ca-trust/source/anchors/ and trust the certificate"
-sudo cp $CERT_DIR/harbor.${VM_IP_AND_DOMAIN_NAME}/tls.crt /etc/pki/ca-trust/source/anchors/harbor.${VM_IP_AND_DOMAIN_NAME}.crt
-sudo update-ca-trust
-
-log_line "CYAN" "Copy the tls.crt to /etc/docker/certs.d/harbor.${VM_IP_AND_DOMAIN_NAME} and restart docker daemon"
-sudo mkdir -p /etc/docker/certs.d/harbor.${VM_IP_AND_DOMAIN_NAME}
-sudo cp $CERT_DIR/harbor.${VM_IP_AND_DOMAIN_NAME}/tls.crt /etc/docker/certs.d/harbor.${VM_IP_AND_DOMAIN_NAME}/ca.crt
-sudo systemctl restart docker
+if [[ $platform == 'linux' ]]; then
+  log_line "CYAN" "Copy the tls.crt to /etc/pki/ca-trust/source/anchors/ and trust the certificate"
+  sudo cp ${CERT_DIR}/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/tls.crt /etc/pki/ca-trust/source/anchors/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}.crt
+  sudo update-ca-trust
+  
+  log_line "CYAN" "Copy the tls.crt to /etc/docker/certs.d/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME} and restart docker daemon"
+  sudo mkdir -p /etc/docker/certs.d/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}
+  sudo cp ${CERT_DIR}/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/tls.crt /etc/docker/certs.d/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/tls.crt
+  sudo systemctl restart docker
+elif [[ $platform == 'darwin' ]]; then
+  log_line "CYAN" "Copy the *.crt, *.key file to ~/.docker/certs.d/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}"
+  mv ${CERT_DIR}/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/tls.crt ${CERT_DIR}/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/tls.cert
+  cp ${CERT_DIR}/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/*.{key,cert} $REMOTE_HOME_DIR/.docker/certs.d/${REGISTRY_HOSTNAME}.${VM_IP_AND_DOMAIN_NAME}/
+fi
 
