@@ -45,17 +45,12 @@ cp $TEMP_DIR/ca.crt ~/.docker/certs.d/registry.harbor.$VM_IP.nip.io/
 osascript -e 'quit app "Docker"'; open -a Docker
 # Linux
 sudo mkdir -p /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
-cp ca.crt /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
-sudo update-ca-certificates (Ubuntu) or sudo update-ca-trust (Centos, Fedora, RHEL)
+sudo cp $TEMP_DIR/ca.crt /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
+sudo systemctl docker restart
 ```
-Tag and push an image
+Tag, push an image and launch a Kubernetes's pod
 ```bash
 docker login registry.harbor.$VM_IP.nip.io -u admin -p Harbor12345
-docker tag registry:2 registry.harbor.$VM_IP.nip.io/library/registry:2
-docker push registry.harbor.$VM_IP.nip.io/library/registry:2
-```
-Launch a Kubernetes's pod
-```bash
 docker pull gcr.io/google-samples/hello-app:1.0
 docker tag gcr.io/google-samples/hello-app:1.0 registry.harbor.$VM_IP.nip.io/library/hello-app:1.0
 docker push registry.harbor.$VM_IP.nip.io/library/hello-app:1.0
@@ -63,7 +58,7 @@ kubectl create deployment hello --image=registry.harbor.$VM_IP.nip.io/library/he
 ```
 **Note**: If the cluster has been created using [kind](https://kind.sigs.k8s.io/docs/user/private-registries/), then it is also needed to upload the certificate as described here otherwise you will get a `x509: certificate signed by unknown authority`
 
-Tp pull/push ilmages within the cluster, secret must be created and patched to the serviceaccount used
+To pull/push images within the cluster, secret must be created and patched to the serviceaccount used
 ```bash
 kubectl -n default create secret docker-registry harbor-creds \
     --docker-server=registry.harbor.$VM_IP.nip.io \
