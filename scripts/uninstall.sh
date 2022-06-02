@@ -108,4 +108,4 @@ rm -rf $REMOTE_HOME_DIR/.cache/tanzu         # remove cached catalog.yaml
 rm -rf $REMOTE_HOME_DIR/tanzu                # folder where tanzu files have been uploaded, values.yaml populated ...
 
 log "GREEN" "Removing the aliases file"
-rm $REMOTE_HOME_DIR/.bashrc_aliases
+rm $REMOTE_HOME_DIR/.bash_aliases
