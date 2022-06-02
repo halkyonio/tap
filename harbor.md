@@ -69,6 +69,9 @@ osascript -e 'quit app "Docker"'; open -a Docker
 sudo mkdir -p /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
 sudo cp $TEMP_DIR/ca.crt /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
 sudo systemctl restart docker
+
+sudo cp $TEMP_DIR/ca.crt /etc/pki/ca-trust/source/anchors/
+sudo update-ca-trust
 ```
 Tag, push an image and launch a Kubernetes's pod to test the image from harbor registry
 ```bash
