@@ -1,3 +1,7 @@
+# Harbor
+
+Instructions to deploy Harbor on a k8s cluster using the Helm chart
+
 ## Prerequisites
 
 - k8s cluster >= 1.20
