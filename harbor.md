@@ -16,6 +16,34 @@ Instructions to deploy Harbor on a k8s cluster using the Helm chart
 - k8s cluster >= 1.20
 - Ingress nginx controller installed
 - Persistent Volumes: 3x 1Gi, 2x5Gi, 2x50Gi or use a dynamic `local-path-provisioner` such [as](https://github.com/rancher/local-path-provisioner/) 
+- Ingress-nginx
+
+## Ingress
+
+To install on the k8s cluster an ingress controller exposing the services under the ports `http 32080`, `https: 32443` execute this command
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+TEMP_DIR=_temp/ingress-nginx
+mkdir -p $TEMP_DIR
+
+cat <<EOF > $TEMP_DIR/values.yml
+controller:
+  service:
+    type: NodePort
+    nodePorts:
+      http: 32080
+      https: 32443
+EOF
+helm install ingress \
+    -f $TEMP_DIR/values.yml \
+    -n ingress-nginx \
+    --create-namespace \
+    ingress-nginx/ingress-nginx
+```
+To remove it
+```bash
+helm uninstall ingress -n ingress-nginx
+```
 
 ## Instructions
 
@@ -23,6 +51,7 @@ Instructions to deploy Harbor on a k8s cluster using the Helm chart
 helm repo add harbor https://helm.goharbor.io
 
 VM_IP=192.168.1.90
+PORT=32443
 TEMP_DIR=_temp/harbor
 mkdir -p $TEMP_DIR
 cat <<EOF > $TEMP_DIR/values.yml
@@ -31,10 +60,11 @@ expose:
   tls:
     enabled: true
   ingress:
+    className: "nginx"
     hosts:
-      core: registry.harbor.$VM_IP.nip.io
-      notary: notary.harbor.$VM_IP.nip.io
-externalURL: https://registry.harbor.$VM_IP.nip.io
+      core: "registry.harbor.$VM_IP.nip.io"
+      notary: "notary.harbor.$VM_IP.nip.io"
+externalURL: "https://registry.harbor.$VM_IP.nip.io:$PORT"
 persistence:
   enabled: true
   resourcePolicy: "keep"
@@ -54,20 +84,24 @@ persistence:
       storageClass: local-path  
 EOF
 
-helm install harbor harbor/harbor -n harbor --create-namespace -f $TEMP_DIR/values.yml
+helm install harbor \
+  -f $TEMP_DIR/values.yml \
+  -n harbor \
+  --create-namespace \
+  harbor/harbor
 ```
-Login in to the UI at the address `https://registry.harbor.$VM_IP.nip.io` using as user `admin` and password `Harbor12345`
+Login in to the UI at the address `https://registry.harbor.$VM_IP.nip.io:$PORT` using as user `admin` and password `Harbor12345`
 
 Next, get the certificate and trust it. Restart the docker daemon
 ```bash
-curl -k https://registry.harbor.$VM_IP.nip.io/api/v2.0/systeminfo/getcert > $TEMP_DIR/ca.crt
+curl -k https://registry.harbor.$VM_IP.nip.io:$PORT/api/v2.0/systeminfo/getcert > $TEMP_DIR/ca.crt
 # Mac OS
-mkdir -p ~/.docker/certs.d/registry.harbor.$VM_IP.nip.io/
-cp $TEMP_DIR/ca.crt ~/.docker/certs.d/registry.harbor.$VM_IP.nip.io/
+mkdir -p ~/.docker/certs.d/registry.harbor.$VM_IP.nip.io:$PORT/
+cp $TEMP_DIR/ca.crt ~/.docker/certs.d/registry.harbor.$VM_IP.nip.io:$PORT/
 osascript -e 'quit app "Docker"'; open -a Docker
 # Linux
-sudo mkdir -p /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
-sudo cp $TEMP_DIR/ca.crt /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io/
+sudo mkdir -p /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io:$PORT/
+sudo cp $TEMP_DIR/ca.crt /etc/docker/certs.d/registry.harbor.$VM_IP.nip.io:$PORT/
 sudo systemctl restart docker
 
 sudo cp $TEMP_DIR/ca.crt /etc/pki/ca-trust/source/anchors/
@@ -75,18 +109,18 @@ sudo update-ca-trust
 ```
 Tag, push an image and launch a Kubernetes's pod to test the image from harbor registry
 ```bash
-docker login registry.harbor.$VM_IP.nip.io -u admin -p Harbor12345
+docker login registry.harbor.$VM_IP.nip.io:$PORT -u admin -p Harbor12345
 docker pull gcr.io/google-samples/hello-app:1.0
-docker tag gcr.io/google-samples/hello-app:1.0 registry.harbor.$VM_IP.nip.io/library/hello-app:1.0
-docker push registry.harbor.$VM_IP.nip.io/library/hello-app:1.0
-kubectl create deployment hello --image=registry.harbor.$VM_IP.nip.io/library/hello-app:1.0
+docker tag gcr.io/google-samples/hello-app:1.0 registry.harbor.$VM_IP.nip.io:$PORT/library/hello-app:1.0
+docker push registry.harbor.$VM_IP.nip.io:$PORT/library/hello-app:1.0
+kubectl create deployment hello --image=registry.harbor.$VM_IP.nip.io:$PORT/library/hello-app:1.0
 ```
 **Note**: If the cluster has been created using [kind](https://kind.sigs.k8s.io/docs/user/private-registries/), then it is also needed to upload the certificate as described here otherwise you will get a `x509: certificate signed by unknown authority`
 
 To pull/push images within the cluster, secret must be created and patched to the serviceaccount used
 ```bash
 kubectl -n default create secret docker-registry harbor-creds \
-    --docker-server=registry.harbor.$VM_IP.nip.io \
+    --docker-server=registry.harbor.$VM_IP.nip.io:$PORT \
     --docker-username=admin \
     --docker-password=Harbor12345
 kubectl patch serviceaccount default -n default -p '{"imagePullSecrets": [{"name": "harbor-creds"}]}'
