@@ -74,6 +74,13 @@ check_distro() {
   log "CYAN" "Detected Linux distribution: $DISTRO"
 }
 
+generate_ca_cert_data_yaml() {
+  if [ -n "$REGISTRY_CA_PATH" ]; then
+    echo "$newline  ca_cert_data: |$newline$(awk '{printf "      %s\n", $0}' < $CA_PATH)"
+  fi
+}
+
+
 KUBE_CFG_FILE=${1:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
@@ -90,6 +97,7 @@ REGISTRY_SERVER=${REGISTRY_SERVER:-docker.io}
 REGISTRY_OWNER=${REGISTRY_OWNER}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
+REGISTRY_CA_PATH=${REGISTRY_CA_PATH}
 
 TANZU_PIVNET_LEGACY_API_TOKEN=${TANZU_PIVNET_LEGACY_API_TOKEN}
 TANZU_REG_SERVER=${TANZU_REG_SERVER}
@@ -108,6 +116,8 @@ TANZU_CLI_VERSION="v0.11.4"
 
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
+
+newline=$'\n'
 
 # Check OS TYPE and/or linux distro
 check_os
@@ -193,7 +203,7 @@ mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd
 log "CYAN" "Install Cluster essentials (kapp, kbld, ytt, imgpkg)"
 log "CYAN" "Configure and run install.sh, which installs kapp-controller and secretgen-controller on your cluster"
 export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@$TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA
-export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
+export INSTALL_REGISTRY_HOSTNAME=$TANZU_REG_SERVER
 export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
 export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
 cd ./tanzu-cluster-essentials
@@ -268,12 +278,6 @@ tanzu package repository add tanzu-tap-repository \
 
 sleep 10s
 
-# TODO: Document the following step of the script to pass as parameter the secret and namespace to be used
-#log "CYAN" "Store the X509 certificate of the local registry"
-#X_509=$(kubectl get secret/cert-key -n infra -o=go-template='{{index .data "server.crt"}}' | base64 -d)
-#echo $X_509 > server.crt
-#X_509_ONELINE=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' server.crt)
-
 log "CYAN" "Install the Tanzu Application Platform profile: light"
 log "CYAN" "Create first the tap-values.yaml file to configure the profile .... .light"
 
@@ -288,8 +292,7 @@ buildservice:
   # Dockerhub has the form kp_default_repository: "my-dockerhub-user/build-service" or kp_default_repository: "index.docker.io/my-user/build-service"
   kp_default_repository: "$REGISTRY_SERVER/$REGISTRY_OWNER/build-service"
   kp_default_repository_username: "$REGISTRY_USERNAME"
-  kp_default_repository_password: "$REGISTRY_PASSWORD"
-  # ca_cert_data: $X_509_ONELINE
+  kp_default_repository_password: "$REGISTRY_PASSWORD"$(generate_ca_cert_data_yaml)
   tanzunet_username: "$TANZU_REG_USERNAME"
   tanzunet_password: "$TANZU_REG_PASSWORD"
 
