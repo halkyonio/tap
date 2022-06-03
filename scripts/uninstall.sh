@@ -54,19 +54,6 @@ rm $REMOTE_HOME_DIR/get_helm.sh
 rm $REMOTE_HOME_DIR/k9s
 rm $REMOTE_HOME_DIR/pivnet
 
-log "GREEN" "Delete the workload(s) created under the namespace: $NAMESPACE_TAP_DEMO"
-tanzu apps workload list -n $NAMESPACE_TAP_DEMO | awk '(NR>1)' | while read name app status age;
-do
-  if [[ $app != exit ]]; then
-    echo "Deleting the $name workload under $NAMESPACE_TAP_DEMO"
-    tanzu -n $NAMESPACE_TAP_DEMO apps workload delete $name --yes
-  fi
-done
-
-log "GREEN" "Delete the resources and the namespace: $NAMESPACE_TAP_DEMO"
-kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all -n $NAMESPACE_TAP_DEMO
-kubectl delete ns $NAMESPACE_TAP_DEMO
-
 log "GREEN" "Remove the TAP packages"
 while read -r package; do
   name=$(echo $package | jq -r '.name')
