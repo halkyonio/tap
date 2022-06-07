@@ -309,6 +309,8 @@ cat > tap-values.yml <<EOF
 profile: light
 ceip_policy_disclosed: true # Installation fails if this is set to 'false'
 
+shared:$(generate_ca_cert_data_yaml)
+
 cnrs:
   domain_name: "$VM_IP.nip.io"
 
@@ -319,8 +321,6 @@ buildservice:
   kp_default_repository_password: "$REGISTRY_PASSWORD"$(generate_ca_cert_data_yaml)
   tanzunet_username: "$TANZU_REG_USERNAME"
   tanzunet_password: "$TANZU_REG_PASSWORD"
-
-convention_controller:$(generate_ca_cert_data_yaml)
 
 supply_chain: basic
 
