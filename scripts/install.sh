@@ -320,7 +320,7 @@ buildservice:
   tanzunet_username: "$TANZU_REG_USERNAME"
   tanzunet_password: "$TANZU_REG_PASSWORD"
 
-conventions_controller:$(generate_ca_cert_data_yaml)
+convention_controller:$(generate_ca_cert_data_yaml)
 
 supply_chain: basic
 
