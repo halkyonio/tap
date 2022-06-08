@@ -7,6 +7,7 @@ Table of Contents
 * [Instructions](#instructions)
   * [Introduction](#introduction)
   * [How to install TAP](#how-to-install-tap)
+  * [Tanzu Client](#tanzu-client)
   * [How to remove TAP](#how-to-remove-tap)
   * [Review what it has been installed](#review-what-it-has-been-installed)
   * [Change TAP configuration](#change-tap-configuration)
@@ -136,6 +137,26 @@ ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
     TANZU_REG_USERNAME=<TANZU_REG_USERNAME> \
     TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD> \
     TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN> "bash -s" -- < ./install.sh
+```
+### Tanzu Client
+
+The Tanzu [client](https://network.tanzu.vmware.com/products/tanzu-application-platform/#/releases/1095326) can be installed locally on a machine
+having access to the k8s cluster running TAP using the pivnet tool.
+
+According to the TAP release that you would like to install, select the appropriate `product-file-id` and `release-version` from the 
+download page of the Tanzu Application Platform product/release - https://network.tanzu.vmware.com/products/tanzu-application-platform.
+
+Next, install the tool using by example the following instructions on a Mac machine. 
+
+**Note**: The instructions are equivalent on Linux except the TAR file to be downloaded !
+
+```bash
+pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.1.1' --product-file-id=1212837
+tar -vxf tanzu-framework-darwin-amd64.tar
+install cli/core/v0.11.4/tanzu-core-darwin_amd64 /usr/local/bin/tanzu
+export TANZU_CLI_NO_INIT=true
+tanzu plugin install --local cli all
+tanzu plugin list
 ```
 
 ### How to remove TAP
