@@ -19,7 +19,7 @@
 # - TANZU_REG_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - TANZU_REG_PASSWORD: password to be used to be authenticated against the Tanzu image registry
 # - COPY_PACKAGES: Copy package image bundles from Tanzu to your favorite image registries
-#
+# - REGISTRY_CA_PATH: Path of the CA certificate used by the local private container registry
 
 set -e
 
@@ -291,8 +291,10 @@ if [[ "$COPY_PACKAGES" == "true" ]]; then
 
   log "CYAN" "Relocate the repository image bundle from Tanzu to ghcr.io"
   echo " imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
-  imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
-            --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
+  imgpkg copy \
+      --concurrency 1 \
+      -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
+      --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
 fi
 
 log "CYAN" "Deploy the TAP package repository"
