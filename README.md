@@ -248,33 +248,11 @@ is not passed as parameter. See [issue-16](https://github.com/halkyonio/tap/issu
 
 This problem must be fixed manually (till someone will find how to patch the TektonTask !)
 ```bash
-apiVersion: tekton.dev/v1beta1
-kind: ClusterTask
-metadata:
-  name: image-writer
-spec:
-  ...
-  steps:
-  - image: registry.harbor.10.0.77.176.nip.io:32443/tap/tap-packages@sha256:e5e961933dfc7406d708c88b3226d7fe79266a58b75e2de93ca640ccd310f78d
-    name: main
-    resources: {}
-    script: |-
-      #!/usr/bin/env bash
-
-      set -o errexit
-      set -o xtrace
-
-      cd `mktemp -d`
-
-      echo -e "$(params.files)" | base64 --decode > files.json
-      eval "$(cat files.json | jq -r 'to_entries | .[] | @sh "mkdir -p $(dirname \(.key)) && echo \(.value) > \(.key)"')"
-
-      mkdir -p .imgpkg
-
-      echo -e "---\napiVersion: imgpkg.carvel.dev/v1alpha1\nkind: ImagesLock" > ./.imgpkg/images.yml
-
-      export IMGPKG_ENABLE_IAAS_AUTH=false
-      imgpkg push --registry-verify-certs='False' -b $(params.bundle) -f . <<<<<<<<<<<<<<<< HERE
+kubectl patch pkgi ootb-templates -n tap-install -p '{"spec":{"paused":true}}' --type=merge
+kubectl edit ClusterTask/image-writer
+and change the following line to pass --registry-verify-certs='False'
+...
+      imgpkg push --registry-verify-certs='False' -b $(params.bundle) -f .
       cat ./.imgpkg/images.yml
     securityContext:
       runAsUser: 0
