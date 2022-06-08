@@ -248,6 +248,7 @@ is not passed as parameter. See [issue-16](https://github.com/halkyonio/tap/issu
 
 This problem must be fixed manually (till someone will find how to patch the TektonTask !)
 ```bash
+kubectl patch pkgi tap -n tap-install -p '{"spec":{"paused":true}}' --type=merge
 kubectl patch pkgi ootb-templates -n tap-install -p '{"spec":{"paused":true}}' --type=merge
 kubectl edit ClusterTask/image-writer
 and change the following line to pass --registry-verify-certs='False'
