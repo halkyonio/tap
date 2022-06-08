@@ -8,9 +8,9 @@ Table of Contents
   * [Introduction](#introduction)
   * [How to install TAP](#how-to-install-tap)
   * [Tanzu Client](#tanzu-client)
-  * [How to remove TAP](#how-to-remove-tap)
-  * [Review what it has been installed](#review-what-it-has-been-installed)
-  * [Change TAP configuration](#change-tap-configuration)
+* [How to remove TAP](#how-to-remove-tap)
+* [Review what it has been installed](#review-what-it-has-been-installed)
+* [Change TAP configuration](#change-tap-configuration)
 * [Demo](#demo)
 * [Clean](#clean)
 * [Tanzu community Edition](#tanzu-community-edition)
@@ -57,35 +57,33 @@ TL&DR; It is needed to:
 - Have a [Tanzu account](https://network.tanzu.vmware.com/) to download the software or access the [Tanzu registry](registry.tanzu.vmware.com),
 - Accept the needed [EULA](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#eulas)
 - Access a k8s cluster >= 1.21 with Cluster Admin Role and kubectl installed
-- Have a Linux VM machine with 8 CPUs and 8 GB or RAM
+- Have a Linux VM machine with at least 8 CPUs, 8 GB of RAM and 100Gb (if you plan to use locally a container registry)
+- 
 
 ## Instructions
 
 ### Introduction
 
-The instructions of the official [guide](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-intro.html) have been executed without problem.
+The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html) have been executed without problem
+to install the release [1.1.1](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-release-notes.html).
 
-**WARNING**: As the TAP release `1.0` do not support to build/push an image using a local container registry (as we cannot inject a self-signed CA certificate),
-then it is needed to use an external repository (ghcr.io, docker.io) !
+To simplify your life, we have designed a [bash script](scripts/install.sh) which allow to install the different bits in a VM:
 
-To simplify your life, we have designed a [bash script](scripts/install.sh) which allow to install the following software:
-
-1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Tools & Controllers)
-
-   - [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins
+1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Carvel Tools & 2 Kubernetes controllers)
    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
    - [Kapp controller](https://carvel.dev/kapp-controller/),
    - [Secretgen controller](https://github.com/vmware-tanzu/carvel-secretgen-controller)
-2. Repository
+2. [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins (package, application, secret, etc)
+3. TAP Repository
 
    A repository is an image bundle containing different K8s manifests, templates, files able to install/configure the TAP packages.
    Such a repository are managed using the Tanzu command `tanzu package repository ...`
-3. TAP Packages
+4. TAP Packages
 
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
    They are managed using the following command `tanzu package installed ...`
 
-**NOTE**: Some additional tools are installed within the VM by our [install.sh](scripts/install.sh) bash script such as: unzip, k9s and pivnet !
+**NOTE**: Some additional tools are installed within the VM by our [install.sh](scripts/install.sh) bash script such as: unzip, k9s, helm, kubectl krew, pivnet, etc !
 
 ### How to install TAP
 
