@@ -13,11 +13,10 @@ Table of Contents
 
 ### Prerequisites
 
-- TAP 1.0.1 installed
-- [Tanzu client](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#tanzu-cli-clean-install) (>= v0.11) is available
+- TAP 1.x installed
+- [Tanzu client](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-install-tanzu-cli.html#cli-and-plugin) (>= v0.11) is available
 - Some kubernetes tools such as [kubernetes tree](https://github.com/ahmetb/kubectl-tree)
-- Have a kube config file configured to access the Kubernetes cluster hosting TAP 1.0.1
-- Have a secret created with the registry credentials and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
+- Have a secret created with the [registry credentials](scripts/populate_namespace_tap.sh) and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
 - Import the config of the kubernetes cluster using the file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools
 
 ### Demo 1: Tanzu Java Web
