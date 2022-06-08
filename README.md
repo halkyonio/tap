@@ -7,6 +7,7 @@ Table of Contents
 * [Instructions](#instructions)
   * [Introduction](#introduction)
   * [How to install TAP](#how-to-install-tap)
+  * [Using a private registry](#using-a-private-registry)
   * [Tanzu Client](#tanzu-client)
 * [How to remove TAP](#how-to-remove-tap)
 * [Review what it has been installed](#review-what-it-has-been-installed)
@@ -113,12 +114,6 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 to your registry from VMware Tanzu Network registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
 as the images will be copied using `imgpkg tool`.
 
-The TAP packages can also be installed manually using the following commands:
-```bash
-imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.1.1 --to-tar packages.tar
-imgpkg copy --tar packages.tar --to-repo registry.harbor.<VM_IP>.nip.io:<PORT>/tap/tap-packages
-```
-
 Execute now the bash script
 
 ```bash
@@ -165,6 +160,124 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     TANZU_PIVNET_LEGACY_API_TOKEN="<TANZU_PIVNET_LEGACY_API_TOKEN>" \
     COPY_PACKAGES="false" \
     "bash -s" -- < ./scripts/install.sh
+```
+
+### Using a private registry
+
+As mentioned within the previous section, when we plan to use a [private local registry](harbor.md), some additional steps are required such as:
+
+1. Copy the TAP packages - images to the registry
+
+```bash
+imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.1.1 --to-tar packages.tar
+imgpkg copy --tar packages.tar --to-repo registry.harbor.<VM_IP>.nip.io:<PORT>/tap/tap-packages
+```
+2. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script
+```bash
+curl -k https://registry.harbor.<VM_IP>.nip.io:<PORT>/api/v2.0/systeminfo/getcert > $TEMP_DIR/ca.crt
+...
+   REGISTRY_CA_PATH="$TEMP_DIR/ca.crt" \
+```
+3. Set the TAP `shared` top level key top of the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-install.html#identify-the-values-for-your-package-5))
+```bash
+shared:
+  ca_cert_data: |
+      -----BEGIN CERTIFICATE-----
+      MIIDFDCCAfygAwIBAgIRAJqAGNrteyM97HLF2i1OhpQwDQYJKoZIhvcNAQELBQAw
+      FDESMBAGA1UEAxMJaGFyYm9yLWNhMB4XDTIyMDYwMzEwMDc1M1oXDTIzMDYwMzEw
+      ...
+      H1H7yyFbxeaRK33ctKxXq2FzEYePYQ0BdTw36O8/R5CXwTMYvbG+kRMmNlRNHhD7
+      82elfYZx4DxrWcap2uqrvrR8A8jnV5oa/sBoqcY6U1rIXG2mkVXvuvihOjIm8wHy
+      8dHt3pESuqbOo2aDt9uP77sBIjho0JBT
+      -----END CERTIFICATE-----
+...      
+```
+4. Configure also the `ca_cert_data` parameter for the package `buildservice` within the `tap-values.yaml` file
+```bash
+buildservice:
+  kp_default_repository: "registry.harbor.10.0.77.176.nip.io:32443/tap/build-service"
+  kp_default_repository_username: "admin"
+  kp_default_repository_password: "Harbor12345"
+  ca_cert_data: |
+      -----BEGIN CERTIFICATE-----
+      MIIDFDCCAfygAwIBAgIRAJqAGNrteyM97HLF2i1OhpQwDQYJKoZIhvcNAQELBQAw
+      FDESMBAGA1UEAxMJaGFyYm9yLWNhMB4XDTIyMDYwMzEwMDc1M1oXDTIzMDYwMzEw
+      MDc1M1owFDESMBAGA1UEAxMJaGFyYm9yLWNhMIIBIjANBgkqhkiG9w0BAQEFAAOC
+      ...
+      Nf7e6cd9MNVDfCpj/E37NtvhwTzumbccyapRHOWg6Bg2io4/Bjee4qmmuNegxWCs
+      H1H7yyFbxeaRK33ctKxXq2FzEYePYQ0BdTw36O8/R5CXwTMYvbG+kRMmNlRNHhD7
+      82elfYZx4DxrWcap2uqrvrR8A8jnV5oa/sBoqcY6U1rIXG2mkVXvuvihOjIm8wHy
+      8dHt3pESuqbOo2aDt9uP77sBIjho0JBT
+      -----END CERTIFICATE-----
+```
+
+**REMARK**
+The steps 2. and 3. are managed by our `install.sh` script !
+
+**WARNING**
+
+Unfortunately, some problems still exist using TAP 1.1.1 as the `kapp controller configmap` must be [patched manually](https://github.com/halkyonio/tap/issues/18) using the commands
+to pass the CA certificate of the private registry
+```bash
+configMap='
+data:
+  caCerts: |
+      -----BEGIN CERTIFICATE-----
+      MIIDFDCCAfygAwIBAgIRAJqAGNrteyM97HLF2i1OhpQwDQYJKoZIhvcNAQELBQAw
+      FDESMBAGA1UEAxMJaGFyYm9yLWNhMB4XDTIyMDYwMzEwMDc1M1oXDTIzMDYwMzEw
+      MDc1M1owFDESMBAGA1UEAxMJaGFyYm9yLWNhMIIBIjANBgkqhkiG9w0BAQEFAAOC
+      ...
+      Nf7e6cd9MNVDfCpj/E37NtvhwTzumbccyapRHOWg6Bg2io4/Bjee4qmmuNegxWCs
+      H1H7yyFbxeaRK33ctKxXq2FzEYePYQ0BdTw36O8/R5CXwTMYvbG+kRMmNlRNHhD7
+      82elfYZx4DxrWcap2uqrvrR8A8jnV5oa/sBoqcY6U1rIXG2mkVXvuvihOjIm8wHy
+      8dHt3pESuqbOo2aDt9uP77sBIjho0JBT
+      -----END CERTIFICATE-----
+  dangerousSkipTLSVerify: ""
+  httpProxy: ""
+  httpsProxy: ""
+  noProxy: ""
+'
+kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
+kubectl rollout restart deployment/kapp-controller -n kapp-controller
+```
+Remark: Such a patching is done part of our `install.sh` script !
+
+The Tekton `ClusterTask/image-writer` which is executed by the supply-chain `config-writer` when the image of the bundle is pushed to the registry
+fails as the command `imgpkg copy -b <bundle>` will get a `x509: Certificate signed by unknow authority ...` as the private CA certificate 
+is not passed as parameter. See [issue-16](https://github.com/halkyonio/tap/issues/16).
+
+This problem must be fixed manually (till someone will find how to patch the TektonTask !)
+```bash
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  name: image-writer
+spec:
+  ...
+  steps:
+  - image: registry.harbor.10.0.77.176.nip.io:32443/tap/tap-packages@sha256:e5e961933dfc7406d708c88b3226d7fe79266a58b75e2de93ca640ccd310f78d
+    name: main
+    resources: {}
+    script: |-
+      #!/usr/bin/env bash
+
+      set -o errexit
+      set -o xtrace
+
+      cd `mktemp -d`
+
+      echo -e "$(params.files)" | base64 --decode > files.json
+      eval "$(cat files.json | jq -r 'to_entries | .[] | @sh "mkdir -p $(dirname \(.key)) && echo \(.value) > \(.key)"')"
+
+      mkdir -p .imgpkg
+
+      echo -e "---\napiVersion: imgpkg.carvel.dev/v1alpha1\nkind: ImagesLock" > ./.imgpkg/images.yml
+
+      export IMGPKG_ENABLE_IAAS_AUTH=false
+      imgpkg push --registry-verify-certs='False' -b $(params.bundle) -f . <<<<<<<<<<<<<<<< HERE
+      cat ./.imgpkg/images.yml
+    securityContext:
+      runAsUser: 0
 ```
 
 ### Tanzu Client
