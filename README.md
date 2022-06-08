@@ -58,7 +58,7 @@ TL&DR; It is needed to:
 - Accept the needed [EULA](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#eulas)
 - Access a k8s cluster >= 1.21 with Cluster Admin Role and kubectl installed
 - Have a Linux VM machine with at least 8 CPUs, 8 GB of RAM and 100Gb (if you plan to use locally a container registry)
-- 
+- Private container registry such as [Harbor](harbor.md) (optional) exposed using a NodePort on the cluster (e.g: registry.harbor.VM_IP.nip.io:32443)
 
 ## Instructions
 
@@ -67,7 +67,7 @@ TL&DR; It is needed to:
 The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html) have been executed without problem
 to install the release [1.1.1](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-release-notes.html).
 
-To simplify your life, we have designed a [bash script](scripts/install.sh) which allow to install the different bits in a VM:
+To simplify your life, we have designed a [bash script](scripts/install.sh) which allows to install the different bits in a VM:
 
 1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Carvel Tools & 2 Kubernetes controllers)
    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
@@ -87,21 +87,20 @@ To simplify your life, we have designed a [bash script](scripts/install.sh) whic
 
 ### How to install TAP
 
-To install TAP, it is needed to have access to a Linux VM (locally or remotely) where a Kubernetes cluster has been deployed (version >= 1.20).
-The VM should have least 8GB of RAM and 8 CPU.
+To install TAP, execute the [install.sh](scripts/install.sh) bash script locally or remotely (ssh) and configure the following parameters:
 
-As different images will be pulled, pushed to an images registry, then it is needed to configure the credentials to access it like also the Tanzu registry server
-using the following variables of the [install.sh](scripts/install.sh) bash script:
-
-- **REGISTRY_SERVER**: registry DNS name (docker.io, ghcr.io, quay.io,...)
-- **REGISTRY_OWNER**: docker username, ghcr.io ORG owner
-- **REGISTRY_USERNAME**: username to be used to log on the registry
-- **REGISTRY_PASSWORD**: password to be used to log on the registry
+- **REGISTRY_SERVER**: registry DNS name (docker.io, ghcr.io, quay.io, registry.harbor.<VM_IP>.nip.io:<PORT>)
+- **REGISTRY_OWNER**: docker user account, ghcr.io ORG owner, container project (e.g: tap - `registry.harbor.<VM_IP>.nip.io:<PORT>/tap`)
+- **REGISTRY_USERNAME**: username to be used to log on to the registry
+- **REGISTRY_PASSWORD**: password to be used to log on to the registry
+- **REGISTRY_CA_PATH**: Path of the CA certificate used your container registry (optional)
 - **TANZU_REG_SERVER**: Tanzu registry from where packages, images can be pulled (e.g: registry.tanzu.vmware.com)
-- **TANZU_REG_USERNAME**: user to be used to be authenticated against the Tanzu images registry
-- **TANZU_REG_PASSWORD**: password to be used to be authenticated against the Tanzu images registry
+- **TANZU_REG_USERNAME**: user to be used to be authenticated against the Tanzu registry
+- **TANZU_REG_PASSWORD**: password to be used to be authenticated against the Tanzu registry
 
-Remark: As the script will download the TAP packages, repository using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then you must also configure the following variable:
+As the script will download different `products` from the https://network.tanzu.vmware.com/ server 
+using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then this is why must also configure the following variable
+and have a [Tanzu network account like an API account](https://tanzu.vmware.com/developer/guides/tanzu-network-gs/):
 
 - **TANZU_PIVNET_LEGACY_API_TOKEN**: Token used by pivnet CLI to login to the Tanzu products website
 
@@ -110,9 +109,17 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
 - **VM_IP**: IP address of the VM where the cluster is running
 
-**IMPORTANT**: Set the following `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP as images will be copied from the Tanzu registry to your own container registry
+**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-install.html#relocate-images-to-a-registry-0) 
+to your registry from VMware Tanzu Network registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
+as the images will be copied using `imgpkg tool`.
 
-Execute the bash script
+The TAP packages can also be installed manually using the following commands:
+```bash
+imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.1.1 --to-tar packages.tar
+imgpkg copy --tar packages.tar --to-repo registry.harbor.<VM_IP>.nip.io:<PORT>/tap/tap-packages
+```
+
+Execute now the bash script
 
 ```bash
 REMOTE_HOME_DIR=<REMOTE_HOME_PATH>
@@ -121,21 +128,45 @@ REGISTRY_SERVER=<REGISTRY_SERVER>
 REGISTRY_OWNER=<REGISTRY_OWNER>
 REGISTRY_USERNAME=<REGISTRY_USERNAME>
 REGISTRY_PASSWORD=<REGISTRY_PASSWORD>
+REGISTRY_CA_PATH=<REGISTRY_CA_PATH>
 TANZU_REG_USERNAME=<TANZU_REG_USERNAME>
 TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD>
 TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN>
-./install.sh
+COPY_PACKAGES="false"
+./scripts/install.sh
 
-ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
+ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
+    REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
     VM_IP=<VM_IP> \
     REGISTRY_SERVER=<REGISTRY_SERVER> \
     REGISTRY_OWNER=<REGISTRY_OWNER> \
     REGISTRY_USERNAME=<REGISTRY_USERNAME> \
     REGISTRY_PASSWORD=<REGISTRY_PASSWORD> \
+    REGISTRY_CA_PATH=<REGISTRY_CA_PATH> \
     TANZU_REG_USERNAME=<TANZU_REG_USERNAME> \
     TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD> \
-    TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN> "bash -s" -- < ./install.sh
+    TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN> \
+    COPY_PACKAGES="false" \
+    "bash -s" -- < ./scripts/install.sh
 ```
+Example of configuration where a local container registry is used:
+```bash
+ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
+    REMOTE_HOME_DIR="/home/snowdrop" \
+    VM_IP="10.0.77.176" \
+    REGISTRY_SERVER="registry.harbor.10.0.77.176.nip.io:32443" \
+    REGISTRY_OWNER="tap" \
+    REGISTRY_USERNAME="admin" \
+    REGISTRY_PASSWORD="Harbor12345" \
+    REGISTRY_CA_PATH="/home/snowdrop/tmp/harbor/ca.crt" \
+    TANZU_REG_SERVER="registry.tanzu.vmware.com" \
+    TANZU_REG_USERNAME="<TANZU_REG_USERNAME>" \
+    TANZU_REG_PASSWORD="<TANZU_REG_USERNAME" \
+    TANZU_PIVNET_LEGACY_API_TOKEN="<TANZU_PIVNET_LEGACY_API_TOKEN>" \
+    COPY_PACKAGES="false" \
+    "bash -s" -- < ./scripts/install.sh
+```
+
 ### Tanzu Client
 
 The Tanzu [client](https://network.tanzu.vmware.com/products/tanzu-application-platform/#/releases/1095326) can be installed locally on a machine
