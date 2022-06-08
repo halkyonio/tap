@@ -216,7 +216,7 @@ The steps 2. and 3. are managed by our `install.sh` script !
 
 **WARNING**
 
-Unfortunately, some problems still exist using TAP 1.1.1 as the `kapp controller configmap` must be [patched manually](https://github.com/halkyonio/tap/issues/18) using the commands
+Unfortunately, some problems still exist using TAP 1.1.1 as the `kapp controller configmap` must be patched manually - see [issue-18](https://github.com/halkyonio/tap/issues/18) using the commands
 to pass the CA certificate of the private registry
 ```bash
 configMap='
