@@ -178,7 +178,7 @@ curl -k https://registry.harbor.<VM_IP>.nip.io:<PORT>/api/v2.0/systeminfo/getcer
 ...
    REGISTRY_CA_PATH="$TEMP_DIR/ca.crt" \
 ```
-3. Set the TAP `shared` top level key top of the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-install.html#identify-the-values-for-your-package-5))
+3. Set the TAP `shared` top level key of the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-install.html#identify-the-values-for-your-package-5))
 ```bash
 shared:
   ca_cert_data: |
