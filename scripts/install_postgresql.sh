@@ -67,23 +67,26 @@ if [[ -d "$HOME/postgresql" ]]; then
 else
   log "CYAN" "Helm pulling"
   helm pull oci://registry.pivotal.io/tanzu-sql-postgres/postgres-operator-chart --version v$POSTGRESQL_VERSION --untar --untardir $HOME/postgresql
-  log "CYAN" "Install the tanzu postgresql chart"
-  helm install tanzu-postgresql $HOME/postgresql/postgres-operator --namespace $NAMESPACE --wait
+  log "CYAN" "Install the tanzu postgresql operator within the namespace db using helm"
+  kubectl create ns db
+  helm install tanzu-postgresql $HOME/postgresql/postgres-operator -n db --wait
 fi
 
 log "CYAN" "Create the secret to allow to pull images from pivotal registry within the $NAMESPACE"
-kubectl -n $NAMESPACE create secret docker-registry regsecret \
+kubectl create secret docker-registry regsecret \
   --docker-server=$REGISTRY_SERVER \
   --docker-username=$REGISTRY_USERNAME \
-  --docker-password=$REGISTRY_PASSWORD
+  --docker-password=$REGISTRY_PASSWORD \
+  -n $NAMESPACE
 
-log "CYAN" "Create an instance of the postgres DB"
+log "CYAN" "Create an instance of the postgres DB within the namespace: $NAMESPACE"
 cat << 'EOF' | kubectl apply -n $NAMESPACE -f -
 apiVersion: sql.tanzu.vmware.com/v1
 kind: Postgres
 metadata:
   name: postgres-db
 spec:
+  storageClassName: local-path
   storageSize: 800M
   cpu: "0.8"
   memory: 800Mi
@@ -112,11 +115,6 @@ spec:
     name: postgres-14 # View available versions with `kubectl get postgresversion`
   serviceType: ClusterIP
   monitorPodConfig:
-#    tolerations:
-#      - key:
-#        operator:
-#        value:
-#        effect:
     affinity:
       podAntiAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
@@ -135,11 +133,6 @@ spec:
               topologyKey: kubernetes.io/hostname
             weight: 100
   dataPodConfig:
-#   tolerations:
-#      - key:
-#        operator:
-#        value:
-#        effect:
     affinity:
       podAntiAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
@@ -157,12 +150,6 @@ spec:
                       - postgres-db
               topologyKey: kubernetes.io/hostname
             weight: 100
-#  highAvailability:
-#    enabled: true
-#  logLevel: Debug
-#  backupLocation:
-#    name: backuplocation-sample
-#  certificateSecretName:
 EOF
 
 log "CYAN" "Create the RBAC to allow the resource claim to access the resources of the DB"
@@ -218,19 +205,4 @@ spec:
     group: $POSTGRES_API_GROUP
     kind: $POSTGRES_KIND
 EOF
-
-#log "CYAN" "Deploying the resource claim"
-#cat <<EOF | kubectl apply -f -
-#apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-#kind: ResourceClaim
-#metadata:
-#  name: quarkus-app
-#  namespace: tap-demo
-#spec:
-#  ref:
-#    apiVersion: $POSTGRES_API_GROUP/$POSTGRES_API_VERSION
-#    kind: $POSTGRES_KIND
-#    name: postgres-db
-#    namespace: tap-demo
-#EOF
 
