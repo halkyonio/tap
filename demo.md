@@ -190,6 +190,11 @@ imgpkg pull --registry-verify-certs=false \
   -b registry.harbor.10.0.77.176.nip.io:32443/tap/spring-tap-petclinic-demo-3-bundle:26302cbb-6ab7-4c5a-a4ef-ac20caeeedc7 \
   -o _temp/sb
 ```
+- Cleanup
+
+```bash
+tanzu apps workload -n demo-3 delete $APP
+```
 
 ### Demo 4: Quarkus App + DB
 
