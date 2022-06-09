@@ -1,3 +1,7 @@
+# Introduction
+
+**NOTE**: This file contains commands that I'm personally using against a private internal VM
+
 # Setup K8S Config locally on the Developer machine to access VM
 
 konfig import -p -s _temp/config.yml
@@ -5,19 +9,19 @@ kubectx kubernetes-admin@kubernetes
 
 # SSH to the VM
 pass-team
-CLOUD=openstack && VM=k121-centos8-01 && ssh-vm $CLOUD $VM
+CLOUD=openstack && VM=k123-fedora35-01 && ssh-vm $CLOUD $VM
 
 ## Open UI & Get Tokens
 
 alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --incognito"
 
-VM_IP=10.0.76.43
+VM_IP=10.0.77.176
 chrome http://tap-gui.$VM_IP.nip.io/
 chrome http://k8s-ui.$VM_IP.nip.io/
 // Tilt
 chrome http://localhost:10350/
 
-# Install kubeapps and get the Kubeapps token
+# Install kubeapps and get the Kubeapps token (optional)
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm uninstall kubeapps -n kubeapps
 cat <<EOF > ./tanzu/kubeapps-values.yml
@@ -85,7 +89,7 @@ k8s + tanzu client + tanzu cluster essentials + tilt (optional)
 tanzu plugin list
 
 vim .
-tanzu package install tap -p tap.tanzu.vmware.com -v 1.0.2
+tanzu package install tap -p tap.tanzu.vmware.com -v 1.1.1
 tanzu package available list -A
 tanzu package installed list -A
 
@@ -99,59 +103,78 @@ kubectl get secret $(kubectl get sa/kubernetes-dashboard -n kubernetes-dashboard
 
 # Demo 1
 
-./scripts/populate_namespace_tap.sh tap-demo-1
-Open VScode, present, do some changes and access the Spring Boot app
+./scripts/populate_namespace_tap.sh demo-1
 
-tanzu apps -n tap-demo-1 workload get tanzu-java-web-app
+- Open VScode, explain Tilt/Extension
+- Next import the project
+- Configure the Tanzu extension to push the code source to the repo: ghcr.io/halkyonio/tap/tanzu-java-web-app-source
+- Change the Tilt file
+  ```text
+  SOURCE_IMAGE = os.getenv("SOURCE_IMAGE", default='ghcr.io/halkyonio/tap/tanzu-java-web-app-source')
+  NAMESPACE = os.getenv("NAMESPACE", default='demo-1')
+  ...
+  allow_k8s_contexts('kubernetes-admin@kubernetes')
+  ```
+- Launch `Tanzu: Live Update start`  
+- Do some changes and access the Spring Boot app locally or remotely
+
+tanzu apps -n demo-1 workload get tanzu-java-web-app
 
 chrome http://localhost:8080
-chrome http://tanzu-java-web-app.tap-demo-1.$VM_IP.nip.io
+chrome http://tanzu-java-web-app.demo-1.$VM_IP.nip.io
 
 # Demo 2
 
-./scripts/populate_namespace_tap.sh tap-demo-2
+./scripts/populate_namespace_tap.sh demo-2
+
 PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
-tanzu apps workload create $APP \
+tanzu apps workload create $APP
+   --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
+   --annotation "autoscaling.knative.dev/minScale=1" \
    --git-repo https://github.com/halkyonio/$APP.git \
    --git-branch main  \
    --type web \
    --label app.kubernetes.io/part-of=$APP \
-   -n tap-demo-2 \
+   -n demo-2 \
    -y
 
-tanzu apps -n tap-demo-2 workload tail $APP --since 1m --timestamp
-tanzu apps -n tap-demo-2 workload get $APP
-kc get -n tap-demo-2 workload $APP -o yaml
-ktree -n tap-demo-2 workload $APP
+tanzu apps -n demo-2 workload tail $APP --since 1m --timestamp
+tanzu apps -n demo-2 workload get $APP
+kc get -n demo-2 workload $APP -o yaml
+ktree -n demo-2 workload $APP
 
-chrome http://spring-tap-petclinic.tap-demo-2.$VM_IP.nip.io
+chrome http://spring-tap-petclinic.demo-2.$VM_IP.nip.io
 and show tap-ui + app live view
 
-tanzu apps -n tap-demo-2 workload delete $APP
+tanzu apps -n demo-2 workload delete $APP
 
 # Demo 3
 
 ! Use the bash script to install PostgreSQL - install_postgresql.sh
 
-./scripts/populate_namespace_tap.sh tap-demo-3
+./scripts/populate_namespace_tap.sh demo-3
+./scripts/install_postgresql.sh demo-3
 
 tanzu service instance list -owide -A
 
-PROJECT=$HOME/code/tanzu/tap/spring-tap-petclinic
+PROJECT=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
 tanzu apps workload create $APP \
-     -n tap-demo-3 \
-     -f $PROJECT/config/workload.yaml \
+     -n demo-3 \
+     -f $PROJECT/$APP/config/workload.yaml \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
-     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:tap-demo-3:postgres-db"
+     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:demo-3:postgres-db"
 
-tanzu apps -n tap-demo-3 workload get $APP
-kc get -n tap-demo-3 workload $APP -o yaml
-tanzu apps -n tap-demo-3 workload tail $APP --since 60m --timestamp
-kubectl get pod -l "app=spring-tap-petclinic-00002" -n tap-demo-3 -o yaml | grep -A 4 volume
+tanzu apps -n demo-3 workload get $APP
+kc get -n demo-3 workload $APP -o yaml
+tanzu apps -n demo-3 workload tail $APP --since 60m --timestamp
+kubectl get pod -l "app=spring-tap-petclinic-00002" -n demo-3 -o yaml | grep -A 4 volume
+
+IMG_SHA=$(k get deliverable/spring-tap-petclinic -n demo-3 -o jsonpath='{.spec.source.image}')
+imgpkg pull -b registry.harbor.10.0.77.176.nip.io:32443/tap/spring-tap-petclinic-demo-3-bundle:26302cbb-6ab7-4c5a-a4ef-ac20caeeedc7 -o _temp/sb --registry-verify-certs=false
 
 ## Optional - Get the K8S CA CERT to trust it for Google Chrome ==> "thisisunsafe"
 
