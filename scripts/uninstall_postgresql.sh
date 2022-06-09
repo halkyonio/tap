@@ -46,11 +46,6 @@ kubectl -n $NAMESPACE_DEMO delete secret regsecret --ignore-not-found
 log "YELLOW" "Delete the postgresql instance"
 kubectl delete Postgres/postgres-db -n $NAMESPACE_DEMO --ignore-not-found
 
-log "YELLOW" "Delete the PV100, PV101"
-kubectl delete pv/pv100 --ignore-not-found
-kubectl delete pv/pv101 --ignore-not-found
-kubectl delete sc/standard --ignore-not-found
-
 log "YELLOW" "Uninstalling the Helm chart of postgresql"
 helm uninstall tanzu-postgresql -n $NAMESPACE_DEMO
 if [ $? -eq 0 ]; then
@@ -61,8 +56,6 @@ fi
 
 log "YELLOW" "Removing the installation folder of posgresql & pv100, pv101"
 rm -rf $HOME/postgresql
-sudo rm -rf /tmp/pv100
-sudo rm -rf /tmp/pv101
 
 log "YELLOW" "Removing RBAC"
 kubectl delete ClusterRoleBinding/postgres-operator-cluster-role-binding

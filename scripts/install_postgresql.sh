@@ -11,7 +11,7 @@
 # - REGISTRY_SERVER: Tanzu image registry hostname
 # - REGISTRY_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - REGISTRY_PASSWORD: password to be used to be authenticated against the Tanzu image registry
-# - NAMESPACE_DEMO: Namespace where the postgresql instance should be created
+# - NAMESPACE: Namespace where the postgresql instance should be created
 
 set -e
 
@@ -45,7 +45,7 @@ REGISTRY_SERVER=${REGISTRY_SERVER:-registry.pivotal.io}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
-NAMESPACE_DEMO=${NAMESPACE_DEMO:-tap-demo}
+NAMESPACE=${NAMESPACE:-tap-demo}
 
 POSTGRESQL_VERSION=1.5.0
 POSTGRES_API_GROUP=sql.tanzu.vmware.com
@@ -62,62 +62,23 @@ helm registry login $REGISTRY_SERVER \
        --username=$REGISTRY_USERNAME \
        --password=$REGISTRY_PASSWORD
 
-helm pull oci://registry.pivotal.io/tanzu-sql-postgres/postgres-operator-chart --version v$POSTGRESQL_VERSION --untar --untardir ./postgresql
+if [[ -d "$HOME/postgresql" ]]; then
+  echo "$HOME/postgresql already exists on the machine."
+else
+  log "CYAN" "Helm pulling"
+  helm pull oci://registry.pivotal.io/tanzu-sql-postgres/postgres-operator-chart --version v$POSTGRESQL_VERSION --untar --untardir $HOME/postgresql
+  log "CYAN" "Install the tanzu postgresql chart"
+  helm install tanzu-postgresql $HOME/postgresql/postgres-operator --namespace $NAMESPACE --wait
+fi
 
-log "CYAN" "Create the secret to allow to pull images from pivotal registry within the $NAMESPACE_DEMO"
-kubectl -n $NAMESPACE_DEMO create secret docker-registry regsecret --docker-server=$REGISTRY_SERVER --docker-username=$REGISTRY_USERNAME --docker-password=$REGISTRY_PASSWORD
-
-log "CYAN" "Install the tanzu postgresql chart"
-helm install tanzu-postgresql ./postgresql/postgres-operator --namespace $NAMESPACE_DEMO --wait
-
-log "CYAN" "Create the kubernetes storageclass and needed PV"
-cat << 'EOF' | kubectl apply -f -
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: standard
-provisioner: kubernetes.io/no-provisioner
-volumeBindingMode: WaitForFirstConsumer
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: pv100
-spec:
-  storageClassName: standard
-  accessModes:
-  - ReadWriteOnce
-  capacity:
-    storage: 1Gi
-  hostPath:
-    path: /tmp/pv100
-    type: ""
-  persistentVolumeReclaimPolicy: Recycle
-  volumeMode: Filesystem
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: pv101
-spec:
-  storageClassName: standard
-  accessModes:
-  - ReadWriteOnce
-  capacity:
-    storage: 1Gi
-  hostPath:
-    path: /tmp/pv101
-    type: ""
-  persistentVolumeReclaimPolicy: Recycle
-  volumeMode: Filesystem
-EOF
-
-log "CYAN" "Change the permissions to 777 for the PV"
-sudo mkdir -p /tmp/pv100 && sudo chmod -R 777 /tmp/pv100
-sudo mkdir -p /tmp/pv101 && sudo chmod -R 777 /tmp/pv101
+log "CYAN" "Create the secret to allow to pull images from pivotal registry within the $NAMESPACE"
+kubectl -n $NAMESPACE create secret docker-registry regsecret \
+  --docker-server=$REGISTRY_SERVER \
+  --docker-username=$REGISTRY_USERNAME \
+  --docker-password=$REGISTRY_PASSWORD
 
 log "CYAN" "Create an instance of the postgres DB"
-cat << 'EOF' | kubectl apply -n $NAMESPACE_DEMO -f -
+cat << 'EOF' | kubectl apply -n $NAMESPACE -f -
 apiVersion: sql.tanzu.vmware.com/v1
 kind: Postgres
 metadata:
@@ -126,7 +87,7 @@ spec:
   storageSize: 800M
   cpu: "0.8"
   memory: 800Mi
-  monitorStorageClassName: standard
+  monitorStorageClassName: local-path
   monitorStorageSize: 1G
   resources:
     monitor:
