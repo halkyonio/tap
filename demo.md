@@ -224,20 +224,36 @@ docker push $REGISTRY_URL/buildpacks-quarkus-run:jvm
 docker push $REGISTRY_URL/buildpacks-quarkus-build:jvm
 ```
 
+If you plan to use a local private registry it is then needed to patch the Knative configmap `config-deployment`
+to add the following parameter `registriesSkippingTagResolving` and to rollout
+
+```bash
+kubectl patch pkgi tap -n tap-install -p '{"spec":{"paused":true}}' --type=merge
+kubectl patch pkgi cnrs -n tap-install -p '{"spec":{"paused":true}}' --type=merge
+kubectl edit cm/config-deployment -n knative-serving
+...
+ registriesSkippingTagResolving: registry.harbor.10.0.77.176.nip.io:32443
+kubectl rollout status deployment -n controller -n knative-serving
+```
+
+
 When done, we can install the Quarkus supply chain and templates files as an application using kapp
 
 ```bash
 ./scripts/populate_namespace_tap.sh demo-4
 pushd supplychain/quarkus-sc
-kapp deploy --yes -a quarkus-supply-chain -n demo-4 \
+kapp deploy --yes -a quarkus-supply-chain \
+  -n demo-4 \
   -f <(ytt --ignore-unknown-comments -f ./values.yaml -f helpers.lib.yml -f ./k8s -f ./templates -f supply-chain.yaml)
 ```
+**Note**: If you use a local private registry, override the values of the values.yaml file using the ytt parameter`-v image_prefix=registry.harbor.10.0.77.176.nip.io:32443/quarkus`
 
 When done, deploy the `quarkus-app` workload using either `kapp`
 
 ```bash
 kapp deploy --yes -a quarkus-app -n demo-4 \
   -f <(ytt --ignore-unknown-comments -f workload.yaml -f ./values.yaml)
+popd  
 ```
 
 or create the workload using the `Tanzu client`
@@ -297,13 +313,16 @@ Obtain a service reference by running:
 ```bash
 tanzu service instance list -owide -A
 NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
-tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:demo-4:postgres-db
+tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:demo-3:postgres-db
 ```
 
 Finally, do the binding
 
 ```bash
-tanzu apps workload update -n demo-4 quarkus-app --git-branch service-binding --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:demo-3:postgres-db"
+tanzu apps workload update quarkus-app \
+  -n demo-4 \
+  --git-branch service-binding \
+  --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:demo-3:postgres-db"
 ```
 
 Create the `ResouceClaim` and `ResourceClaimPolicy` CRDs in order to find the Service claimed. As the service is running in another namespace, it is then needed
@@ -365,6 +384,16 @@ EOF
 **TODO**: This manifest could become part of the Quarkus supply chain
 
 Enjoy !!
+
+To cleanup
+
+```bash
+tanzu apps workload delete quarkus-app -n demo-4
+kubectl delete resourceclaim/quarkus-app -n demo-4 
+kubectl delete resourceclaimpolicy/postgres-db-cross-namespace -n demo-3
+kubectl delete servicebinding/quarkus-app -n demo-4 
+kapp delete -n demo-4 -a quarkus-supply-chain -y
+```
 
 ### Issues
 
