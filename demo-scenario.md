@@ -3,16 +3,17 @@
 **NOTE**: This file contains commands that I'm personally using against a private internal VM
 
 # Setup K8S Config locally on the Developer machine to access VM
-
+```
 konfig import -p -s _temp/config.yml
 kubectx kubernetes-admin@kubernetes
-
+```
 # SSH to the VM
+```
 pass-team
 CLOUD=openstack && VM=k123-fedora35-01 && ssh-vm $CLOUD $VM
-
+```
 ## Open UI & Get Tokens
-
+```
 alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --incognito"
 
 VM_IP=10.0.77.176
@@ -20,11 +21,12 @@ chrome http://tap-gui.$VM_IP.nip.io/
 chrome http://k8s-ui.$VM_IP.nip.io/
 // Tilt
 chrome http://localhost:10350/
-
+```
 # Install kubeapps and get the Kubeapps token (optional)
+```
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm uninstall kubeapps -n kubeapps
-cat <<EOF > ./tanzu/kubeapps-values.yml
+cat <<EOF > $HOME/tanzu/kubeapps-values.yml
 dashboard:
   image:
     repository: bitnami/kubeapps-dashboard
@@ -47,8 +49,8 @@ packaging:
 featureFlags:
   operators: false
 EOF
-kc create ns kubeapps
-helm install kubeapps -n kubeapps bitnami/kubeapps -f ./tanzu/kubeapps-values.yml
+kubectl create ns kubeapps
+helm install kubeapps -n kubeapps bitnami/kubeapps -f $HOME/tanzu/kubeapps-values.yml
 cat <<EOF | kubectl apply -f - 
 apiVersion: projectcontour.io/v1
 kind: HTTPProxy
@@ -76,8 +78,9 @@ kubectl create --namespace default serviceaccount kubeapps-operator
 kubectl create clusterrolebinding kubeapps-operator --clusterrole=cluster-admin --serviceaccount=default:kubeapps-operator
 
 kubectl get -n default secret $(kubectl get -n default serviceaccount kubeapps-operator -o jsonpath='{range .secrets[*]}{.name}{"\n"}{end}' | grep kubeapps-operator-token) -o jsonpath='{.data.token}' -o go-template='{{.data.token | base64decode}}' | pbcopy
--->
-eyJhbGciOiJSUzI1NiIsImtpZCI6ImU3enRQN0x6Y0RzNXBRVUlFTXpYRkE3N3lXcWlLVGlCS3FDQk9TUTh0Y1EifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Imt1YmVhcHBzLW9wZXJhdG9yLXRva2VuLTduN3RnIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6Imt1YmVhcHBzLW9wZXJhdG9yIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiMjNiMGQ1NmQtZDRmMy00YWU2LWJhZTctMTEwMGJmYWIxMzAzIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmRlZmF1bHQ6a3ViZWFwcHMtb3BlcmF0b3IifQ.QbxquvgJGFoSUMFz1a0pt9mVatwF0e6DmId-KxVv2xLwBPIebmUa0_j3YVgQhMOjsaz1kFZ_G0mMm4quT07HVkQoIa0L5aKNxL1iUgjfcxvRzu-P8eB4HWzUBtbVzBCWf3_mukxL7DW_y99TsoaflN4FZDAb8UKJSoYs2_Z2-N35JtSSeXwE6hz3B__GZXAHzML6j8Lu3UFPsB4ygGhL0IYogngoJQYfX7qRmWeinf_lX96leBZytUdwChwv-OIY_wvJrwrEoUWpcSX7mL8sp_gIk3iCahQV44KUtVbe4F_m_ZrLfTT2AB1AOBUdwveEsUorMXKvHOmIq1wSfgLOuQ
+```
+The last command will return the token: `eyJhbGciOiJSUzI1NiIs....OmIq1wSfgLOuQ`
+
 // Kubeapps (optional)
 chrome http://kubeapps.$VM_IP.nip.io/#/login
 
