@@ -8,7 +8,7 @@
 # ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./uninstall_postgresql.sh
 #
 # Define the following env vars:
-# - NAMESPACE_DEMO: Namespace where the postgresql instance should be created
+# - NAMESPACE: Namespace where the postgresql instance should be created
 
 # Defining some colors for output
 RED='\033[0;31m'
@@ -38,16 +38,16 @@ log() {
 
 KUBE_CFG_FILE=${KUBE_CFG_FILE:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
-NAMESPACE_DEMO=${NAMESPACE_DEMO:-tap-demo}
+NAMESPACE=${NAMESPACE:-tap-demo}
 
 log "YELLOW" "Deleting the regsecret secret"
-kubectl -n $NAMESPACE_DEMO delete secret regsecret --ignore-not-found
+kubectl -n $NAMESPACE delete secret regsecret --ignore-not-found
 
 log "YELLOW" "Delete the postgresql instance"
-kubectl delete Postgres/postgres-db -n $NAMESPACE_DEMO --ignore-not-found
+kubectl delete Postgres/postgres-db -n $NAMESPACE --ignore-not-found
 
 log "YELLOW" "Uninstalling the Helm chart of postgresql"
-helm uninstall tanzu-postgresql -n $NAMESPACE_DEMO
+helm uninstall tanzu-postgresql -n db
 if [ $? -eq 0 ]; then
    echo "Helm chart removed"
 else
@@ -66,6 +66,8 @@ kubectl delete ClusterRole/postgres-viewer
 kubectl delete ClusterRole/postgresbackup-viewer-role
 kubectl delete ClusterRole/postgresbackupschedule-editor-role
 kubectl delete ClusterRole/postgresbackupschedule-viewer-role
+kubectl delete ClusterRole/postgresbackuplocation-editor-role
+kubectl delete ClusterRole/postgresbackuplocation-viewer-role
 kubectl delete ClusterRole/postgresrestore-editor-role
 kubectl delete ClusterRole/postgresrestore-viewer-role
 kubectl delete ClusterRole/postgresversion-editor-role
@@ -80,6 +82,6 @@ kubectl delete PostgresVersion/postgres-14
 kubectl delete MutatingWebhookConfiguration/postgres-operator-mutating-webhook-configuration
 kubectl delete ValidatingWebhookConfiguration/postgres-operator-validating-webhook-configuration
 
-kubectl delete secret/regsecret -n $NAMESPACE_DEMO
+kubectl delete ns db
 
 
