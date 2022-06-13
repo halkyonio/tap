@@ -41,15 +41,15 @@ generate_eyecatcher(){
 }
 
 log_msg() {
-    COLOR=${1}
-      MSG="${@:2}"
-    echo -e "\n${!COLOR}## ${MSG}${NC}"
+  COLOR=${1}
+  MSG="${@:2}"
+  echo -e "\n${!COLOR}## ${MSG}${NC}"
 }
 
 log_line() {
-    COLOR=${1}
-    MSG="${@:2}"
-    echo -e "${!COLOR}## ${MSG}${NC}"
+  COLOR=${1}
+  MSG="${@:2}"
+  echo -e "${!COLOR}## ${MSG}${NC}"
 }
 
 log() {
