@@ -132,11 +132,11 @@ chrome http://tanzu-java-web-app.demo-1.$VM_IP.nip.io
 
 PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
-tanzu apps workload create $APP
+tanzu apps workload create $APP \
    --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
    --annotation "autoscaling.knative.dev/minScale=1" \
    --git-repo https://github.com/halkyonio/$APP.git \
-   --git-branch main  \
+   --git-branch main \
    --type web \
    --label app.kubernetes.io/part-of=$APP \
    -n demo-2 \
