@@ -35,7 +35,7 @@ WHITE='\033[0;37m'
 
 newline=$'\n'
 
-repeat_char(){
+generate_eyecatcher(){
   COLOR=${1}
 	for i in {1..50}; do echo -ne "${!COLOR}$2${NC}"; done
 }
@@ -54,7 +54,7 @@ log_line() {
 
 log() {
   MSG="${@:2}"
-  echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
+  echo; generate_eyecatcher ${1} '#'; log_msg ${1} ${MSG}; generate_eyecatcher ${1} '#'; echo
 }
 
 check_os() {
