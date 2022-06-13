@@ -313,34 +313,19 @@ Obtain a service reference by running:
 ```bash
 tanzu service instance list -owide -A
 NAMESPACE  NAME         KIND      SERVICE TYPE  AGE  SERVICE REF
-tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:demo-3:postgres-db
+tap-demo   postgres-db  Postgres  postgresql    19m  sql.tanzu.vmware.com/v1:Postgres:postgres-db
 ```
 
 Finally, do the binding
 
 ```bash
-tanzu apps workload update quarkus-app \
+tanzu apps workload apply quarkus-app \
   -n demo-4 \
+  --git-repo https://github.com/halkyonio/quarkus-tap-petclinic.git \
   --git-branch service-binding \
+  --type quarkus \
+  --label app.kubernetes.io/part-of=quarkus-petclinic-app \
   --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:postgres-db"
-```
-
-Create the `ResouceClaim` CRD in order to find the Service claimed.
-```bash
-cat <<EOF | kubectl apply -f -    
----    
-apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-kind: ResourceClaim
-metadata:
-  name: quarkus-app
-  namespace: demo-4
-spec:
-  ref:
-    apiVersion: sql.tanzu.vmware.com/v1
-    kind: Postgres
-    name: postgres-db
-    namespace: demo-4  
-EOF
 ```
 
 **Note**: If the service is running in another namespace, it is then needed to create a ResourceClaim to expose it to all the namespaces.
@@ -362,42 +347,12 @@ spec:
 EOF
 ```
 
-**TODO**: These manifest could become part of the Quarkus supply chain like the ServiceBinding to avoid having to create them manually
-
-Create the ServiceBinding to tell to the ServiceBinding Operator how to get the secret from the `ResourceClaim` to mount it to the `ksvc`
-
-```bash
-cat <<'EOF' | kubectl apply -f -
-apiVersion: servicebinding.io/v1alpha3
-kind: ServiceBinding
-metadata:
-  labels:
-    apps.tanzu.vmware.com/workload-type: quarkus
-  name: quarkus-app
-  namespace: demo-4
-spec:
-  name: postgresql
-  service:
-    apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-    kind: ResourceClaim
-    name: quarkus-app
-  workload:
-    apiVersion: serving.knative.dev/v1
-    kind: Service
-    name: quarkus-app
-EOF
-```
-**TODO**: This manifest could become part of the Quarkus supply chain
-
 Enjoy !!
 
 To cleanup
 
 ```bash
 tanzu apps workload delete quarkus-app -n demo-4
-kubectl delete resourceclaim/quarkus-app -n demo-4 
-kubectl delete resourceclaimpolicy/postgres-db-cross-namespace -n demo-3
-kubectl delete servicebinding/quarkus-app -n demo-4 
 kapp delete -n demo-4 -a quarkus-supply-chain -y
 ```
 

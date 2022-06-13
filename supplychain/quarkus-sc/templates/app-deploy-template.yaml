@@ -13,6 +13,40 @@ spec:
     #@   data.values.workload.metadata.name
     #@   ])
     #@ end
+    
+    #@ def merge_labels(fixed_values):
+    #@   labels = {}
+    #@   if hasattr(data.values.workload.metadata, "labels"):
+    #@     labels.update(data.values.workload.metadata.labels)
+    #@   end
+    #@   labels.update(fixed_values)
+    #@   return labels
+    #@ end
+
+    #@ def merge_annotations(fixed_values):
+    #@   annotations = {}
+    #@   if hasattr(data.values.workload.metadata, "annotations"):
+    #@     annotations.update(data.values.workload.metadata.annotations)
+    #@   end
+    #@   annotations.update(fixed_values)
+    #@   return annotations
+    #@ end    
+    
+    #@ def get_claims_extension():
+    #@     return None
+    #@ end
+
+    #@ def merge_claims_extension(claim, claims_extension):
+    #@   if claims_extension == None:
+    #@     return claim.ref
+    #@   end
+    #@   extension = claims_extension.get(claim.name)
+    #@   if extension == None:
+    #@      return claim.ref
+    #@   end
+    #@   extension.update(claim.ref)
+    #@   return extension
+    #@ end
 
     #@ def manifest():
     ---
@@ -63,6 +97,37 @@ spec:
             image: #@ img()
             securityContext:
               runAsUser: 1000
+    
+    ---
+    #@ claims_extension = get_claims_extension()
+    #@ for s in data.values.workload.spec.serviceClaims:
+    ---
+    apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+    kind: ResourceClaim
+    metadata:
+      name: #@ data.values.workload.metadata.name + '-' + s.name
+      annotations: #@ merge_annotations({})
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "run", "carto.run/workload-name": data.values.workload.metadata.name })
+    spec:
+      ref: #@ merge_claims_extension(s, claims_extension)
+    ---
+    apiVersion: servicebinding.io/v1alpha3
+    kind: ServiceBinding
+    metadata:
+      name: #@ data.values.workload.metadata.name + '-' + s.name
+      annotations: #@ merge_annotations({})
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "run", "carto.run/workload-name": data.values.workload.metadata.name })
+    spec:
+      name: #@ s.name
+      service:
+        apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+        kind: ResourceClaim
+        name: #@ data.values.workload.metadata.name + '-' + s.name
+      workload:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        name: #@ data.values.workload.metadata.name
+    #@ end
     #@ end
 
     ---
