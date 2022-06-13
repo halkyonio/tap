@@ -147,7 +147,7 @@ fi
 
 sudo yum install jq -y
 wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
-sudo cp k9s /usr/local/bin
+sudo cp k9s ${DEST_DIR}
 
 log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
 (
@@ -193,7 +193,7 @@ chmod 700 get_helm.sh
 log "CYAN" "Executing installation Part I of the TAP guide"
 log "CYAN" "Installing pivnet tool ..."
 wget -q -c https://github.com/pivotal-cf/pivnet-cli/releases/download/v$PIVNET_CLI_VERSION/pivnet-linux-amd64-$PIVNET_CLI_VERSION
-chmod +x pivnet-linux-amd64-$PIVNET_CLI_VERSION && mv pivnet-linux-amd64-$PIVNET_CLI_VERSION pivnet && sudo cp pivnet /usr/local/bin
+chmod +x pivnet-linux-amd64-$PIVNET_CLI_VERSION && mv pivnet-linux-amd64-$PIVNET_CLI_VERSION pivnet && sudo cp pivnet ${DEST_DIR}
 pivnet version
 
 log "CYAN" "Pivnet log in to Tanzu "
@@ -226,10 +226,10 @@ export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
 ./install.sh -y
 
 log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
-sudo cp ytt /usr/local/bin
-sudo cp kapp /usr/local/bin
-sudo cp imgpkg /usr/local/bin
-sudo cp kbld /usr/local/bin
+sudo cp ytt ${DEST_DIR}
+sudo cp kapp ${DEST_DIR}
+sudo cp imgpkg ${DEST_DIR}
+sudo cp kbld ${DEST_DIR}
 cd ..
 
 log "CYAN" "Wait till the pod of kapp-controller is running"
@@ -251,7 +251,7 @@ tar -vxf $TANZU_PRODUCT_NAME.tar
 log "CYAN" "Set env var TANZU_CLI_NO_INIT to true to assure the local downloaded versions of the CLI core and plug-ins are installed"
 export TANZU_CLI_NO_INIT=true
 mkdir -p $HOME/.tanzu
-sudo install cli/core/$TANZU_CLI_VERSION/tanzu-core-linux_amd64 /usr/local/bin/tanzu
+sudo install cli/core/$TANZU_CLI_VERSION/tanzu-core-linux_amd64 ${DEST_DIR}/tanzu
 tanzu version
 
 log "CYAN" "Enable tanzu completion for bash"
