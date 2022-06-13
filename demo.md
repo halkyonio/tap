@@ -246,7 +246,7 @@ kapp deploy --yes -a quarkus-supply-chain \
   -n demo-4 \
   -f <(ytt --ignore-unknown-comments -f ./values.yaml -f helpers.lib.yml -f ./k8s -f ./templates -f supply-chain.yaml)
 ```
-**Note**: If you use a local private registry, override the values of the values.yaml file using the ytt parameter`-v image_prefix=registry.harbor.10.0.77.176.nip.io:32443/quarkus`
+**Note**: If you use a local private registry, override the values of the values.yaml file using the ytt parameter `-v image_prefix=registry.harbor.10.0.77.176.nip.io:32443/quarkus`
 
 When done, deploy the `quarkus-app` workload using either `kapp`
 
@@ -322,26 +322,12 @@ Finally, do the binding
 tanzu apps workload update quarkus-app \
   -n demo-4 \
   --git-branch service-binding \
-  --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:demo-3:postgres-db"
+  --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:postgres-db"
 ```
 
-Create the `ResouceClaim` and `ResourceClaimPolicy` CRDs in order to find the Service claimed. As the service is running in another namespace, it is then needed
-to create a ResourceClaim to expose it to all the namespaces.
-
-Before to execute the following command, be sure that no other `ResourceClaim` exists on the platform !!
+Create the `ResouceClaim` CRD in order to find the Service claimed.
 ```bash
-cat <<EOF | kubectl apply -f -
-apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-kind: ResourceClaimPolicy
-metadata:
-  name: postgres-db-cross-namespace
-  namespace: demo-3
-spec:
-  consumingNamespaces:
-  - '*'
-  subject:
-    group: sql.tanzu.vmware.com
-    kind: Postgres 
+cat <<EOF | kubectl apply -f -    
 ---    
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ResourceClaim
@@ -353,9 +339,29 @@ spec:
     apiVersion: sql.tanzu.vmware.com/v1
     kind: Postgres
     name: postgres-db
-    namespace: demo-3  
+    namespace: demo-4  
 EOF
 ```
+
+**Note**: If the service is running in another namespace, it is then needed to create a ResourceClaim to expose it to all the namespaces.
+Before to execute the following command, be sure that no other `ResourceClaim` exists on the platform !!
+
+```text
+cat <<EOF | kubectl apply -f -
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ResourceClaimPolicy
+metadata:
+  name: postgres-db-cross-namespace
+  namespace: demo-4
+spec:
+  consumingNamespaces:
+  - '*'
+  subject:
+    group: sql.tanzu.vmware.com
+    kind: Postgres
+EOF
+```
+
 **TODO**: These manifest could become part of the Quarkus supply chain like the ServiceBinding to avoid having to create them manually
 
 Create the ServiceBinding to tell to the ServiceBinding Operator how to get the secret from the `ResourceClaim` to mount it to the `ksvc`
