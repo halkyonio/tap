@@ -16,8 +16,8 @@
 set -e
 
 # Defining some colors for output
-RED='\033[0;31m'
 NC='\033[0m' # No Color
+RED='\033[0;31m'
 YELLOW='\033[0;33m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -47,7 +47,7 @@ REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
 NAMESPACE=${NAMESPACE:-tap-demo}
 
-POSTGRESQL_VERSION=1.5.0
+POSTGRESQL_VERSION=1.7.2
 POSTGRES_API_GROUP=sql.tanzu.vmware.com
 POSTGRES_API_VERSION=v1
 POSTGRES_KIND=Postgres
@@ -67,6 +67,11 @@ if [[ -d "$HOME/postgresql" ]]; then
 else
   log "CYAN" "Helm pulling"
   helm pull oci://registry.pivotal.io/tanzu-sql-postgres/postgres-operator-chart --version v$POSTGRESQL_VERSION --untar --untardir $HOME/postgresql
+fi
+
+if [ $(helm list -f 'tanzu*' -n db -o json | jq '.[].name == "tanzu-postgresql"') == "true" ]; then
+  echo "tanzu-postgresql helm release already deployed"
+else
   log "CYAN" "Install the tanzu postgresql operator within the namespace db using helm"
   kubectl create ns db
   helm install tanzu-postgresql $HOME/postgresql/postgres-operator -n db --wait
