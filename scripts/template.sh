@@ -82,7 +82,7 @@ while test $# -gt 0; do
       action=$1
       shift
       ;;
-    -ns | --namespace)
+    -n | --namespace)
       shift
       app_namespace=$1
       shift
