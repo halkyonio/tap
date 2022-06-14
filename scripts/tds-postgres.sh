@@ -81,12 +81,12 @@ while test $# -gt 0; do
       action=$1
       shift
       ;;
-    --ns)
+     -ns | --namespace)
       shift
       db_namespace=$1
       shift
       ;;
-    --help)
+     -h | --help)
       echo "$HELP_CONTENT"
       exit 1
       ;;

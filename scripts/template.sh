@@ -87,7 +87,7 @@ while test $# -gt 0; do
       app_namespace=$1
       shift
       ;;
-    --help)
+    -h | --help)
       log "CYAN" "$HELP_CONTENT"
       exit 1
       ;;
