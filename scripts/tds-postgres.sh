@@ -14,21 +14,20 @@ CYAN='\033[0;36m'
 WHITE='\033[0;37m'
 
 HELP_CONTENT="
-Usage: template.sh [OPTIONS]
+Usage: tds-postgres.sh [OPTIONS]
 Options:
+
 [Global Mandatory Flags]
-  --action : What action to take - create,stop,start,status,delete,prepare
+  --action: What action to take ?
+            \"prepare\": install the Tanzu Data Service repository using a private images registry
+            \"instance\": Create a PostgresDB CR instance within the specified namespace
+            \"delete\": Delete a PostgresDB CR deployed in a namespace
+            \"remove\": Delete the package and repository of TDS
 [Global Optional Flags]
-  --help : show this help menu
-[Mandatory Flags - Used by the Create/Delete Action]
-  --app-user : User for the Application
-  --app-password : Password for the Application
-  --repo-url : URL to access the repository of the application
-[Optional Flags - For Create Action]
-  --supply-chain : The supply chain to install (Default: basic) Options: basic, testing, testing_scanning
-  --app-version : Version of the application (Default: 1.1.1)
-  --enable-remote-access : (yes or no) This flag allows you to set whether remote access from other machines should be allowed (Default: no)
-  --ip-address : Required if enabling remote access. This flags value needs to be the IP of the machine's node (e.g. 192.168.1.231)
+  --help: Show this help menu
+
+[Mandatory Flags - Used by the instance/delete Action]
+  --namespace: Namespace where the Postgres CR has been created
 "
 
 ####################################
@@ -77,18 +76,18 @@ fi
 
 while test $# -gt 0; do
   case "$1" in
-    -a | --action)
+     -a | --action)
       shift
       action=$1
       shift
       ;;
-    -ns | --namespace)
+    --ns)
       shift
-      app_namespace=$1
+      db_namespace=$1
       shift
       ;;
     --help)
-      log "CYAN" "$HELP_CONTENT"
+      echo "$HELP_CONTENT"
       exit 1
       ;;
     *)
@@ -101,7 +100,7 @@ done
 #######################################################
 ## Set default values when no optional flags are passed
 #######################################################
-: ${app_namespace:="toto"}
+#: ${db_namespace:="db"}
 
 # Check machine os
 machine_os
@@ -118,17 +117,23 @@ fi
 
 # Actions to executed
 case $action in
-  start)
-    log "CYAN" "I'm starting the Application using ${app_user}"
+  prepare)
+    log "CYAN" "Preparing to install"
     log "CYAN" "....";;
-  stop)
-    log "CYAN" "I'm stopping the Application"
-    log "CYAN" "....";;
-  create)
-    log "CYAN" "I'm deploying your application ..."
-    log_msg "CYAN" "Step: Creating the following namespace ${app_namespace}"
-    log_msg "CYAN" "kubectl create ns ${app_namespace} --dry-run=client -o yaml | kubectl apply -f -"
-    log_msg "CYAN" "Step: Done ....";;
+  instance)
+    log "CYAN" "Creating an instance"
+    # Validate Mandatory Flags were supplied
+    if ! [[ ${db_namespace} ]]; then
+      log "YELLOW" "Mandatory flags were not passed: --ns. use --help for usage information"
+      exit 1
+    fi
+    log_msg "CYAN" "kubectl create ns ${db_namespace} --dry-run=client -o yaml | kubectl apply -f -"
+    log "CYAN"  "Installed.";;
+  delete)
+    log "CYAN" "Deleting an instance"
+    log_msg CYAN "Step: Removing the namespace ${db_namespace}"
+    log_msg "CYAN" "kubectl delete ns ${db_namespace}"
+    log_msg CYAN "Step: Done ....";;
    *)
     log "RED" "Unknown action passed: $action. Please use --help."
     exit 1
