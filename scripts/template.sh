@@ -126,8 +126,8 @@ case $action in
     echo "....";;
   create)
     log "CYAN" "I'm deploying your application ..."
-    log_msg CYAN "Step: Creating the following namespace ${namespace}"
-    echo "kubectl create ns ${namespace} --dry-run=client -o yaml | kubectl apply -f -"
+    log_msg CYAN "Step: Creating the following namespace ${app_namespace}"
+    echo "kubectl create ns ${app_namespace} --dry-run=client -o yaml | kubectl apply -f -"
     log_msg CYAN "Step: Done ....";;
    *)
     log "RED" "Unknown action passed: $action. Please use --help."
