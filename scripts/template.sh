@@ -71,7 +71,7 @@ machine_os() {
 ## Check if flags are passed and set the variables using the flogs passed
 ############################################################################
 if [[ $# == 0 ]]; then
-  log "RED" "No Flags were passed. Run with --help flag to get usage information"
+  log "RED" "No Flags were passed. Run with -h or --help flag to get usage information"
   exit 1
 fi
 
