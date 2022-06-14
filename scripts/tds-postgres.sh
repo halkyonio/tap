@@ -19,15 +19,27 @@ Options:
 
 [Global Mandatory Flags]
   --action: What action to take ?
-            \"prepare\": install the Tanzu Data Service repository using a private images registry
-            \"instance\": Create a PostgresDB CR instance within the specified namespace
-            \"delete\": Delete a PostgresDB CR deployed in a namespace
-            \"remove\": Delete the package and repository of TDS
+    \"prepare\": Install the Tanzu Data Service repository using a private images registry
+    \"instance\": Create a PostgresDB CR instance within the specified namespace
+    \"delete\": Delete a PostgresDB CR deployed in a namespace
+    \"remove\": Delete the package and repository of TDS
+
 [Global Optional Flags]
   --help: Show this help menu
 
-[Mandatory Flags - Used by the instance/delete Action]
-  --namespace: Namespace where the Postgres CR has been created
+[Mandatory Flags - Used by the Instance/Delete Action]
+  --registry-url: Image registry hostname (e.g. registry.harbor.10.0.77.176.nip.io:32443)
+  --registry-username: User to be used to be authenticated against the image registry
+  --registry-password: Password to be used to be authenticated against the image registry
+  --registry-owner: Registry owner or project where images have ben pushed, relocated (e.g. tds or <my_docker_user>)
+
+[Optional Flags - Used by the Prepare Action]
+  -n or --namespace: Namespace where the repository, package, operator will be deployed (Default: db)
+  --tds-version: Version of the Tanzu Database Service repository to be installed (Default: 1.7.3)
+
+[Optional Flags - Used by the Instance Action]
+  -n or --namespace: Namespace where the repository, package, operate will
+  --tds-version: Version of the Tanzu Database Service repository to be installed (Default: 1.7.3)
 "
 
 ####################################
@@ -38,7 +50,7 @@ repeat_char(){
 	for i in {1..50}; do echo -ne "${!COLOR}$2${NC}"; done
 }
 
-log_msg() {
+msg() {
   COLOR=${1}
   MSG="${@:2}"
   echo -e "\n${!COLOR}## ${MSG}${NC}"
@@ -46,7 +58,7 @@ log_msg() {
 
 log() {
   MSG="${@:2}"
-  echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
+  echo; repeat_char ${1} '#'; msg ${1} ${MSG}; repeat_char ${1} '#'; echo
 }
 
 repeat(){
@@ -79,17 +91,34 @@ while test $# -gt 0; do
      -a | --action)
       shift
       action=$1
-      shift
-      ;;
+      shift;;
      -ns | --namespace)
       shift
       db_namespace=$1
+      shift;;
+     --registry-url)
       shift
-      ;;
+      registry_url=$1
+      shift;;
+     --registry-username)
+      shift
+      registry_username=$1
+      shift;;
+     --registry-password)
+      shift
+      registry_password=$1
+      shift;;
+     --registry-owner)
+      shift
+      registry_owner=$1
+      shift;;
+     --tds-version)
+      shift
+      tds_version=$1
+      shift;;
      -h | --help)
       echo "$HELP_CONTENT"
-      exit 1
-      ;;
+      exit 1;;
     *)
       log "RED" "$1 is not a recognized flag!"
       exit 1
@@ -100,7 +129,16 @@ done
 #######################################################
 ## Set default values when no optional flags are passed
 #######################################################
-#: ${db_namespace:="db"}
+: ${tds_version:="1.7.3"}
+: ${tds_namespace:="db"}
+
+#######################################################
+## Set local default values
+#######################################################
+postgres_api_group="sql.tanzu.vmware.com"
+postgres_api_version="v1"
+postgres_kind="Postgres"
+postgres_resource_name="postgres"
 
 # Check machine os
 machine_os
@@ -118,22 +156,49 @@ fi
 # Actions to executed
 case $action in
   prepare)
-    log "CYAN" "Preparing to install"
-    log "CYAN" "....";;
+    log "CYAN" "Preparing to install the TDS repository ${tds_version}, package and operator"
+
+    # Validate if Mandatory Flags were supplied
+    if ! [[ ${registry_username} || ${registry_password} || ${registry_url} || ${registry_owner} ]]; then
+      log "YELLOW" "Some mandatory flags were not passed. use --help for usage information"
+      exit 1
+    fi
+
+    if ! command -v tanzu &> /dev/null
+    then
+      log "YELLOW" "Tanzu client is not installed"
+      exit 1
+    fi
+    exit 0
+
+    kubectl create ns ${tds_namespace} --dry-run=client -o yaml | kubectl apply -f -
+
+    tanzu secret registry add registry-credentials \
+      --username ${registry_username} \
+      --password ${registry_password} \
+      --server ${registry_url} \
+      -n ${tds_namespace} \
+      --export-to-all-namespaces --yes
+
+    tanzu package repository add tanzu-data-services-repository \
+      --url ${registry_url}/${registry_owner}/tds-packages \
+      -n ${tds_namespace}
+
+    log "CYAN" "Done";;
   instance)
     log "CYAN" "Creating an instance"
-    # Validate Mandatory Flags were supplied
+    # Validate if Mandatory Flags were supplied
     if ! [[ ${db_namespace} ]]; then
       log "YELLOW" "Mandatory flags were not passed: --ns. use --help for usage information"
       exit 1
     fi
-    log_msg "CYAN" "kubectl create ns ${db_namespace} --dry-run=client -o yaml | kubectl apply -f -"
-    log "CYAN"  "Installed.";;
+    msg "CYAN" "kubectl create ns ${db_namespace} --dry-run=client -o yaml | kubectl apply -f -"
+    log "CYAN"  "Instance of Postgres created under ${db_namespace}.";;
   delete)
     log "CYAN" "Deleting an instance"
-    log_msg CYAN "Step: Removing the namespace ${db_namespace}"
-    log_msg "CYAN" "kubectl delete ns ${db_namespace}"
-    log_msg CYAN "Step: Done ....";;
+    msg CYAN "Step: Removing the Tanzu Database repository"
+    msg "CYAN" "tanzu package repository delete tanzu-data-services-repository -n tap-install"
+    msg CYAN "Step: Done ....";;
    *)
     log "RED" "Unknown action passed: $action. Please use --help."
     exit 1
