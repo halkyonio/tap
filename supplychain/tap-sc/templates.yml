@@ -1,15 +1,54 @@
+#
+# Templates of TAP - 1.1.1
+#
 apiVersion: carto.run/v1alpha1
 kind: ClusterSourceTemplate
 metadata:
+  annotations:
+    kapp.k14s.io/identity: v1;/carto.run/ClusterSourceTemplate/source-template;carto.run/v1alpha1
+    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"ClusterSourceTemplate","metadata":{"labels":{"kapp.k14s.io/app":"1654768621881280686","kapp.k14s.io/association":"v1.3f8a98253cdf47d64c37f27a382e5698"},"name":"source-template"},"spec":{"params":[{"default":"default","name":"serviceAccount"},{"default":"go-git","name":"gitImplementation"}],"revisionPath":".status.artifact.revision","urlPath":".status.artifact.url","ytt":"#@
+      load(\"@ytt:data\", \"data\")\n\n#@ def merge_labels(fixed_values):\n#@   labels
+      = {}\n#@   if hasattr(data.values.workload.metadata, \"labels\"):\n#@     labels.update(data.values.workload.metadata.labels)\n#@   end\n#@   labels.update(fixed_values)\n#@   return
+      labels\n#@ end\n\n#@ def param(key):\n#@   if not key in data.values.params:\n#@     return
+      None\n#@   end\n#@   return data.values.params[key]\n#@ end\n\n---\n#@ if hasattr(data.values.workload.spec.source,
+      \"git\"):\napiVersion: source.toolkit.fluxcd.io/v1beta1\nkind: GitRepository\nmetadata:\n  name:
+      #@ data.values.workload.metadata.name\n  labels: #@ merge_labels({ \"app.kubernetes.io/component\":
+      \"source\" })\nspec:\n  interval: 1m0s\n  url: #@ data.values.workload.spec.source.git.url\n  ref:
+      #@ data.values.workload.spec.source.git.ref\n  gitImplementation: #@ data.values.params.gitImplementation\n  ignore:
+      |\n    !.git\n  #@ if/end param(\"gitops_ssh_secret\"):\n  secretRef:\n    name:
+      #@ param(\"gitops_ssh_secret\")\n#@ end\n\n#@ if hasattr(data.values.workload.spec.source,
+      \"image\"):\napiVersion: source.apps.tanzu.vmware.com/v1alpha1\nkind: ImageRepository\nmetadata:\n  name:
+      #@ data.values.workload.metadata.name\n  labels: #@ merge_labels({ \"app.kubernetes.io/component\":
+      \"source\" })\nspec:\n  serviceAccount: #@ data.values.params.serviceAccount\n  interval:
+      1m0s\n  image: #@ data.values.workload.spec.source.image\n#@ end\n"}}'
+    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+  creationTimestamp: "2022-06-09T09:57:02Z"
+  generation: 1
+  labels:
+    kapp.k14s.io/app: "1654768621881280686"
+    kapp.k14s.io/association: v1.3f8a98253cdf47d64c37f27a382e5698
   name: source-template
+  resourceVersion: "27537985"
+  uid: 9a1cd2ec-d89d-4253-9c08-240c09753dc0
 spec:
   params:
     - default: default
       name: serviceAccount
+    - default: go-git
+      name: gitImplementation
   revisionPath: .status.artifact.revision
   urlPath: .status.artifact.url
   ytt: |
     #@ load("@ytt:data", "data")
+
+    #@ def merge_labels(fixed_values):
+    #@   labels = {}
+    #@   if hasattr(data.values.workload.metadata, "labels"):
+    #@     labels.update(data.values.workload.metadata.labels)
+    #@   end
+    #@   labels.update(fixed_values)
+    #@   return labels
+    #@ end
 
     #@ def param(key):
     #@   if not key in data.values.params:
@@ -24,14 +63,12 @@ spec:
     kind: GitRepository
     metadata:
       name: #@ data.values.workload.metadata.name
-      labels:
-        app.kubernetes.io/component: source
-        #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
-        app.kubernetes.io/part-of: #@ data.values.workload.metadata.labels["app.kubernetes.io/part-of"]
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "source" })
     spec:
       interval: 1m0s
       url: #@ data.values.workload.spec.source.git.url
       ref: #@ data.values.workload.spec.source.git.ref
+      gitImplementation: #@ data.values.params.gitImplementation
       ignore: |
         !.git
       #@ if/end param("gitops_ssh_secret"):
@@ -44,10 +81,7 @@ spec:
     kind: ImageRepository
     metadata:
       name: #@ data.values.workload.metadata.name
-      labels:
-        app.kubernetes.io/component: source
-        #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
-        app.kubernetes.io/part-of: #@ data.values.workload.metadata.labels["app.kubernetes.io/part-of"]
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "source" })
     spec:
       serviceAccount: #@ data.values.params.serviceAccount
       interval: 1m0s
@@ -55,165 +89,43 @@ spec:
     #@ end
 ---
 apiVersion: carto.run/v1alpha1
-kind: ClusterTemplate
-metadata:
-  labels:
-    app.tanzu.vmware.com/deliverable-type: web
-  name: deliverable-template
-spec:
-  params:
-    - name: registry
-  ytt: |
-    #@ load("@ytt:data", "data")
-
-    #@ def is_git_source():
-    #@   return 'git' in data.values.workload.spec.source
-    #@ end
-
-    #@ def has_git_params():
-    #@   if 'gitops_repository_prefix' in data.values.params:
-    #@     return True
-    #@   end
-    #@
-    #@   if 'gitops_repository' in data.values.params:
-    #@     return True
-    #@   end
-    #@
-    #@   return False
-    #@ end
-
-    #@ def is_gitops():
-    #@   return is_git_source() and has_git_params()
-    #@ end
-
-    #@ def param(key):
-    #@   if not key in data.values.params:
-    #@     return None
-    #@   end
-    #@   return data.values.params[key]
-    #@ end
-
-    #@ def git_repository():
-    #@   if 'gitops_repository' in data.values.params:
-    #@     return param("gitops_repository")
-    #@   end
-    #@
-    #@   prefix = param("gitops_repository_prefix")
-    #@   return prefix + data.values.workload.metadata.name + ".git"
-    #@ end
-
-    #@ def image():
-    #@   return "/".join([
-    #@    data.values.params.registry.server,
-    #@    data.values.params.registry.repository,
-    #@    "-".join([
-    #@      data.values.workload.metadata.name,
-    #@      data.values.workload.metadata.namespace,
-    #@      "bundle",
-    #@    ])
-    #@   ]) + ":" + data.values.workload.metadata.uid
-    #@ end
-
-
-    ---
-    apiVersion: carto.run/v1alpha1
-    kind: Deliverable
-    metadata:
-      name: #@ data.values.workload.metadata.name
-      labels:
-        app.tanzu.vmware.com/deliverable-type: web
-        app.kubernetes.io/component: deliverable
-        #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
-        app.kubernetes.io/part-of: #@ data.values.workload.metadata.labels["app.kubernetes.io/part-of"]
-    spec:
-      #@ if/end hasattr(data.values.workload.spec, "serviceAccountName"):
-      serviceAccountName: #@ data.values.workload.spec.serviceAccountName
-
-      #@ if/end is_gitops():
-      params:
-        - name: "gitops_ssh_secret"
-          value: #@ param("gitops_ssh_secret")
-
-      source:
-        #@ if/end is_gitops():
-        git:
-          url: #@ git_repository()
-          ref:
-            branch: #@ param("gitops_branch")
-
-        #@ if/end not is_gitops():
-        image: #@ image()
----
-apiVersion: carto.run/v1alpha1
-kind: ClusterImageTemplate
-metadata:
-  name: kpack-template
-spec:
-  imagePath: .status.latestImage
-  params:
-    - default: default
-      name: serviceAccount
-    - default: default
-      name: clusterBuilder
-    - name: registry
-  ytt: |
-    #@ load("@ytt:data", "data")
-
-    #@ def param(key):
-    #@   if not key in data.values.params:
-    #@     return None
-    #@   end
-    #@   return data.values.params[key]
-    #@ end
-
-    #@ def image():
-    #@   return "/".join([
-    #@    data.values.params.registry.server,
-    #@    data.values.params.registry.repository,
-    #@    "-".join([
-    #@      data.values.workload.metadata.name,
-    #@      data.values.workload.metadata.namespace,
-    #@    ])
-    #@   ])
-    #@ end
-
-    apiVersion: kpack.io/v1alpha2
-    kind: Image
-    metadata:
-      name: #@ data.values.workload.metadata.name
-      labels:
-        app.kubernetes.io/component: build
-        #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
-        app.kubernetes.io/part-of: #@ data.values.workload.metadata.labels["app.kubernetes.io/part-of"]
-    spec:
-      tag: #@ image()
-      serviceAccountName: #@ data.values.params.serviceAccount
-      builder:
-        kind: ClusterBuilder
-        name: #@ data.values.params.clusterBuilder
-      source:
-        blob:
-          url: #@ data.values.source.url
-        #@ if/end hasattr(data.values.workload.spec.source, "subPath"):
-        subPath: #@ data.values.workload.spec.source.subPath
-      build:
-        env:
-        - name: BP_OCI_SOURCE
-          value: #@ data.values.source.revision
-        #@ if/end param("live-update"):
-        - name: BP_LIVE_RELOAD_ENABLED
-          value: 'true'
-        #@ if hasattr(data.values.workload.spec.build, "env"):
-        #@ for var in data.values.workload.spec.build.env:
-        - name: #@ var.name
-          value: #@ var.value
-        #@ end
-        #@ end
----
-apiVersion: carto.run/v1alpha1
 kind: ClusterConfigTemplate
 metadata:
+  annotations:
+    kapp.k14s.io/identity: v1;/carto.run/ClusterConfigTemplate/convention-template;carto.run/v1alpha1
+    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"ClusterConfigTemplate","metadata":{"labels":{"kapp.k14s.io/app":"1654768621881280686","kapp.k14s.io/association":"v1.2bcdf58bddb06beabb3a9f3d61ba556a"},"name":"convention-template"},"spec":{"configPath":".status.template","params":[{"default":"default","name":"serviceAccount"}],"ytt":"#@
+      load(\"@ytt:data\", \"data\")\n\n#@ def param(key):\n#@   if not key in data.values.params:\n#@     return
+      None\n#@   end\n#@   return data.values.params[key]\n#@ end\n\n#@ def merge_labels(fixed_values):\n#@   labels
+      = {}\n#@   if hasattr(data.values.workload.metadata, \"labels\"):\n#@     labels.update(data.values.workload.metadata.labels)\n#@   end\n#@   labels.update(fixed_values)\n#@   return
+      labels\n#@ end\n\n#@ def build_fixed_annotations():\n#@   fixed_annotations
+      = { \"developer.conventions/target-containers\": \"workload\" }\n#@   if param(\"debug\"):\n#@     fixed_annotations[\"apps.tanzu.vmware.com/debug\"]
+      = param(\"debug\")\n#@   end\n#@   if param(\"live-update\"):\n#@     fixed_annotations[\"apps.tanzu.vmware.com/live-update\"]
+      = param(\"live-update\")\n#@   end\n#@   return fixed_annotations\n#@ end\n\n#@
+      def merge_annotations(fixed_values):\n#@   annotations = {}\n#@   if hasattr(data.values.workload.metadata,
+      \"annotations\"):\n#@     # DEPRECATED: remove in a future release\n#@     annotations.update(data.values.workload.metadata.annotations)\n#@   end\n#@   if
+      type(param(\"annotations\")) == \"dict\" or type(param(\"annotations\")) ==
+      \"struct\":\n#@     annotations.update(param(\"annotations\"))\n#@   end\n#@   annotations.update(fixed_values)\n#@   return
+      annotations\n#@ end\n\napiVersion: conventions.apps.tanzu.vmware.com/v1alpha1\nkind:
+      PodIntent\nmetadata:\n  name: #@ data.values.workload.metadata.name\n  labels:
+      #@ merge_labels({ \"app.kubernetes.io/component\": \"intent\" })\nspec:\n  serviceAccountName:
+      #@ data.values.params.serviceAccount\n  template:\n    metadata:\n      annotations:
+      #@ merge_annotations(build_fixed_annotations())\n      labels: #@ merge_labels({
+      \"app.kubernetes.io/component\": \"run\", \"carto.run/workload-name\": data.values.workload.metadata.name
+      })\n    spec:\n      serviceAccountName: #@ data.values.params.serviceAccount\n      containers:\n        -
+      name: workload\n          image: #@ data.values.image\n          securityContext:\n            runAsUser:
+      1000\n          #@ if hasattr(data.values.workload.spec, \"env\"):\n          env:\n            #@
+      for var in data.values.workload.spec.env:\n            - name: #@ var.name\n              value:
+      #@ var.value\n            #@ end\n          #@ end\n          #@ if/end hasattr(data.values.workload.spec,
+      \"resources\"):\n          resources: #@ data.values.workload.spec[\"resources\"]\n"}}'
+    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+  creationTimestamp: "2022-06-09T09:57:02Z"
+  generation: 1
+  labels:
+    kapp.k14s.io/app: "1654768621881280686"
+    kapp.k14s.io/association: v1.2bcdf58bddb06beabb3a9f3d61ba556a
   name: convention-template
+  resourceVersion: "27537987"
+  uid: 830e2c6a-3282-420d-a9f4-1f40af317e1f
 spec:
   configPath: .status.template
   params:
@@ -252,7 +164,11 @@ spec:
     #@ def merge_annotations(fixed_values):
     #@   annotations = {}
     #@   if hasattr(data.values.workload.metadata, "annotations"):
+    #@     # DEPRECATED: remove in a future release
     #@     annotations.update(data.values.workload.metadata.annotations)
+    #@   end
+    #@   if type(param("annotations")) == "dict" or type(param("annotations")) == "struct":
+    #@     annotations.update(param("annotations"))
     #@   end
     #@   annotations.update(fixed_values)
     #@   return annotations
@@ -262,10 +178,7 @@ spec:
     kind: PodIntent
     metadata:
       name: #@ data.values.workload.metadata.name
-      labels:
-        app.kubernetes.io/component: intent
-        #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
-        app.kubernetes.io/part-of: #@ data.values.workload.metadata.labels["app.kubernetes.io/part-of"]
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "intent" })
     spec:
       serviceAccountName: #@ data.values.params.serviceAccount
       template:
@@ -292,7 +205,63 @@ spec:
 apiVersion: carto.run/v1alpha1
 kind: ClusterConfigTemplate
 metadata:
+  annotations:
+    kapp.k14s.io/identity: v1;/carto.run/ClusterConfigTemplate/config-template;carto.run/v1alpha1
+    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"ClusterConfigTemplate","metadata":{"labels":{"kapp.k14s.io/app":"1654768621881280686","kapp.k14s.io/association":"v1.f2e215f8e20339d6e303fb495fed4b4d"},"name":"config-template"},"spec":{"configPath":".data","ytt":"#@
+      load(\"@ytt:data\", \"data\")\n#@ load(\"@ytt:yaml\", \"yaml\")\n#@ load(\"@ytt:json\",
+      \"json\")\n\n#@ def get_claims_extension():\n#@   claims_extension_key = \"serviceclaims.supplychain.apps.x-tanzu.vmware.com/extensions\"\n#@   if
+      not hasattr(data.values.workload.metadata, \"annotations\") or not hasattr(data.values.workload.metadata.annotations,
+      claims_extension_key):\n#@     return None\n#@   end\n#@\n#@   extension = json.decode(data.values.workload.metadata.annotations[claims_extension_key])\n#@\n#@   spec_extension
+      = extension.get(''spec'')\n#@   if spec_extension == None:\n#@     return None\n#@   end\n#@\n#@   return
+      spec_extension.get(''serviceClaims'')\n#@ end\n\n#@ def merge_claims_extension(claim,
+      claims_extension):\n#@   if claims_extension == None:\n#@     return claim.ref\n#@   end\n#@   extension
+      = claims_extension.get(claim.name)\n#@   if extension == None:\n#@      return
+      claim.ref\n#@   end\n#@   extension.update(claim.ref)\n#@   return extension\n#@
+      end\n\n#@ def param(key):\n#@   if not key in data.values.params:\n#@     return
+      None\n#@   end\n#@   return data.values.params[key]\n#@ end\n\n#@ def merge_labels(fixed_values):\n#@   labels
+      = {}\n#@   if hasattr(data.values.workload.metadata, \"labels\"):\n#@     labels.update(data.values.workload.metadata.labels)\n#@   end\n#@   labels.update(fixed_values)\n#@   return
+      labels\n#@ end\n\n#@ def merge_annotations(fixed_values):\n#@   annotations
+      = {}\n#@   if hasattr(data.values.workload.metadata, \"annotations\"):\n#@     #
+      DEPRECATED: remove in a future release\n#@     annotations.update(data.values.workload.metadata.annotations)\n#@   end\n#@   if
+      type(param(\"annotations\")) == \"dict\" or type(param(\"annotations\")) ==
+      \"struct\":\n#@     annotations.update(param(\"annotations\"))\n#@   end\n#@   annotations.update(fixed_values)\n#@   return
+      annotations\n#@ end\n\n#@ def delivery():\napiVersion: serving.knative.dev/v1\nkind:
+      Service\nmetadata:\n  name: #@ data.values.workload.metadata.name\n  #! annotations
+      NOT merged because knative annotations would be invalid here\n  labels: #@ merge_labels({
+      \"app.kubernetes.io/component\": \"run\", \"carto.run/workload-name\": data.values.workload.metadata.name
+      })\nspec:\n  template: #@ data.values.config\n#@ end\n\n#@ def claims():\n#@
+      claims_extension = get_claims_extension()\n#@ for s in data.values.workload.spec.serviceClaims:\n#@
+      if claims_extension == None or claims_extension.get(s.name) == None:\n---\napiVersion:
+      servicebinding.io/v1alpha3\nkind: ServiceBinding\nmetadata:\n  name: #@ data.values.workload.metadata.name
+      + ''-'' + s.name\n  annotations: #@ merge_annotations({})\n  labels: #@ merge_labels({
+      \"app.kubernetes.io/component\": \"run\", \"carto.run/workload-name\": data.values.workload.metadata.name
+      })\nspec:\n  name: #@ s.name\n  service: #@ s.ref\n  workload:\n    apiVersion:
+      serving.knative.dev/v1\n    kind: Service\n    name: #@ data.values.workload.metadata.name\n#@
+      else:\n---\napiVersion: services.apps.tanzu.vmware.com/v1alpha1\nkind: ResourceClaim\nmetadata:\n  name:
+      #@ data.values.workload.metadata.name + ''-'' + s.name\n  annotations: #@ merge_annotations({})\n  labels:
+      #@ merge_labels({ \"app.kubernetes.io/component\": \"run\", \"carto.run/workload-name\":
+      data.values.workload.metadata.name })\nspec:\n  ref: #@ merge_claims_extension(s,
+      claims_extension)\n---\napiVersion: servicebinding.io/v1alpha3\nkind: ServiceBinding\nmetadata:\n  name:
+      #@ data.values.workload.metadata.name + ''-'' + s.name\n  annotations: #@ merge_annotations({})\n  labels:
+      #@ merge_labels({ \"app.kubernetes.io/component\": \"run\", \"carto.run/workload-name\":
+      data.values.workload.metadata.name })\nspec:\n  name: #@ s.name\n  service:\n    apiVersion:
+      services.apps.tanzu.vmware.com/v1alpha1\n    kind: ResourceClaim\n    name:
+      #@ data.values.workload.metadata.name + ''-'' + s.name\n  workload:\n    apiVersion:
+      serving.knative.dev/v1\n    kind: Service\n    name: #@ data.values.workload.metadata.name\n#@
+      end\n#@ end\n#@ end\n\n---\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name:
+      #@ data.values.workload.metadata.name\n  labels: #@ merge_labels({ \"app.kubernetes.io/component\":
+      \"config\" })\ndata:\n  delivery.yml: #@ yaml.encode(delivery())\n  #@ if hasattr(data.values.workload.spec,
+      \"serviceClaims\") and len(data.values.workload.spec.serviceClaims):\n  serviceclaims.yml:
+      #@ yaml.encode(claims())\n  #@ end\n"}}'
+    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+  creationTimestamp: "2022-06-09T09:57:01Z"
+  generation: 1
+  labels:
+    kapp.k14s.io/app: "1654768621881280686"
+    kapp.k14s.io/association: v1.f2e215f8e20339d6e303fb495fed4b4d
   name: config-template
+  resourceVersion: "27537953"
+  uid: a076136c-67fc-4550-8d56-15bffe570f92
 spec:
   configPath: .data
   ytt: |
@@ -328,6 +297,13 @@ spec:
     #@   return extension
     #@ end
 
+    #@ def param(key):
+    #@   if not key in data.values.params:
+    #@     return None
+    #@   end
+    #@   return data.values.params[key]
+    #@ end
+
     #@ def merge_labels(fixed_values):
     #@   labels = {}
     #@   if hasattr(data.values.workload.metadata, "labels"):
@@ -340,7 +316,11 @@ spec:
     #@ def merge_annotations(fixed_values):
     #@   annotations = {}
     #@   if hasattr(data.values.workload.metadata, "annotations"):
+    #@     # DEPRECATED: remove in a future release
     #@     annotations.update(data.values.workload.metadata.annotations)
+    #@   end
+    #@   if type(param("annotations")) == "dict" or type(param("annotations")) == "struct":
+    #@     annotations.update(param("annotations"))
     #@   end
     #@   annotations.update(fixed_values)
     #@   return annotations
@@ -360,6 +340,22 @@ spec:
     #@ def claims():
     #@ claims_extension = get_claims_extension()
     #@ for s in data.values.workload.spec.serviceClaims:
+    #@ if claims_extension == None or claims_extension.get(s.name) == None:
+    ---
+    apiVersion: servicebinding.io/v1alpha3
+    kind: ServiceBinding
+    metadata:
+      name: #@ data.values.workload.metadata.name + '-' + s.name
+      annotations: #@ merge_annotations({})
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "run", "carto.run/workload-name": data.values.workload.metadata.name })
+    spec:
+      name: #@ s.name
+      service: #@ s.ref
+      workload:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        name: #@ data.values.workload.metadata.name
+    #@ else:
     ---
     apiVersion: services.apps.tanzu.vmware.com/v1alpha1
     kind: ResourceClaim
@@ -388,12 +384,14 @@ spec:
         name: #@ data.values.workload.metadata.name
     #@ end
     #@ end
+    #@ end
 
     ---
     apiVersion: v1
     kind: ConfigMap
     metadata:
       name: #@ data.values.workload.metadata.name
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "config" })
     data:
       delivery.yml: #@ yaml.encode(delivery())
       #@ if hasattr(data.values.workload.spec, "serviceClaims") and len(data.values.workload.spec.serviceClaims):
@@ -403,20 +401,55 @@ spec:
 apiVersion: carto.run/v1alpha1
 kind: ClusterTemplate
 metadata:
+  annotations:
+    kapp.k14s.io/identity: v1;/carto.run/ClusterTemplate/config-writer-template;carto.run/v1alpha1
+    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"ClusterTemplate","metadata":{"labels":{"kapp.k14s.io/app":"1654768621881280686","kapp.k14s.io/association":"v1.03a82cf1322797de0619e77144b895b2"},"name":"config-writer-template"},"spec":{"params":[{"default":"default","name":"serviceAccount"},{"default":{},"name":"registry"}],"ytt":"#@
+      load(\"@ytt:data\", \"data\")\n#@ load(\"@ytt:json\", \"json\")\n#@ load(\"@ytt:base64\",
+      \"base64\")\n\n#@ def has_git_params():\n#@   if ''gitops_repository_prefix''
+      in data.values.params:\n#@     return True\n#@   end\n#@\n#@   if ''gitops_repository''
+      in data.values.params:\n#@     return True\n#@   end\n#@\n#@   return False\n#@
+      end\n\n#@ def is_gitops():\n#@   return has_git_params()\n#@ end\n\n#@ def param(key):\n#@   if
+      not key in data.values.params:\n#@     return None\n#@   end\n#@   return data.values.params[key]\n#@
+      end\n\n#@ def git_repository():\n#@   if ''gitops_repository'' in data.values.params:\n#@     return
+      param(\"gitops_repository\")\n#@   end\n#@\n#@   prefix = param(\"gitops_repository_prefix\")\n#@   return
+      prefix + data.values.workload.metadata.name + \".git\"\n#@ end\n\n#@ def image():\n#@   return
+      \"/\".join([\n#@    data.values.params.registry.server,\n#@    data.values.params.registry.repository,\n#@    \"-\".join([\n#@      data.values.workload.metadata.name,\n#@      data.values.workload.metadata.namespace,\n#@      \"bundle\",\n#@    ])\n#@   ])
+      + \":\" + data.values.workload.metadata.uid\n#@ end\n\n\n---\napiVersion: carto.run/v1alpha1\nkind:
+      Runnable\nmetadata:\n  name: #@ data.values.workload.metadata.name + \"-config-writer\"\n  labels:\n    app.kubernetes.io/component:
+      config-writer\n    #@ if/end hasattr(data.values.workload.metadata, \"labels\")
+      and hasattr(data.values.workload.metadata.labels, \"app.kubernetes.io/part-of\"):\n    app.kubernetes.io/part-of:
+      #@ data.values.workload.metadata.labels[\"app.kubernetes.io/part-of\"]\nspec:\n  #@
+      if/end hasattr(data.values.workload.spec, \"serviceAccountName\"):\n  serviceAccountName:
+      #@ data.values.workload.spec.serviceAccountName\n\n  runTemplateRef:\n    name:
+      tekton-taskrun\n\n  inputs:\n    serviceAccount: #@ data.values.params.serviceAccount\n    taskRef:\n      kind:
+      ClusterTask\n      name: #@ \"git-writer\" if is_gitops() else \"image-writer\"\n    params:\n      #@
+      if is_gitops():\n      - name: git_repository\n        value: #@ git_repository()\n      -
+      name: git_branch\n        value: #@ param(\"gitops_branch\")\n      - name:
+      git_user_name\n        value: #@ param(\"gitops_user_name\")\n      - name:
+      git_user_email\n        value: #@ param(\"gitops_user_email\")\n      - name:
+      git_commit_message\n        value: #@ param(\"gitops_commit_message\")\n      -
+      name: git_files\n        value: #@ base64.encode(json.encode(data.values.config))\n      #@
+      else:\n      - name: files\n        value: #@ base64.encode(json.encode(data.values.config))\n      -
+      name: bundle\n        value: #@ image()\n      #@ end\n"}}'
+    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+  creationTimestamp: "2022-06-09T09:57:01Z"
+  generation: 1
+  labels:
+    kapp.k14s.io/app: "1654768621881280686"
+    kapp.k14s.io/association: v1.03a82cf1322797de0619e77144b895b2
   name: config-writer-template
+  resourceVersion: "27537960"
+  uid: bd6d85a4-3254-4ca5-b3a0-b9b5a2b53b48
 spec:
   params:
     - default: default
       name: serviceAccount
-    - name: registry
+    - default: {}
+      name: registry
   ytt: |
     #@ load("@ytt:data", "data")
     #@ load("@ytt:json", "json")
     #@ load("@ytt:base64", "base64")
-
-    #@ def is_git_source():
-    #@   return 'git' in data.values.workload.spec.source
-    #@ end
 
     #@ def has_git_params():
     #@   if 'gitops_repository_prefix' in data.values.params:
@@ -431,7 +464,7 @@ spec:
     #@ end
 
     #@ def is_gitops():
-    #@   return is_git_source() and has_git_params()
+    #@   return has_git_params()
     #@ end
 
     #@ def param(key):
@@ -504,3 +537,125 @@ spec:
           - name: bundle
             value: #@ image()
           #@ end
+---
+apiVersion: carto.run/v1alpha1
+kind: ClusterTemplate
+metadata:
+  annotations:
+    kapp.k14s.io/identity: v1;/carto.run/ClusterTemplate/deliverable-template;carto.run/v1alpha1
+    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"ClusterTemplate","metadata":{"labels":{"app.tanzu.vmware.com/deliverable-type":"web","kapp.k14s.io/app":"1654768621881280686","kapp.k14s.io/association":"v1.1ffcda80f456c9e6f298bc5cfbbe05cb"},"name":"deliverable-template"},"spec":{"params":[{"default":{},"name":"registry"}],"ytt":"#@
+      load(\"@ytt:data\", \"data\")\n\n#@ def merge_labels(fixed_values):\n#@   labels
+      = {}\n#@   if hasattr(data.values.workload.metadata, \"labels\"):\n#@     labels.update(data.values.workload.metadata.labels)\n#@   end\n#@   labels.update(fixed_values)\n#@   return
+      labels\n#@ end\n\n#@ def has_git_params():\n#@   if ''gitops_repository_prefix''
+      in data.values.params:\n#@     return True\n#@   end\n#@\n#@   if ''gitops_repository''
+      in data.values.params:\n#@     return True\n#@   end\n#@\n#@   return False\n#@
+      end\n\n#@ def is_gitops():\n#@   return has_git_params()\n#@ end\n\n#@ def param(key):\n#@   if
+      not key in data.values.params:\n#@     return None\n#@   end\n#@   return data.values.params[key]\n#@
+      end\n\n#@ def git_repository():\n#@   if ''gitops_repository'' in data.values.params:\n#@     return
+      param(\"gitops_repository\")\n#@   end\n#@\n#@   prefix = param(\"gitops_repository_prefix\")\n#@   return
+      prefix + data.values.workload.metadata.name + \".git\"\n#@ end\n\n#@ def image():\n#@   return
+      \"/\".join([\n#@    data.values.params.registry.server,\n#@    data.values.params.registry.repository,\n#@    \"-\".join([\n#@      data.values.workload.metadata.name,\n#@      data.values.workload.metadata.namespace,\n#@      \"bundle\",\n#@    ])\n#@   ])
+      + \":\" + data.values.workload.metadata.uid\n#@ end\n\n\n---\napiVersion: carto.run/v1alpha1\nkind:
+      Deliverable\nmetadata:\n  name: #@ data.values.workload.metadata.name\n  labels:
+      #@ merge_labels({ \"app.kubernetes.io/component\": \"deliverable\", \"app.tanzu.vmware.com/deliverable-type\":
+      \"web\" })\nspec:\n  #@ if/end hasattr(data.values.workload.spec, \"serviceAccountName\"):\n  serviceAccountName:
+      #@ data.values.workload.spec.serviceAccountName\n\n  #@ if/end is_gitops():\n  params:\n    -
+      name: \"gitops_ssh_secret\"\n      value: #@ param(\"gitops_ssh_secret\")\n\n  source:\n    #@
+      if/end is_gitops():\n    git:\n      url: #@ git_repository()\n      ref:\n        branch:
+      #@ param(\"gitops_branch\")\n\n    #@ if/end not is_gitops():\n    image: #@
+      image()\n"}}'
+    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+  creationTimestamp: "2022-06-09T09:57:01Z"
+  generation: 1
+  labels:
+    app.tanzu.vmware.com/deliverable-type: web
+    kapp.k14s.io/app: "1654768621881280686"
+    kapp.k14s.io/association: v1.1ffcda80f456c9e6f298bc5cfbbe05cb
+  name: deliverable-template
+  resourceVersion: "27537954"
+  uid: f70beb6c-20b7-4fbe-b194-67cb14a74a00
+spec:
+  params:
+    - default: {}
+      name: registry
+  ytt: |
+    #@ load("@ytt:data", "data")
+
+    #@ def merge_labels(fixed_values):
+    #@   labels = {}
+    #@   if hasattr(data.values.workload.metadata, "labels"):
+    #@     labels.update(data.values.workload.metadata.labels)
+    #@   end
+    #@   labels.update(fixed_values)
+    #@   return labels
+    #@ end
+
+    #@ def has_git_params():
+    #@   if 'gitops_repository_prefix' in data.values.params:
+    #@     return True
+    #@   end
+    #@
+    #@   if 'gitops_repository' in data.values.params:
+    #@     return True
+    #@   end
+    #@
+    #@   return False
+    #@ end
+
+    #@ def is_gitops():
+    #@   return has_git_params()
+    #@ end
+
+    #@ def param(key):
+    #@   if not key in data.values.params:
+    #@     return None
+    #@   end
+    #@   return data.values.params[key]
+    #@ end
+
+    #@ def git_repository():
+    #@   if 'gitops_repository' in data.values.params:
+    #@     return param("gitops_repository")
+    #@   end
+    #@
+    #@   prefix = param("gitops_repository_prefix")
+    #@   return prefix + data.values.workload.metadata.name + ".git"
+    #@ end
+
+    #@ def image():
+    #@   return "/".join([
+    #@    data.values.params.registry.server,
+    #@    data.values.params.registry.repository,
+    #@    "-".join([
+    #@      data.values.workload.metadata.name,
+    #@      data.values.workload.metadata.namespace,
+    #@      "bundle",
+    #@    ])
+    #@   ]) + ":" + data.values.workload.metadata.uid
+    #@ end
+
+
+    ---
+    apiVersion: carto.run/v1alpha1
+    kind: Deliverable
+    metadata:
+      name: #@ data.values.workload.metadata.name
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "deliverable", "app.tanzu.vmware.com/deliverable-type": "web" })
+    spec:
+      #@ if/end hasattr(data.values.workload.spec, "serviceAccountName"):
+      serviceAccountName: #@ data.values.workload.spec.serviceAccountName
+
+      #@ if/end is_gitops():
+      params:
+        - name: "gitops_ssh_secret"
+          value: #@ param("gitops_ssh_secret")
+
+      source:
+        #@ if/end is_gitops():
+        git:
+          url: #@ git_repository()
+          ref:
+            branch: #@ param("gitops_branch")
+
+        #@ if/end not is_gitops():
+        image: #@ image()

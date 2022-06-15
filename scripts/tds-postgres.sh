@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# exit when any command fails
+set -e
+
 ##########################################
 ## Section to declare the global variables
 ##########################################
@@ -45,15 +48,35 @@ Options:
 ####################################
 ## Section to declare the functions
 ####################################
+exec_command() {
+  if ! $@ ; then
+     rc=$?
+     fixme "Command '$@' failed"
+     exit $rc
+  fi
+}
+
 repeat_char(){
   COLOR=${1}
-	for i in {1..50}; do echo -ne "${!COLOR}$2${NC}"; done
+	for i in {1..70}; do echo -ne "${!COLOR}$2${NC}"; done
 }
 
 msg() {
   COLOR=${1}
   MSG="${@:2}"
   echo -e "\n${!COLOR}## ${MSG}${NC}"
+}
+
+note() {
+  echo -e "\n${BLUE}NOTE:${NC} $1"
+}
+
+warn() {
+  echo -e "\n${YELLOW}WARN:${NC} $1"
+}
+
+fixme() {
+  echo -e "\n${RED}FIXME:${NC} $1"
 }
 
 log() {
@@ -82,7 +105,7 @@ machine_os() {
 ## Check if flags are passed and set the variables using the flogs passed
 ############################################################################
 if [[ $# == 0 ]]; then
-  log "RED" "No Flags were passed. Run with --help flag to get usage information"
+  fixme "No Flags were passed. Run with --help flag to get usage information"
   exit 1
 fi
 
@@ -91,10 +114,6 @@ while test $# -gt 0; do
      -a | --action)
       shift
       action=$1
-      shift;;
-     -ns | --namespace)
-      shift
-      db_namespace=$1
       shift;;
      --registry-url)
       shift
@@ -116,11 +135,15 @@ while test $# -gt 0; do
       shift
       tds_version=$1
       shift;;
+     -ns | --namespace)
+      shift
+      db_namespace=$1
+      shift;;
      -h | --help)
       echo "$HELP_CONTENT"
       exit 1;;
     *)
-      log "RED" "$1 is not a recognized flag!"
+      fixme "$1 is note a recognized flag!"
       exit 1
       ;;
   esac
@@ -143,36 +166,36 @@ postgres_resource_name="postgres"
 # Check machine os
 machine_os
 if [[ $machine_os != "Mac" && $machine_os != "Linux" ]]; then
-  log "RED" "Only Mac and Linux are currently supported. your machine returned the type of $machine_os"
+  fixme "Only Mac and Linux are currently supported. your machine returned the type of $machine_os"
   exit 1
 fi
 
 # Validate that an action was passed
 if ! [[ $action ]]; then
-  log "RED" "Please pass a valid action using the flag (e.g. --action create)"
+  fixme "Please pass a valid action using the flag (e.g. --action create)"
   exit 1
 fi
 
 # Actions to executed
 case $action in
   prepare)
-    log "CYAN" "Preparing to install the TDS repository ${tds_version}, package and operator"
-
+    log "BLUE" "Preparing to install the TDS repository ${tds_version}, package and operator"
     # Validate if Mandatory Flags were supplied
-    if ! [[ ${registry_username} || ${registry_password} || ${registry_url} || ${registry_owner} ]]; then
-      log "YELLOW" "Some mandatory flags were not passed. use --help for usage information"
+    if ! [[ ${registry_username} && ${registry_password} && ${registry_url} && ${registry_owner} ]]; then
+      fixme "Mandatory flags were note passed: --registry-url, --registry_owner, --registry-username, --registry-password"
       exit 1
     fi
 
     if ! command -v tanzu &> /dev/null
     then
-      log "YELLOW" "Tanzu client is not installed"
+      warn "Tanzu client is note installed"
       exit 1
     fi
-    exit 0
 
+    note "Creating the namespace: ${tds_namespace}"
     kubectl create ns ${tds_namespace} --dry-run=client -o yaml | kubectl apply -f -
 
+    note "Populating the secret containing the registry credentials"
     tanzu secret registry add registry-credentials \
       --username ${registry_username} \
       --password ${registry_password} \
@@ -180,26 +203,27 @@ case $action in
       -n ${tds_namespace} \
       --export-to-all-namespaces --yes
 
+    note "Adding the tanzu-data-services-repository"
     tanzu package repository add tanzu-data-services-repository \
       --url ${registry_url}/${registry_owner}/tds-packages \
       -n ${tds_namespace}
 
-    log "CYAN" "Done";;
+    log "BLUE" "Done";;
   instance)
-    log "CYAN" "Creating an instance"
+    log "BLUE" "Creating an instance"
     # Validate if Mandatory Flags were supplied
     if ! [[ ${db_namespace} ]]; then
-      log "YELLOW" "Mandatory flags were not passed: --ns. use --help for usage information"
+      log "YELLOW" "Mandatory flags were note passed: --ns. use --help for usage information"
       exit 1
     fi
     msg "CYAN" "kubectl create ns ${db_namespace} --dry-run=client -o yaml | kubectl apply -f -"
-    log "CYAN"  "Instance of Postgres created under ${db_namespace}.";;
+    log "BLUE" "Instance of Postgres created under ${db_namespace}.";;
   delete)
-    log "CYAN" "Deleting an instance"
+    log "BLUE" "Deleting an instance"
     msg CYAN "Step: Removing the Tanzu Database repository"
     msg "CYAN" "tanzu package repository delete tanzu-data-services-repository -n tap-install"
-    msg CYAN "Step: Done ....";;
+    log "BLUE" "Done.";;
    *)
-    log "RED" "Unknown action passed: $action. Please use --help."
+    fixme "Unknown action passed: $action. Please use --help."
     exit 1
 esac
