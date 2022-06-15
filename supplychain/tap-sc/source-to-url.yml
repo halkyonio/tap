@@ -1,0 +1,97 @@
+apiVersion: carto.run/v1alpha1
+kind: ClusterSupplyChain
+metadata:
+  name: source-to-url
+spec:
+  params:
+    - default: main
+      name: gitops_branch
+    - default: supplychain
+      name: gitops_user_name
+    - default: supplychain
+      name: gitops_user_email
+    - default: supplychain@cluster.local
+      name: gitops_commit_message
+    - default: ""
+      name: gitops_ssh_secret
+  resources:
+    #
+    #     from(source-provider) --uses--> ClusterSourceTemplate/source-template
+    #     to(image-builder)     --uses--> ClusterConfigTemplate/convention-template
+    #     to(app-config)        --uses--> ClusterConfigTemplate/config-template (This is where the k8s resources are created such as ServiceBinding, Knative service or Rsourceclaim (optional))
+    #     to(config-writer)     --uses--> ClusterTemplate/config-writer-template
+    #
+    #     To(deliverable)       --uses--> ClusterTemplate/deliverable-template
+    #
+    - name: source-provider
+      params:
+        - name: serviceAccount
+          value: default
+        - name: gitImplementation
+          value: go-git
+      templateRef:
+        kind: ClusterSourceTemplate
+        name: source-template
+
+    - name: deliverable
+      params:
+        - name: registry
+          value:
+            repository: tap
+            server: registry.harbor.10.0.77.176.nip.io:32443
+      templateRef:
+        kind: ClusterTemplate
+        name: deliverable-template
+
+    - name: image-builder
+      params:
+        - name: serviceAccount
+          value: default
+        - name: clusterBuilder
+          value: default
+        - name: registry
+          value:
+            repository: tap
+            server: registry.harbor.10.0.77.176.nip.io:32443
+      sources:
+        - name: source
+          resource: source-provider
+      templateRef:
+        kind: ClusterImageTemplate
+        name: kpack-template
+
+    - images:
+        - name: image
+          resource: image-builder
+      name: config-provider
+      params:
+        - name: serviceAccount
+          value: default
+      templateRef:
+        kind: ClusterConfigTemplate
+        name: convention-template
+
+    - configs:
+        - name: config
+          resource: config-provider
+      name: app-config
+      templateRef:
+        kind: ClusterConfigTemplate
+        name: config-template
+
+    - configs:
+        - name: config
+          resource: app-config
+      name: config-writer
+      params:
+        - name: serviceAccount
+          value: default
+        - name: registry
+          value:
+            repository: tap
+            server: registry.harbor.10.0.77.176.nip.io:32443
+      templateRef:
+        kind: ClusterTemplate
+        name: config-writer-template
+  selector:
+    apps.tanzu.vmware.com/workload-type: web
