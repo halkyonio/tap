@@ -4,6 +4,7 @@ Table of Contents
 * [Harbor](#harbor)
     * [Prerequisites](#prerequisites)
     * [Instructions](#instructions)
+    * [Issue](#issue)
     * [Remove Harbor](#remove-harbor)
     * [Optional](#optional)
 
@@ -124,6 +125,15 @@ kubectl -n default create secret docker-registry harbor-creds \
     --docker-username=admin \
     --docker-password=Harbor12345
 kubectl patch serviceaccount default -n default -p '{"imagePullSecrets": [{"name": "harbor-creds"}]}'
+```
+
+## Issue
+
+The only limitation that we have using harbor deployed on a k8s cluster is is when you restart the cluster or VM as the harbor pod could not be ready when the kpack controller reconcilles the clusterstack CRDs. 
+
+The workaround is to restart the kpack controller
+```
+kubectl rollout restart deployment/kpack-controller -n kpack
 ```
 
 ## Remove Harbor
