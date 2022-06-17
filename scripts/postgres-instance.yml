@@ -1,0 +1,69 @@
+apiVersion: sql.tanzu.vmware.com/v1
+kind: Postgres
+metadata:
+  name: postgres-db
+spec:
+  storageClassName: local-path
+  storageSize: 800M
+  cpu: "0.8"
+  memory: 800Mi
+  monitorStorageClassName: local-path
+  monitorStorageSize: 1G
+  resources:
+    monitor:
+      limits:
+        cpu: 800m
+        memory: 800Mi
+      requests:
+        cpu: 800m
+        memory: 800Mi
+    metrics:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+  pgConfig:
+    dbname: postgres-db
+    username: pgadmin
+    appUser: pgappuser
+  postgresVersion:
+    name: postgres-14 # View available versions with `kubectl get postgresversion`
+  serviceType: ClusterIP
+  monitorPodConfig:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: type
+                    operator: In
+                    values:
+                      - data
+                      - monitor
+                  - key: postgres-instance
+                    operator: In
+                    values:
+                      - postgres-db
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+  dataPodConfig:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: type
+                    operator: In
+                    values:
+                      - data
+                      - monitor
+                  - key: postgres-instance
+                    operator: In
+                    values:
+                      - postgres-db
+              topologyKey: kubernetes.io/hostname
+            weight: 100
