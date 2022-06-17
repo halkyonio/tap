@@ -198,6 +198,10 @@ tanzu apps workload -n demo-3 delete $APP
 
 ### Demo 4: Quarkus App + DB
 
+TODO: To be reviewed as the way to claim a service has changed since 1.1.1 and it is not longer to create a `ResourceClaim` when the 
+application is running within the same namespace as the DB but only to pass the reference using as convention `ApiVersion:Kind:Name`.
+If the DB runs in a different namespace, then a `ResourceClailPolicy` must be created as its reference used as serviceRef !!
+
 This example illustrates how to use the quarkus runtime and a Database service on a platform running TAP. As the current platform is not able to build by default
 the fat-jar used by Quarkus, it has been needed to create a new supply chain able to perform such a build. The scenario that we will follow part of this demo will
 do:
