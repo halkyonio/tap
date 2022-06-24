@@ -22,7 +22,7 @@ Options:
 
 [Global Mandatory Flags]
   --action: What action to take ?
-    \"prepare\": Install the Tanzu Data Service repository using a private images registry
+    \"prepare\": Install the Tanzu Data Service repository using a private image registry
     \"instance\": Create a PostgresDB CR instance within the specified namespace
     \"delete\": Delete a PostgresDB CR deployed in a namespace
     \"remove\": Delete the package and repository of TDS
@@ -153,6 +153,7 @@ done
 ## Set default values when no optional flags are passed
 #######################################################
 : ${tds_version:="1.7.3"}
+: ${tds_repository_name:="tanzu-data-services-repository"}
 : ${tds_namespace:="db"}
 
 #######################################################
@@ -182,20 +183,20 @@ case $action in
     log "BLUE" "Preparing to install the TDS repository ${tds_version}, package and operator"
     # Validate if Mandatory Flags were supplied
     if ! [[ ${registry_username} && ${registry_password} && ${registry_url} && ${registry_owner} ]]; then
-      fixme "Mandatory flags were note passed: --registry-url, --registry_owner, --registry-username, --registry-password"
+      fixme "Mandatory flags were note passed: --registry-url, --registry-owner, --registry-username, --registry-password"
       exit 1
     fi
 
     if ! command -v tanzu &> /dev/null
     then
-      warn "Tanzu client is note installed"
+      warn "Tanzu client is not installed"
       exit 1
     fi
 
     note "Creating the namespace: ${tds_namespace}"
     kubectl create ns ${tds_namespace} --dry-run=client -o yaml | kubectl apply -f -
 
-    note "Populating the secret containing the registry credentials"
+    note "Populating the secret containing the registry credentials, create it and export it to all the namespaces"
     tanzu secret registry add registry-credentials \
       --username ${registry_username} \
       --password ${registry_password} \
@@ -204,9 +205,16 @@ case $action in
       --export-to-all-namespaces --yes
 
     note "Adding the tanzu-data-services-repository"
-    tanzu package repository add tanzu-data-services-repository \
+    tanzu package repository add ${tds_repository_name} \
       --url ${registry_url}/${registry_owner}/tds-packages \
       -n ${tds_namespace}
+
+    note "Installing the Postgresql Operator from the package postgres-operator.sql.tanzu.vmware.com version: ${tds_version}"
+    #tanzu package install postgres-operator \
+    #  -p postgres-operator.sql.tanzu.vmware.com \
+    #  -v ${tds_version} \
+    #  -n ${tds_namespace}
+    #  #-f <YOUR-OVERRIDES-FILE-PATH>
 
     log "BLUE" "Done";;
   instance)
@@ -219,10 +227,15 @@ case $action in
     msg "CYAN" "kubectl create ns ${db_namespace} --dry-run=client -o yaml | kubectl apply -f -"
     log "BLUE" "Instance of Postgres created under ${db_namespace}.";;
   delete)
-    log "BLUE" "Deleting an instance"
-    msg CYAN "Step: Removing the Tanzu Database repository"
-    msg "CYAN" "tanzu package repository delete tanzu-data-services-repository -n tap-install"
-    log "BLUE" "Done.";;
+    note "Deleting an instance"
+    note "tanzu package repository delete tanzu-data-services-repository -n tap-install"
+    note "Done.";;
+  remove)
+    note "Remove the Tanzu postgresql package"
+    tanzu package installed delete postgres-operator -n ${tds_namespace} -y
+    note "Remove now the Tanzu TDS repository"
+    tanzu package repository delete ${tds_repository_name} -n ${tds_namespace} -y
+    note "Done.";;
    *)
     fixme "Unknown action passed: $action. Please use --help."
     exit 1
