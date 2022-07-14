@@ -19,7 +19,7 @@ Table of Contents
 
 ## What is Tanzu Application Platform - TAP
 
-Tanzu Application Platform - https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
+Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.2/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
@@ -51,12 +51,12 @@ See the following file to get an overview about the different TAP packages [here
 
 ## Prerequisites
 
-The following [installation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-prerequisites.html) guide explains what the prerequisites are.
+The following [installation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.2/tap/GUID-prerequisites.html) guide explains what the prerequisites are.
 
 TL&DR; It is needed to:
 
 - Have a [Tanzu account](https://network.tanzu.vmware.com/) to download the software or access the [Tanzu registry](registry.tanzu.vmware.com),
-- Accept the needed [EULA](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#eulas)
+- Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.2/tap/GUID-install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
 - Access a k8s cluster >= 1.21 with Cluster Admin Role and kubectl installed
 - Have a Linux VM machine with at least 8 CPUs, 8 GB of RAM and 100Gb (if you plan to use locally a container registry)
 - Private container registry such as [Harbor](harbor.md) (optional) exposed using a NodePort on the cluster (e.g: registry.harbor.VM_IP.nip.io:32443)
@@ -66,7 +66,7 @@ TL&DR; It is needed to:
 ### Introduction
 
 The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html) have been executed without problem
-to install the release [1.1.1](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-release-notes.html).
+to install the release [1.2.0](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.2/tap/GUID-release-notes.html).
 
 To simplify your life, we have designed a [bash script](scripts/install.sh) which allows to install the different bits in a VM:
 
@@ -110,7 +110,7 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
 - **VM_IP**: IP address of the VM where the cluster is running
 
-**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-install.html#relocate-images-to-a-registry-0) 
+**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.2/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
 to your registry from VMware Tanzu Network registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
 as the images will be copied using `imgpkg tool`.
 
@@ -169,7 +169,7 @@ As mentioned within the previous section, when we plan to use a [private local r
 1. Copy the TAP packages - images to the registry
 
 ```bash
-imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.1.1 --to-tar packages.tar
+imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.2.0 --to-tar packages.tar
 imgpkg copy --tar packages.tar --to-repo registry.harbor.<VM_IP>.nip.io:<PORT>/tap/tap-packages
 ```
 2. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script
@@ -216,7 +216,7 @@ The steps 2. and 3. are managed by our `install.sh` script !
 
 **WARNING**
 
-Unfortunately, some problems still exist using TAP 1.1.1 as the `kapp controller configmap` must be patched manually - see [issue-18](https://github.com/halkyonio/tap/issues/18) using the commands
+Unfortunately, some problems still exist using TAP 1.2.0 as the `kapp controller configmap` must be patched manually - see [issue-18](https://github.com/halkyonio/tap/issues/18) using the commands
 to pass the CA certificate of the private registry
 ```bash
 configMap='
@@ -272,7 +272,7 @@ Next, install the tool using by example the following instructions on a Mac mach
 **Note**: The instructions are equivalent on Linux except the TAR file to be downloaded !
 
 ```bash
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.1.1' --product-file-id=1212837
+pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.2.0' --product-file-id=1212837
 tar -vxf tanzu-framework-darwin-amd64.tar
 install cli/core/v0.11.4/tanzu-core-darwin_amd64 /usr/local/bin/tanzu
 export TANZU_CLI_NO_INIT=true

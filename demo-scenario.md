@@ -92,7 +92,7 @@ k8s + tanzu client + tanzu cluster essentials + tilt (optional)
 tanzu plugin list
 
 vim .
-tanzu package install tap -p tap.tanzu.vmware.com -v 1.1.1
+tanzu package install tap -p tap.tanzu.vmware.com -v 1.2.0
 tanzu package available list -A
 tanzu package installed list -A
 
