@@ -196,12 +196,13 @@ EOF
 log "CYAN" "Register the Postgres DB as Service to the API"
 cat <<EOF | kubectl apply -f -
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-kind: ClusterResource
+kind: ClusterInstanceClass
 metadata:
   name: postgresql
 spec:
-  shortDescription: It's a PostgreSQL cluster!
-  resourceRef:
+  description:
+     short: It's a PostgreSQL cluster!
+  pool:
     group: $POSTGRES_API_GROUP
     kind: $POSTGRES_KIND
 EOF
