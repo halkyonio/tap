@@ -69,8 +69,8 @@ docker pull registry.tanzu.vmware.com/tanzu-sql-postgres/postgres-instance:v${PO
 docker pull registry.tanzu.vmware.com/tanzu-sql-postgres/postgres-operator:v${POSTGRESQL_VERSION}
 
 log "CYAN" "Accept the EULA licence for the product - 327 - VMware Tanzu SQL with Postgres"
-p=327
-pivnet curl -X POST $(pivnet releases -p ${p} --format=json | jq -r '.[0]._links.eula_acceptance.href')
+id=$(pivnet products --format=json | jq -r '.[] | select(.slug=="tanzu-sql-postgres").id')
+pivnet accept-eula -p ${id} -r ${POSTGRESQL_VERSION}
 
 if [[ -d "$HOME/postgresql" ]]; then
   echo "$HOME/postgresql already exists on the machine."
