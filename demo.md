@@ -93,15 +93,15 @@ tanzu apps workload -n demo-2 delete $APP
 
 This example extends the previous and will demonstrate how to bind a Postgresql DB with the Spring application.
 
-- First, install the Postgresql DB operator and create an instance within the `demo-3` namespace using the commands:
+- First, install the Postgresql DB operator and next create an instance, claim within the `demo-3` namespace using the bash scripts:
 
 ```bash
 REGISTRY_USERNAME="xxxxx"
 REGISTRY_PASSWORD="yyyyyyyy"
-./scripts/install_postgresql.sh
+./scripts/install_postgresql.sh # To install the Postgresql Operator using a helm chart
 
 NAMESPACE=demo-3
-./scripts/claim_postgresql.sh 
+./scripts/claim_postgresql.sh # To create a postgres instance, the clusterrole allowing to access the resources, the resourceclaim, etc
 ```
 
 **Remark**: In order to let the Service Toolkit to access the resources of the Postgresql DB, to claim them, it has been needed to create the following RBAC during the installation of the Postgresql database
