@@ -40,7 +40,7 @@ log() {
   echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
 }
 
-REGISTRY_SERVER=${REGISTRY_SERVER:-registry.pivotal.io}
+REGISTRY_SERVER=${REGISTRY_SERVER:-registry.tanzu.vmware.com}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
