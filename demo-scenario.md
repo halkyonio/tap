@@ -157,9 +157,8 @@ tanzu apps -n demo-2 workload delete $APP
 ! Use the bash script to install PostgreSQL - install_postgresql.sh
 
 ./scripts/populate_namespace_tap.sh demo-3
-./scripts/install_postgresql.sh demo-3
-
-tanzu service instance list -owide -A
+./scripts/install_postgresql.sh
+./scripts/claim_postgresql.sh demo-3
 
 PROJECT=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
@@ -169,7 +168,7 @@ tanzu apps workload create $APP \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
-     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:demo-3:postgres-db"
+     --service-ref "db=services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:postgres-1"
 
 tanzu apps -n demo-3 workload get $APP
 kc get -n demo-3 workload $APP -o yaml
@@ -178,6 +177,9 @@ kubectl get pod -l "app=spring-tap-petclinic-00002" -n demo-3 -o yaml | grep -A 
 
 IMG_SHA=$(k get deliverable/spring-tap-petclinic -n demo-3 -o jsonpath='{.spec.source.image}')
 imgpkg pull -b registry.harbor.10.0.77.176.nip.io:32443/tap/spring-tap-petclinic-demo-3-bundle:26302cbb-6ab7-4c5a-a4ef-ac20caeeedc7 -o _temp/sb --registry-verify-certs=false
+
+To cleanup
+tanzu apps workload delete $APP -n demo-3 -y
 
 ## Optional - Get the K8S CA CERT to trust it for Google Chrome ==> "thisisunsafe"
 
