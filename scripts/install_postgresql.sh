@@ -54,28 +54,30 @@ POSTGRES_RESOURCE_NAME=postgres
 KUBE_CFG_FILE=${KUBE_CFG_FILE:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
-log "CYAN" "Pull the postgres-operator-chart from Pivotal registry"
+log "CYAN" "Helm login to $REGISTRY_SERVER"
 export HELM_EXPERIMENTAL_OCI=1
 helm registry login $REGISTRY_SERVER \
        --username=$REGISTRY_USERNAME \
        --password=$REGISTRY_PASSWORD
 
-log "CYAN" "Pull the postgres-operator images"
+log "CYAN" "Docker login to $REGISTRY_SERVER"
 docker login $REGISTRY_SERVER \
        -u $REGISTRY_USERNAME \
-        -p $REGISTRY_PASSWORD
+       -p $REGISTRY_PASSWORD
 
+PRODUCT_NAME="tanzu-sql-postgres"
+log "CYAN" "Accept the EULA licence for the product $PRODUCT_NAME and version: $POSTGRESQL_VERSION"
+pivnet accept-eula -p $PRODUCT_NAME -r ${POSTGRESQL_VERSION}
+
+log "CYAN" "Pull the docker images: postgres-instance and postgres-operator"
 docker pull registry.tanzu.vmware.com/tanzu-sql-postgres/postgres-instance:v${POSTGRESQL_VERSION}
 docker pull registry.tanzu.vmware.com/tanzu-sql-postgres/postgres-operator:v${POSTGRESQL_VERSION}
 
-log "CYAN" "Accept the EULA licence for the product - 327 - VMware Tanzu SQL with Postgres"
-id=$(pivnet products --format=json | jq -r '.[] | select(.slug=="tanzu-sql-postgres").id')
-pivnet accept-eula -p ${id} -r ${POSTGRESQL_VERSION}
 
 if [[ -d "$HOME/postgresql" ]]; then
   echo "$HOME/postgresql already exists on the machine."
 else
-  log "CYAN" "Helm pulling"
+  log "CYAN" "Pull the postgres-operator-chart from VMWare Tanzu registry"
   helm pull oci://$REGISTRY_SERVER/tanzu-sql-postgres/postgres-operator-chart --version v$POSTGRESQL_VERSION --untar --untardir $HOME/postgresql
   log "CYAN" "Install the tanzu postgresql operator within the namespace db using helm"
   kubectl create ns db
