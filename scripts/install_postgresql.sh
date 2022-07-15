@@ -11,7 +11,7 @@
 # - REGISTRY_SERVER: Tanzu image registry hostname
 # - REGISTRY_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - REGISTRY_PASSWORD: password to be used to be authenticated against the Tanzu image registry
-# - POSTGRESQL_VERSION: Version of the Postgresl Operator to be installed (e.g. 1.8.0)
+# - POSTGRESQL_VERSION: Version of the Postgresl Operator to be installed (e.g. 1.5.0)
 
 set -e
 
@@ -45,7 +45,7 @@ REGISTRY_SERVER=${REGISTRY_SERVER:-registry.tanzu.vmware.com}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
-POSTGRESQL_VERSION=${POSTGRESQL_VERSION:-1.8.0}
+POSTGRESQL_VERSION=${POSTGRESQL_VERSION:-1.5.0}
 POSTGRES_API_GROUP=sql.tanzu.vmware.com
 POSTGRES_API_VERSION=v1
 POSTGRES_KIND=Postgres
