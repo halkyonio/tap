@@ -103,7 +103,7 @@ REGISTRY_PASSWORD="yyyyyyyy" # Your registry password to access registry.pivotal
 NAMESPACE=demo-3
 ./scripts/claim_postgresql.sh # To create a postgres instance, the clusterrole allowing to access the resources, the resourceclaim, etc
 ```
-**Note**: It is needed to have n account on `https://network.tanzu.vmware.com/` to access the Tanzu/Pivotal registry !
+**Note**: It is needed to have an account on `https://network.tanzu.vmware.com/` to access the Tanzu/Pivotal registry !
 
 **Remark**: In order to let the Service Toolkit to access the resources of the Postgresql DB, to claim them, it has been needed to create the following RBAC during the installation of the Postgresql database
 ```yaml
