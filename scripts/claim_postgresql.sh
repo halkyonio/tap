@@ -11,7 +11,7 @@
 # - REGISTRY_SERVER: Tanzu image registry hostname
 # - REGISTRY_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - REGISTRY_PASSWORD: password to be used to be authenticated against the Tanzu image registry
-# - NAMESPACE: Namespace where the claim should be created
+# - NAMESPACE: Namespace where the claim should be created (e.g demo-3) and used by the service binding
 
 set -e
 
@@ -112,8 +112,8 @@ spec:
   consumingNamespaces:
   - '*'
   subject:
-    group: sql.tanzu.vmware.com
-    kind: Postgres
+    group: ${POSTGRES_API_GROUP}
+    kind: ${POSTGRES_KIND}
 EOF
 
 log "CYAN" "Create an instance of the postgres DB within the namespace: ${NAMESPACE_SERVICE_INSTANCES}"

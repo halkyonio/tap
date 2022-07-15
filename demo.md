@@ -93,10 +93,15 @@ tanzu apps workload -n demo-2 delete $APP
 
 This example extends the previous and will demonstrate how to bind a Postgresql DB with the Spring application.
 
-- First, install the Postgresql DB operator and create an instance within the `demo-3` namespace using this command:
+- First, install the Postgresql DB operator and create an instance within the `demo-3` namespace using the commands:
 
 ```bash
-./scripts/install_postgresql.sh demo-3
+REGISTRY_USERNAME="xxxxx"
+REGISTRY_PASSWORD="yyyyyyyy"
+./scripts/install_postgresql.sh
+
+NAMESPACE=demo-3
+./scripts/claim_postgresql.sh 
 ```
 
 **Remark**: In order to let the Service Toolkit to access the resources of the Postgresql DB, to claim them, it has been needed to create the following RBAC during the installation of the Postgresql database
@@ -108,6 +113,7 @@ metadata:
   name: resource-claims-postgresql
   labels:
     resourceclaims.services.apps.tanzu.vmware.com/controller: "true"
+    servicebinding.io/controller: "true"
 rules:
   - apiGroups:
     - sql.tanzu.vmware.com
@@ -118,23 +124,35 @@ rules:
 Next, the Postgresql service has been registered as such
 ```yaml
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-kind: ClusterResource
+kind: ClusterInstanceClass
 metadata:
   name: postgresql
 spec:
-  shortDescription: It's a PostgreSQL cluster!
-  resourceRef:
+  description:
+    short: It's a PostgreSQL cluster!
+  pool:
     group: sql.tanzu.vmware.com
-    kind: postgres
+    kind: Postgres
 ```
 
 - Wait a few moments to be sure that the DB is up and running
-- Obtain a service reference by running:
+- When the DB pod is ready, then grant the user to fix the issue `permission denied for schema` that the spring petclinic log will report otherwise
+  `kubectl exec -it postgres-db-0 -n service-instances -- bash -c "psql -d postgres-db -c \"GRANT postgres to pgappuser;\""`
+- Obtain a Service Claim reference by running the following command:
 
 ```bash
-tanzu service instance list -owide -A
-NAMESPACE  NAME         KIND      SERVICE TYPE  AGE    SERVICE REF
-demo-3     postgres-db  Postgres  postgresql    3d18h  sql.tanzu.vmware.com/v1:Postgres:postgres-db
+tanzu service claim get  postgres-1 -n demo-3
+Name: postgres-1
+Status:
+  Ready: True
+Namespace: demo-3
+Claim Reference: services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:postgres-1
+Resource to Claim:
+  Name: postgres-db
+  Namespace: service-instances
+  Group: sql.tanzu.vmware.com
+  Version: v1
+  Kind: Postgres
 ```
 - Create on the TAP cluster, a `demo-3` namespace, secret & RBAC using the bash script `./scripts/populate_namespace_tap.sh demo-3`.
 - Use the `Workload` of the [git repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
@@ -148,7 +166,7 @@ tanzu apps workload create $APP \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
-     --service-ref "db=sql.tanzu.vmware.com/v1:Postgres:postgres-db"
+     --service-ref "db=services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:postgres-1"
 ```
 
 - Check the status of the workload, if a new build succeeded and application has been redeployed
