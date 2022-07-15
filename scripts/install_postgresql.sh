@@ -11,6 +11,7 @@
 # - REGISTRY_SERVER: Tanzu image registry hostname
 # - REGISTRY_USERNAME: user to be used to be authenticated against the Tanzu image registry
 # - REGISTRY_PASSWORD: password to be used to be authenticated against the Tanzu image registry
+# - POSTGRESQL_VERSION: Version of the Postgresl Operator to be installed (e.g. 1.8.0)
 
 set -e
 
@@ -44,9 +45,7 @@ REGISTRY_SERVER=${REGISTRY_SERVER:-registry.tanzu.vmware.com}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 
-NAMESPACE=${NAMESPACE:-tap-demo}
-
-POSTGRESQL_VERSION=1.5.0
+POSTGRESQL_VERSION=${POSTGRESQL_VERSION:-1.8.0}
 POSTGRES_API_GROUP=sql.tanzu.vmware.com
 POSTGRES_API_VERSION=v1
 POSTGRES_KIND=Postgres
@@ -60,6 +59,14 @@ export HELM_EXPERIMENTAL_OCI=1
 helm registry login $REGISTRY_SERVER \
        --username=$REGISTRY_USERNAME \
        --password=$REGISTRY_PASSWORD
+
+log "CYAN" "Pull the postgres-operator images"
+docker login $REGISTRY_SERVER \
+       -u $REGISTRY_USERNAME \
+        -p $REGISTRY_PASSWORD
+
+docker pull registry.tanzu.vmware.com/tanzu-sql-postgres/postgres-instance:v${POSTGRESQL_VERSION}
+docker pull registry.tanzu.vmware.com/tanzu-sql-postgres/postgres-operator:v${POSTGRESQL_VERSION}
 
 if [[ -d "$HOME/postgresql" ]]; then
   echo "$HOME/postgresql already exists on the machine."
