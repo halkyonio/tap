@@ -65,7 +65,7 @@ if [[ -d "$HOME/postgresql" ]]; then
   echo "$HOME/postgresql already exists on the machine."
 else
   log "CYAN" "Helm pulling"
-  helm pull oci://registry.pivotal.io/tanzu-sql-postgres/postgres-operator-chart --version v$POSTGRESQL_VERSION --untar --untardir $HOME/postgresql
+  helm pull oci://$REGISTRY_SERVER/tanzu-sql-postgres/postgres-operator-chart --version v$POSTGRESQL_VERSION --untar --untardir $HOME/postgresql
   log "CYAN" "Install the tanzu postgresql operator within the namespace db using helm"
   kubectl create ns db
   helm install tanzu-postgresql $HOME/postgresql/postgres-operator -n db --wait
