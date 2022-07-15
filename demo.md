@@ -96,8 +96,8 @@ This example extends the previous and will demonstrate how to bind a Postgresql 
 - First, install the Postgresql DB operator and next create an instance, claim within the `demo-3` namespace using the bash scripts:
 
 ```bash
-REGISTRY_USERNAME="xxxxx"
-REGISTRY_PASSWORD="yyyyyyyy"
+REGISTRY_USERNAME="xxxxx" # Your registry account/username to access registry.pivotal.io
+REGISTRY_PASSWORD="yyyyyyyy" # Your registry password to access registry.pivotal.io
 ./scripts/install_postgresql.sh # To install the Postgresql Operator using a helm chart
 
 NAMESPACE=demo-3

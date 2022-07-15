@@ -154,7 +154,7 @@ tanzu apps -n demo-2 workload delete $APP
 
 # Demo 3
 
-! Use the bash script to install PostgreSQL - install_postgresql.sh
+! Use the following bash scripts to install Postgres, claim, ....
 
 ./scripts/populate_namespace_tap.sh demo-3
 ./scripts/install_postgresql.sh
