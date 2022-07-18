@@ -127,9 +127,16 @@ NAMESPACE_DEMO="tap-demo"
 NAMESPACE_TAP="tap-install"
 
 PIVNET_CLI_VERSION="3.0.1"
-TANZU_CLUSTER_ESSENTIALS_VERSION="1.1.0"
-TAP_VERSION="1.1.1"
-TANZU_CLI_VERSION="v0.11.4"
+
+TAP_VERSION="1.2.0"
+
+TANZU_CLI_VERSION="v0.11.6"
+TANZU_CLIENT_FILE_ID="1246421"
+TANZU_CLIENT_NAME="tanzu-framework-linux-amd64"
+
+TANZU_CLUSTER_ESSENTIALS_VERSION="1.2.0"
+TANZU_CLUSTER_ESSENTIALS_FILE_ID="1263760"
+TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:e00f33b92d418f49b1af79f42cb13d6765f1c8c731f4528dfff8343af042dc3e"
 
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
@@ -208,9 +215,6 @@ pushd $TANZU_TEMP_DIR
 
 # Download Cluster Essentials for VMware Tanzu
 log "CYAN" "Set the Cluster Essentials product ID for version $TANZU_CLUSTER_ESSENTIALS_VERSION"
-TANZU_CLUSTER_ESSENTIALS_FILE_ID="1191987"
-TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:ab0a3539da241a6ea59c75c0743e9058511d7c56312ea3906178ec0f3491f51d"
-
 log "CYAN" "Download the tanzu-cluster-essentials ... "
 pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
 mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd64-$TANZU_CLUSTER_ESSENTIALS_VERSION.tgz -C ./tanzu-cluster-essentials
@@ -243,10 +247,8 @@ kubectl rollout restart deployment/kapp-controller -n kapp-controller
 
 log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION"
 log "CYAN" "Download the Tanzu client and extract it"
-TANZU_PRODUCT_FILE_ID="1212839"
-TANZU_PRODUCT_NAME="tanzu-framework-linux-amd64"
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=$TAP_VERSION --product-file-id=$TANZU_PRODUCT_FILE_ID
-tar -vxf $TANZU_PRODUCT_NAME.tar
+pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=$TAP_VERSION --product-file-id=$TANZU_CLIENT_FILE_ID
+tar -vxf $TANZU_CLIENT_NAME.tar
 
 log "CYAN" "Set env var TANZU_CLI_NO_INIT to true to assure the local downloaded versions of the CLI core and plug-ins are installed"
 export TANZU_CLI_NO_INIT=true

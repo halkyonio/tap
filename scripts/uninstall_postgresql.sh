@@ -8,7 +8,7 @@
 # ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./uninstall_postgresql.sh
 #
 # Define the following env vars:
-# - NAMESPACE: Namespace where the postgresql instance should be created
+# - NAMESPACE: Namespace where the postgresql instance should be deleted
 
 # Defining some colors for output
 RED='\033[0;31m'
@@ -38,13 +38,13 @@ log() {
 
 KUBE_CFG_FILE=${KUBE_CFG_FILE:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
-NAMESPACE=${NAMESPACE:-tap-demo}
+#NAMESPACE=${NAMESPACE:-tap-demo}
 
-log "YELLOW" "Deleting the regsecret secret"
-kubectl -n $NAMESPACE delete secret regsecret --ignore-not-found
+#log "YELLOW" "Deleting the regsecret secret"
+#kubectl -n $NAMESPACE delete secret regsecret --ignore-not-found
 
-log "YELLOW" "Delete the postgresql instance"
-kubectl delete Postgres/postgres-db -n $NAMESPACE --ignore-not-found
+#log "YELLOW" "Delete the postgresql instance"
+#kubectl delete Postgres/postgres-db -n $NAMESPACE --ignore-not-found
 
 log "YELLOW" "Uninstalling the Helm chart of postgresql"
 helm uninstall tanzu-postgresql -n db
