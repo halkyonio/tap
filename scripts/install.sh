@@ -79,7 +79,7 @@ check_distro() {
 generate_ca_cert_data_yaml() {
   if [ -n "$REGISTRY_CA_PATH" ]; then
     caCertFormated=$(awk '{printf "      %s\n", $0}' < ${REGISTRY_CA_PATH})
-    echo "$newline  ca_cert_data: |$newline$caCertFormated"
+    echo "$caCertFormated"
   fi
 }
 
@@ -121,22 +121,22 @@ TANZU_REG_SERVER=${TANZU_REG_SERVER}
 TANZU_REG_USERNAME=${TANZU_REG_USERNAME}
 TANZU_REG_PASSWORD=${TANZU_REG_PASSWORD}
 
-INGRESS_DOMAIN=$VM_IP.nip.io
+INGRESS_DOMAIN=$VM_IP.sslip.io
 
 NAMESPACE_DEMO="tap-demo"
 NAMESPACE_TAP="tap-install"
 
 PIVNET_CLI_VERSION="3.0.1"
 
-TAP_VERSION="1.2.0"
+TAP_VERSION="1.3.0"
 
-TANZU_CLI_VERSION="v0.11.6"
-TANZU_CLIENT_FILE_ID="1246421"
+TANZU_CLI_VERSION="v0.25.0"
+TANZU_CLIENT_FILE_ID="1310085"
 TANZU_CLIENT_NAME="tanzu-framework-linux-amd64"
 
-TANZU_CLUSTER_ESSENTIALS_VERSION="1.2.0"
-TANZU_CLUSTER_ESSENTIALS_FILE_ID="1263760"
-TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:e00f33b92d418f49b1af79f42cb13d6765f1c8c731f4528dfff8343af042dc3e"
+TANZU_CLUSTER_ESSENTIALS_VERSION="1.3.0"
+TANZU_CLUSTER_ESSENTIALS_FILE_ID="1330470"
+TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9"
 
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
@@ -152,29 +152,32 @@ else
   sudo yum install git wget unzip epel-release bash-completion -y
 fi
 
-sudo yum install jq -y
-wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
-sudo cp k9s ${DEST_DIR}
+if ! command -v k9s &> /dev/null; then
+  sudo yum install jq -y
+  wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
+  sudo cp k9s ${DEST_DIR}
+fi
 
 log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
-(
-  set -x; cd "$(mktemp -d)" &&
-  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
-  KREW="krew-${OS}_${ARCH}" &&
-  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
-  tar zxvf "${KREW}.tar.gz" &&
-  ./"${KREW}" install krew
-)
+if ! command -v ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew &> /dev/null; then
+  (
+    set -x; cd "$(mktemp -d)" &&
+    OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+    ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+    KREW="krew-${OS}_${ARCH}" &&
+    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+    tar zxvf "${KREW}.tar.gz" &&
+    ./"${KREW}" install krew
+  )
 
-log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
-${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
-${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
-${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
-${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
+  log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
+  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
+  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
+  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
+  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
 
-log "CYAN" "Creating some nice aliases, export PATH"
-cat <<EOF > ${REMOTE_HOME_DIR}/.bash_aliases
+  log "CYAN" "Creating some nice aliases, export PATH"
+  cat <<EOF > ${REMOTE_HOME_DIR}/.bash_aliases
 ### kubectl krew
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
@@ -191,17 +194,22 @@ alias kubectx='kubectl ctx'
 ### kubectl konfig
 alias konfig='kubectl konfig'
 EOF
+fi
 
-log "CYAN" "Installing Helm"
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
+if ! command -v helm &> /dev/null; then
+  log "CYAN" "Installing Helm"
+  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  chmod 700 get_helm.sh
+  ./get_helm.sh
+fi
 
-log "CYAN" "Executing installation Part I of the TAP guide"
-log "CYAN" "Installing pivnet tool ..."
-wget -q -c https://github.com/pivotal-cf/pivnet-cli/releases/download/v$PIVNET_CLI_VERSION/pivnet-linux-amd64-$PIVNET_CLI_VERSION
-chmod +x pivnet-linux-amd64-$PIVNET_CLI_VERSION && mv pivnet-linux-amd64-$PIVNET_CLI_VERSION pivnet && sudo cp pivnet ${DEST_DIR}
-pivnet version
+if ! command -v pivnet &> /dev/null; then
+  log "CYAN" "Executing installation Part I of the TAP guide"
+  log "CYAN" "Installing pivnet tool ..."
+  wget -q -c https://github.com/pivotal-cf/pivnet-cli/releases/download/v$PIVNET_CLI_VERSION/pivnet-linux-amd64-$PIVNET_CLI_VERSION
+  chmod +x pivnet-linux-amd64-$PIVNET_CLI_VERSION && mv pivnet-linux-amd64-$PIVNET_CLI_VERSION pivnet && sudo cp pivnet ${DEST_DIR}
+  pivnet version
+fi
 
 log "CYAN" "Pivnet log in to Tanzu "
 pivnet login --api-token=$TANZU_PIVNET_LEGACY_API_TOKEN
@@ -265,13 +273,13 @@ export TANZU_CLI_NO_INIT=true
 tanzu plugin install --local cli all
 tanzu plugin list
 
-log "CYAN" "Install the RBAC/AUTH plugin"
-TAP_AUTH_FILE_ID="1192815"
-TAP_AUTH_NAME="tap-auth"
-TAP_AUTH_VERSION="1.0.1-beta.1"
-pivnet download-product-files --product-slug=$TAP_AUTH_NAME --release-version=$TAP_AUTH_VERSION --product-file-id=$TAP_AUTH_FILE_ID
-tar -vxf $TAP_AUTH_NAME-plugin_$TAP_AUTH_VERSION.tar.gz
-tanzu plugin install rbac --local linux-amd64
+# log "CYAN" "Install the RBAC/AUTH plugin"
+# TAP_AUTH_FILE_ID="1192815"
+# TAP_AUTH_NAME="tap-auth"
+# TAP_AUTH_VERSION="1.0.1-beta.1"
+# pivnet download-product-files --product-slug=$TAP_AUTH_NAME --release-version=$TAP_AUTH_VERSION --product-file-id=$TAP_AUTH_FILE_ID
+# tar -vxf $TAP_AUTH_NAME-plugin_$TAP_AUTH_VERSION.tar.gz
+# tanzu plugin install rbac --local linux-amd64
 
 log "CYAN" "Executing installation Part II of the TAP guide"
 log "CYAN" "Install profiles ..."
@@ -292,9 +300,10 @@ if [[ "$COPY_PACKAGES" == "true" ]]; then
   docker login $TANZU_REG_SERVER -u $TANZU_REG_USERNAME -p $TANZU_REG_PASSWORD
 
   log "CYAN" "Relocate the repository image bundle from Tanzu to ghcr.io"
-  echo " imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
+  echo " imgpkg copy --concurrency 1 --registry-ca-cert-path ${REGISTRY_CA_PATH} -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
   imgpkg copy \
       --concurrency 1 \
+      --registry-ca-cert-path ${REGISTRY_CA_PATH} \
       -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION \
       --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
 fi
@@ -307,22 +316,35 @@ tanzu package repository add tanzu-tap-repository \
 sleep 10s
 
 log "CYAN" "Install the Tanzu Application Platform profile: light"
-log "CYAN" "Create first the tap-values.yaml file to configure the profile .... .light"
+log "CYAN" "Create first the tap-values.yaml file to configure the 'light' profile ..."
 
 cat > tap-values.yml <<EOF
 profile: light
 ceip_policy_disclosed: true # Installation fails if this is set to 'false'
 
-shared:$(generate_ca_cert_data_yaml)
-
+shared:
+  ingress_domain: "$INGRESS_DOMAIN"
+  image_registry:
+    project_path: "$REGISTRY_SERVER/tap-packages"
+    username: "$REGISTRY_USERNAME"
+    password: "$REGISTRY_PASSWORD"
+  ca_cert_data: |
+EOF
+generate_ca_cert_data_yaml >> tap-values.yml
+cat << EOF >> tap-values.yml
 cnrs:
-  domain_name: "$VM_IP.nip.io"
+  domain_name: "$VM_IP.sslip.io"
+
+contour:
+  envoy:
+    service:
+      type: NodePort
 
 buildservice:
   # Dockerhub has the form kp_default_repository: "my-dockerhub-user/build-service" or kp_default_repository: "index.docker.io/my-user/build-service"
   kp_default_repository: "$REGISTRY_SERVER/$REGISTRY_OWNER/build-service"
   kp_default_repository_username: "$REGISTRY_USERNAME"
-  kp_default_repository_password: "$REGISTRY_PASSWORD"$(generate_ca_cert_data_yaml)
+  kp_default_repository_password: "$REGISTRY_PASSWORD"
   tanzunet_username: "$TANZU_REG_USERNAME"
   tanzunet_password: "$TANZU_REG_PASSWORD"
 
@@ -379,13 +401,16 @@ cat <<EOF > k8s-ui-values.yml
 vm_ip: "$VM_IP"
 EOF
 
+# TODO: Check if we have to patch contour as documented: https://kind.sigs.k8s.io/docs/user/ingress/#contour
+
 tanzu package install my-dashboard -p kubernetes-dashboard.halkyonio.io -v 0.1.0 --values-file k8s-ui-values.yml -n $NAMESPACE_TAP
 
 K8S_TOKEN=$(kubectl get secret $(kubectl get sa kubernetes-dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode)
 CA_CERT=$(kubectl get secret/k8s-ui-secret -n kubernetes-dashboard -o jsonpath="{.data.ca\.crt}" | base64 --decode)
-log_line "YELLOW" "Kubernetes dashboard URL: https://k8S-ui.$VM_IP.nip.io"
+log_line "YELLOW" "Kubernetes dashboard URL: https://k8S-ui.$VM_IP.sslip.io"
 log_line "YELLOW" "Kubernetes dashboard TOKEN: $K8S_TOKEN"
-log_line "YELLOW" "CA Root certificate generated by cert manager and to be imported within the Keystore: $CA_CERT"
+log_line "YELLOW" "CA Root certificate generated by cert manager and to be imported within the Keystore:"
+log_line "YELLOW" "$CA_CERT"
 
 popd
 exit
