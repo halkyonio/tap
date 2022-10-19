@@ -101,9 +101,6 @@ EOF
 KUBE_CFG_FILE=${1:-config}
 export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
 
-# Terminal UI to interact with a Kubernetes cluster
-K9S_VERSION=$(curl --silent "https://api.github.com/repos/derailed/k9s/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
-
 COPY_PACKAGES=${COPY_PACKAGES:-false}
 REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
 DEST_DIR="/usr/local/bin"
@@ -147,60 +144,9 @@ check_distro
 
 log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
 if [[ $DISTRO == 'fedora' ]]; then
-  sudo yum install git wget unzip bash-completion openssl -y
+  sudo yum install git wget unzip bash-completion openssl jq -y
 else
-  sudo yum install git wget unzip epel-release bash-completion -y
-fi
-
-if ! command -v k9s &> /dev/null; then
-  sudo yum install jq -y
-  wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
-  sudo cp k9s ${DEST_DIR}
-fi
-
-log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
-if ! command -v ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew &> /dev/null; then
-  (
-    set -x; cd "$(mktemp -d)" &&
-    OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-    ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
-    KREW="krew-${OS}_${ARCH}" &&
-    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
-    tar zxvf "${KREW}.tar.gz" &&
-    ./"${KREW}" install krew
-  )
-
-  log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
-  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
-  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
-  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
-  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
-
-  log "CYAN" "Creating some nice aliases, export PATH"
-  cat <<EOF > ${REMOTE_HOME_DIR}/.bash_aliases
-### kubectl krew
-export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-
-### kubectl shortcut -> kc
-alias kc='kubectl'
-### kubectl shortcut -> k
-alias k='kubectl'
-### kubectl tree
-alias ktree='kubectl tree'
-### kubectl ns
-alias kubens='kubectl ns'
-### kubectl ctx
-alias kubectx='kubectl ctx'
-### kubectl konfig
-alias konfig='kubectl konfig'
-EOF
-fi
-
-if ! command -v helm &> /dev/null; then
-  log "CYAN" "Installing Helm"
-  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-  chmod 700 get_helm.sh
-  ./get_helm.sh
+  sudo yum install git wget unzip epel-release bash-completion jq -y
 fi
 
 if ! command -v pivnet &> /dev/null; then
@@ -338,7 +284,7 @@ cnrs:
 contour:
   envoy:
     service:
-      type: NodePort
+      type: LoadBalancer
 
 buildservice:
   # Dockerhub has the form kp_default_repository: "my-dockerhub-user/build-service" or kp_default_repository: "index.docker.io/my-user/build-service"
