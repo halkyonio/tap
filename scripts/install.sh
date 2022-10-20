@@ -135,6 +135,10 @@ TANZU_CLUSTER_ESSENTIALS_VERSION="1.3.0"
 TANZU_CLUSTER_ESSENTIALS_FILE_ID="1330470"
 TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9"
 
+TAP_AUTH_FILE_ID="1309818"
+TAP_AUTH_NAME="tap-auth"
+TAP_AUTH_VERSION="1.1.0-beta.1"
+
 # Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
 
@@ -223,11 +227,8 @@ tanzu plugin install --local cli all
 tanzu plugin list
 
 log "CYAN" "Install the RBAC/AUTH plugin"
-TAP_AUTH_FILE_ID="1309818"
-TAP_AUTH_NAME="tap-auth"
-TAP_AUTH_VERSION="1.1.0-beta.1'"
 pivnet download-product-files --product-slug=$TAP_AUTH_NAME --release-version=$TAP_AUTH_VERSION --product-file-id=$TAP_AUTH_FILE_ID
-tar -vxf $TAP_AUTH_NAME-plugin_$TAP_AUTH_VERSION.tar.gz
+tar -vxf tanzu-auth-plugin_$TAP_AUTH_VERSION.tar.gz
 tanzu plugin install rbac --local linux-amd64
 
 log "CYAN" "Executing installation Part II of the TAP guide"
