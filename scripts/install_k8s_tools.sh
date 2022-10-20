@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 #
-# Execute this command locally
-#
 # ./install_k8s_tools.sh
 #
 # or remotely
@@ -9,14 +7,12 @@
 #
 # Define the following env vars:
 # - REMOTE_HOME_DIR: home directory where files will be installed within the remote VM
-# - VM_IP: IP address of the VM where the cluster is running
-#
 
 set -e
 
 # Defining some colors for output
-RED='\033[0;31m'
 NC='\033[0m' # No Color
+RED='\033[0;31m'
 YELLOW='\033[0;33m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -24,26 +20,47 @@ MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 WHITE='\033[0;37m'
 
-repeat_char(){
+newline=$'\n'
+
+generate_eyecatcher(){
   COLOR=${1}
 	for i in {1..50}; do echo -ne "${!COLOR}$2${NC}"; done
 }
 
 log_msg() {
-    COLOR=${1}
-      MSG="${@:2}"
-    echo -e "\n${!COLOR}## ${MSG}${NC}"
+  COLOR=${1}
+  MSG="${@:2}"
+  echo -e "\n${!COLOR}## ${MSG}${NC}"
 }
 
 log_line() {
-    COLOR=${1}
-    MSG="${@:2}"
-    echo -e "${!COLOR}## ${MSG}${NC}"
+  COLOR=${1}
+  MSG="${@:2}"
+  echo -e "${!COLOR}## ${MSG}${NC}"
 }
 
 log() {
   MSG="${@:2}"
-  echo; repeat_char ${1} '#'; log_msg ${1} ${MSG}; repeat_char ${1} '#'; echo
+  echo; generate_eyecatcher ${1} '#'; log_msg ${1} ${MSG}; generate_eyecatcher ${1} '#'; echo
+}
+
+check_os() {
+  PLATFORM='unknown'
+  unamestr=$(uname)
+  if [[ "$unamestr" == 'Linux' ]]; then
+     PLATFORM='linux'
+  elif [[ "$unamestr" == 'Darwin' ]]; then
+     PLATFORM='darwin'
+  fi
+  log "CYAN" "OS type: $PLATFORM"
+}
+
+check_distro() {
+  DISTRO=$( cat /etc/*-release | tr [:upper:] [:lower:] | grep -Poi '(debian|ubuntu|red hat|centos|fedora)' | uniq )
+  if [ -z $DISTRO ]; then
+      DISTRO='unknown'
+  fi
+  log "CYAN" "Detected Linux distribution: $DISTRO"
 }
 
 KUBE_CFG_FILE=${1:-config}
@@ -55,43 +72,70 @@ K9S_VERSION=$(curl --silent "https://api.github.com/repos/derailed/k9s/releases/
 REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
 DEST_DIR="/usr/local/bin"
 
-VM_IP=${VM_IP:-127.0.0.1}
+# Check OS TYPE and/or linux distro
+check_os
+check_distro
 
 log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
-sudo yum install git wget unzip epel-release bash-completion -y
-sudo yum install jq -y
-wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
-sudo cp k9s /usr/local/bin
+if [[ $DISTRO == 'fedora' ]]; then
+  sudo yum install git wget unzip bash-completion openssl -y
+else
+  sudo yum install git wget unzip epel-release bash-completion -y
+fi
+
+if ! command -v k9s &> /dev/null; then
+  sudo yum install jq -y
+  wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
+  sudo cp k9s ${DEST_DIR}
+fi
 
 log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
-(
-  set -x; cd "$(mktemp -d)" &&
-  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
-  KREW="krew-${OS}_${ARCH}" &&
-  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
-  tar zxvf "${KREW}.tar.gz" &&
-  ./"${KREW}" install krew
-)
+if ! command -v ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew &> /dev/null; then
+  (
+    set -x; cd "$(mktemp -d)" &&
+    OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+    ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+    KREW="krew-${OS}_${ARCH}" &&
+    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+    tar zxvf "${KREW}.tar.gz" &&
+    ./"${KREW}" install krew
+  )
 
-printf "\n## kubectl krew\nexport PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH\"\n" >> $HOME/.bashrc
-#export PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH
-log "CYAN" "To be able to play with kubectl krew, re-start your shell session ;-)"
+  log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
+  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
+  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
+  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
+  ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
 
-log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
-${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
-${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
-${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
-${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
+  log "CYAN" "Creating some nice aliases, export PATH"
+  cat <<EOF > ${REMOTE_HOME_DIR}/.bash_aliases
+### kubectl krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
-printf "\n### kubectl tree\nalias kc='kubectl'\n" >> $HOME/.bashrc
-printf "\n### kubectl tree\nalias ktree='kubectl tree'\n" >> $HOME/.bashrc
-printf "\n### kubectl ns\nalias kubens='kubectl ns'\n" >> $HOME/.bashrc
-printf "\n### kubectl ctx\nalias kubectx='kubectl ctx'\n" >> $HOME/.bashrc
-printf "\n### kubectl konfig\nalias konfig='kubectl konfig'\n" >> $HOME/.bashrc
-source $HOME/.bashrc
+### kubectl shortcut -> kc
+alias kc='kubectl'
+### kubectl shortcut -> k
+alias k='kubectl'
+### kubectl tree
+alias ktree='kubectl tree'
+### kubectl ns
+alias kubens='kubectl ns'
+### kubectl ctx
+alias kubectx='kubectl ctx'
+### kubectl konfig
+alias konfig='kubectl konfig'
+EOF
+fi
 
-log "CYAN" "Installing Helm"
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
+if ! command -v helm &> /dev/null; then
+  log "CYAN" "Installing Helm"
+  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  chmod 700 get_helm.sh
+  ./get_helm.sh
+fi
+
+if ! command -v kctl &> /dev/null; then
+  curl -s -L github.com/vmware-tanzu/carvel-kapp-controller/releases/download/v0.41.2/kctrl-linux-amd64 > kctrl
+  chmod +x kctrl
+  sudo cp kctrl /usr/local/bin
+fi
