@@ -373,7 +373,7 @@ helm upgrade --install kubernetes-dashboard kubernetes-dashboard \
   --set serviceAccount.create=false \
   --set serviceAccount.name=admin-user
 
-cat <EOF | kubectl apply -f -
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: ServiceAccount
 metadata:
