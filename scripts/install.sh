@@ -395,7 +395,7 @@ subjects:
   namespace: kubernetes-dashboard
 EOF
 
-log_line "YELLOW" "Kubernetes dashboard URL: http://k8s-ui.$VM_IP.sslip.io"
+log_line "YELLOW" "Kubernetes dashboard URL: http://k8s-gui.$VM_IP.sslip.io"
 
 #K8S_TOKEN=$(kubectl get secret $(kubectl get sa kubernetes-dashboard -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" -n kubernetes-dashboard | base64 --decode)
 #CA_CERT=$(kubectl get secret/k8s-ui-secret -n kubernetes-dashboard -o jsonpath="{.data.ca\.crt}" | base64 --decode)
