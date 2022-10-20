@@ -89,8 +89,8 @@ if ! command -v k9s &> /dev/null; then
   sudo cp k9s ${DEST_DIR}
 fi
 
-log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
 if ! command -v ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew &> /dev/null; then
+  log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
   (
     set -x; cd "$(mktemp -d)" &&
     OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
@@ -134,7 +134,8 @@ if ! command -v helm &> /dev/null; then
   ./get_helm.sh
 fi
 
-if ! command -v kctl &> /dev/null; then
+if ! command -v kctrl &> /dev/null; then
+    log "CYAN" "Installing kctrl"
   VERSION=$(wget -q -O- https://api.github.com/repos/vmware-tanzu/carvel-kapp-controller/releases/latest | jq -r '.name')
   curl -s -L github.com/vmware-tanzu/carvel-kapp-controller/releases/download/${VERSION}/kctrl-linux-amd64 > kctrl
   chmod +x kctrl
