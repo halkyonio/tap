@@ -53,11 +53,11 @@ The following [installation](https://docs.vmware.com/en/VMware-Tanzu-Application
 
 TL&DR; It is needed to:
 
-- Have a [Tanzu account](https://network.tanzu.vmware.com/) to download the software or access the [Tanzu registry](registry.tanzu.vmware.com),
+- Have a [Tanzu account](https://account.run.pivotal.io/z/uaa/sign-up) on `https://network.tanzu.vmware.com/` to download the software or to access the registry `registry.tanzu.vmware.com`,
 - Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
 - Have a kind cluster >= 1.22 installed with a private docker registry. Use this [script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-tls-secured-reg.sh)
 - Have a Linux VM machine with at least 8 CPUs, 8 GB of RAM and 100Gb (if you plan to use locally a container registry)
-- Private container registry such as [Harbor](harbor.md) (optional) exposed using a NodePort on the cluster (e.g: registry.harbor.VM_IP.nip.io:32443)
+- Private container registry such as docker registry
 
 ## Instructions
 
