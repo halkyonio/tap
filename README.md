@@ -187,7 +187,7 @@ Create first a namespace using the command
 or 
 
 ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
-    "bash -s" -- < ./scripts/populate_namespace_tap.sh demo-1
+    "bash -s" -- < ./scripts/populate_namespace_tap.sh demo
 ```
 Next deploy a Web Application using the tanzu client and a workload
 ```bash
@@ -198,12 +198,12 @@ tanzu apps workload create tanzu-java-web-app \
   --type web \
   --label app.kubernetes.io/part-of=tanzu-java-web-app \
   --yes \
-  --namespace demo-1
+  --namespace demo
 ```
 Follow the build/deployment and access the service when finished
 ```bash
-tanzu apps workload tail tanzu-java-web-app --namespace demo-1
-tanzu apps workload get tanzu-java-web-app --namespace demo-1
+tanzu apps workload tail tanzu-java-web-app --namespace demo
+tanzu apps workload get tanzu-java-web-app --namespace demo
 ```
 ### Using a private registry
 

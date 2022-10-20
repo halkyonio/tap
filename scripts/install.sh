@@ -284,6 +284,7 @@ generate_ca_cert_data_yaml >> tap-values.yml
 cat << EOF >> tap-values.yml
 cnrs:
   domain_name: "$VM_IP.sslip.io"
+  provider: local
 
 contour:
   envoy:
