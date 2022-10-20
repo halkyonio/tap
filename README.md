@@ -178,8 +178,33 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
 
 ### Testing TAP
 
-See demo page & instructions [here](demo.md) to deploy a Quarkus application using a new Supply Chain, the Quarkus Buildpack builder image, etc.
+See demo page & instructions [here](demo.md) covering more examples like also to deploy a Quarkus application using a new Supply Chain, the Quarkus Buildpack builder image, etc.
 
+Create first a namespace using the command
+```bash
+./scripts/populate_namespace_tap.sh demo-1
+
+or 
+
+ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
+    "bash -s" -- < ./scripts/populate_namespace_tap.sh demo-1
+```
+Next deploy a Web Application using the tanzu client and a workload
+```bash
+tanzu apps workload create tanzu-java-web-app \
+  --git-repo https://github.com/vmware-tanzu/application-accelerator-samples\
+  --sub-path tanzu-java-web-app \
+  --git-branch main \
+  --type web \
+  --label app.kubernetes.io/part-of=tanzu-java-web-app \
+  --yes \
+  --namespace demo-1
+```
+Follow the build/deployment and access the service when finished
+```bash
+tanzu apps workload tail tanzu-java-web-app --namespace demo-1
+tanzu apps workload get tanzu-java-web-app --namespace demo-1
+```
 ### Using a private registry
 
 As mentioned within the previous section, when we plan to use a private local registry such as [Harbor](harbor.md) or docker, some additional steps are required such as:
