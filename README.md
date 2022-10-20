@@ -23,7 +23,7 @@ Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
-TAP 1.0 has been released in January 2022 and different releases are regularly produced - see [releases note](https://network.pivotal.io/products/tanzu-application-platform/releases). 
+TAP 1.0 has been released in January 2022 and different versions are regularly produced - see [releases note](https://network.pivotal.io/products/tanzu-application-platform/releases). 
 
 By supporting the [Supply Chain choreograph](https://cartographer.sh/) pattern, TAP allows
 to decouple the path to move a microservice to different kubernetes environments (build, scan, CI/CD, test, ...)
@@ -40,7 +40,7 @@ TAP rely on some key components such as:
 - `Application Live & Application Accelerator` to guide the Architects/Developers to design/deploy/monitor applications on k8s.
 - `Tekton pipelines` and `FluxCD` to fetch the sources (git, ...)
 - `Convention` controller able to change the `Workloads` according to METADATA (framework, runtime, ...)
-- `Service Binding`,
+- `Service Binding & Toolkit` able to manage locally the services,
 - `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...).
 
 ## Packages
@@ -57,7 +57,7 @@ TL&DR; It is needed to:
 
 - Have a [Tanzu account](https://network.tanzu.vmware.com/) to download the software or access the [Tanzu registry](registry.tanzu.vmware.com),
 - Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
-- Access a k8s cluster >= 1.31 with Cluster Admin Role and kubectl installed
+- Access a k8s cluster >= 1.22 with Cluster Admin Role and kubectl client installed
 - Have a Linux VM machine with at least 8 CPUs, 8 GB of RAM and 100Gb (if you plan to use locally a container registry)
 - Private container registry such as [Harbor](harbor.md) (optional) exposed using a NodePort on the cluster (e.g: registry.harbor.VM_IP.nip.io:32443)
 
@@ -84,11 +84,17 @@ To simplify your life, we have designed a [bash script](scripts/install.sh) whic
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
    They are managed using the following command `tanzu package installed ...`
 
-**NOTE**: Some additional tools are installed within the VM by our [install.sh](scripts/install.sh) bash script such as: unzip, k9s, helm, kubectl krew, pivnet, etc !
+**NOTE**: Some additional tools which are very helpfull can be installed using the [install_k8s_tools.sh](scripts/install_k8s_tools.sh) bash script such as: unzip, k9s, helm, kubectl krew, kctrl !
 
 ### How to install TAP
 
-To install TAP, execute the [install.sh](scripts/install.sh) bash script locally or remotely (ssh) and configure the following parameters:
+To install TAP, create first a kind cluster and private docker registry:
+```bash
+bash <(curl -s -L https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind-tls-secured-reg.sh)
+```
+Different questions will be asked such as IP of the VM machine, k8s version. Do not install ingress nginx as TAP will deploy ingress contour !
+
+Next, execute the [install.sh](scripts/install.sh) bash script locally or remotely (ssh) and configure the following parameters:
 
 - **REGISTRY_SERVER**: registry DNS name (docker.io, ghcr.io, quay.io, registry.harbor.<VM_IP>.nip.io:<PORT>)
 - **REGISTRY_OWNER**: docker user account, ghcr.io ORG owner, container project (e.g: tap - `registry.harbor.<VM_IP>.nip.io:<PORT>/tap`)
@@ -149,11 +155,11 @@ Example of configuration where a local container registry is used:
 ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     REMOTE_HOME_DIR="/home/snowdrop" \
     VM_IP="10.0.77.176" \
-    REGISTRY_SERVER="registry.harbor.10.0.77.176.nip.io:32443" \
+    REGISTRY_SERVER="10.0.77.176.nip.io:5000" \
     REGISTRY_OWNER="tap" \
     REGISTRY_USERNAME="admin" \
-    REGISTRY_PASSWORD="Harbor12345" \
-    REGISTRY_CA_PATH="/home/snowdrop/tmp/harbor/ca.crt" \
+    REGISTRY_PASSWORD="snowdrop" \
+    REGISTRY_CA_PATH="/home/snowdrop/_tmp/certs/localhost/client.crt" \
     TANZU_REG_SERVER="registry.tanzu.vmware.com" \
     TANZU_REG_USERNAME="<TANZU_REG_USERNAME>" \
     TANZU_REG_PASSWORD="<TANZU_REG_USERNAME" \
@@ -164,20 +170,17 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
 
 ### Using a private registry
 
-As mentioned within the previous section, when we plan to use a [private local registry](harbor.md), some additional steps are required such as:
+As mentioned within the previous section, when we plan to use a private local registry such as [Harbor](harbor.md) or docker, some additional steps are required such as:
 
-1. Copy the TAP packages - images to the registry
+1. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script
+
+2. Copy the TAP packages and push them to the private registry
 
 ```bash
 imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.3.0 --to-tar packages.tar
-imgpkg copy --tar packages.tar --to-repo registry.harbor.<VM_IP>.nip.io:<PORT>/tap/tap-packages
+imgpkg copy --tar packages.tar --to-repo <VM_IP>.sslip.io:<PORT>/tap/tap-packages
 ```
-2. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script
-```bash
-curl -k https://registry.harbor.<VM_IP>.nip.io:<PORT>/api/v2.0/systeminfo/getcert > $TEMP_DIR/ca.crt
-...
-   REGISTRY_CA_PATH="$TEMP_DIR/ca.crt" \
-```
+
 3. Set the TAP `shared` top level key of the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-install.html#identify-the-values-for-your-package-5))
 ```bash
 shared:
@@ -192,27 +195,9 @@ shared:
       -----END CERTIFICATE-----
 ...      
 ```
-4. Configure also the `ca_cert_data` parameter for the package `buildservice` within the `tap-values.yaml` file
-```bash
-buildservice:
-  kp_default_repository: "registry.harbor.10.0.77.176.nip.io:32443/tap/build-service"
-  kp_default_repository_username: "admin"
-  kp_default_repository_password: "Harbor12345"
-  ca_cert_data: |
-      -----BEGIN CERTIFICATE-----
-      MIIDFDCCAfygAwIBAgIRAJqAGNrteyM97HLF2i1OhpQwDQYJKoZIhvcNAQELBQAw
-      FDESMBAGA1UEAxMJaGFyYm9yLWNhMB4XDTIyMDYwMzEwMDc1M1oXDTIzMDYwMzEw
-      MDc1M1owFDESMBAGA1UEAxMJaGFyYm9yLWNhMIIBIjANBgkqhkiG9w0BAQEFAAOC
-      ...
-      Nf7e6cd9MNVDfCpj/E37NtvhwTzumbccyapRHOWg6Bg2io4/Bjee4qmmuNegxWCs
-      H1H7yyFbxeaRK33ctKxXq2FzEYePYQ0BdTw36O8/R5CXwTMYvbG+kRMmNlRNHhD7
-      82elfYZx4DxrWcap2uqrvrR8A8jnV5oa/sBoqcY6U1rIXG2mkVXvuvihOjIm8wHy
-      8dHt3pESuqbOo2aDt9uP77sBIjho0JBT
-      -----END CERTIFICATE-----
-```
 
 **REMARK**
-The steps 2. and 3. are managed by our `install.sh` script !
+The steps 2 and 3 are managed by the `install.sh` script !
 
 **WARNING**
 
@@ -260,6 +245,8 @@ and change the following line to pass --registry-verify-certs='False'
 ```
 
 ### Tanzu Client
+
+FYI: The `install.sh` bash script installs the Tanzu client as described hereafter like the carvel tools: imgpkg, kapp, kbld, pivnet !
 
 The Tanzu [client](https://network.tanzu.vmware.com/products/tanzu-application-platform/#/releases/1095326) can be installed locally on a machine
 having access to the k8s cluster running TAP using the pivnet tool.
