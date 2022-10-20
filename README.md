@@ -5,17 +5,14 @@ Table of Contents
 * [Packages](#packages)
 * [Prerequisites](#prerequisites)
 * [Instructions](#instructions)
-  * [Introduction](#introduction)
-  * [How to install TAP](#how-to-install-tap)
-  * [Using a private registry](#using-a-private-registry)
-  * [Tanzu Client](#tanzu-client)
-* [How to remove TAP](#how-to-remove-tap)
-* [Review what it has been installed](#review-what-it-has-been-installed)
-* [Change TAP configuration](#change-tap-configuration)
-* [Demo](#demo)
+    * [Introduction](#introduction)
+    * [How to install TAP](#how-to-install-tap)
+    * [Testing TAP](#testing-tap)
+    * [Using a private registry](#using-a-private-registry)
+    * [Tanzu Client](#tanzu-client)
+    * [Review what it has been installed](#review-what-it-has-been-installed)
+    * [Change TAP configuration](#change-tap-configuration)
 * [Clean](#clean)
-* [Tanzu community Edition](#tanzu-community-edition)
-* [References](#references)
 
 ## What is Tanzu Application Platform - TAP
 
@@ -92,7 +89,33 @@ To install TAP, create first a kind cluster and private docker registry:
 ```bash
 bash <(curl -s -L https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind-tls-secured-reg.sh)
 ```
-Different questions will be asked such as IP of the VM machine, k8s version. Do not install ingress nginx as TAP will deploy ingress contour !
+**Important**: Different questions will be asked such as IP of the VM machine, k8s version. Do not install ingress nginx as TAP will deploy ingress contour !
+```bash
+   _____                                  _
+  / ____|                                | |
+ | (___    _ __     ___   __      __   __| |  _ __    ___    _ __
+  \___ \  | '_ \   / _ \  \ \ /\ / /  / _  | |  __|  / _ \  | \ _ \
+  ____) | | | | | | (_) |  \ V  V /  | (_| | | |    | (_) | | |_) |
+ |_____/  |_| |_|  \___/    \_/\_/    \__,_| |_|     \___/  |  __/
+                                                            | |
+                                                            |_|
+ Kind installation script
+
+- Deploying a local secured (using htpasswd) docker registry
+- Generating a selfsigned certificate (using openssl) to expose the registry as a HTTP/HTTPS endpoint
+- Setting a docker network between the containers: kind and registry and alias "registry.local"
+- Allowing to access the repository using as address "registry.local:5000" within a pod, from laptop or when a pod is created
+- Exposing 2 additional NodePort: 30000 and 31000
+- Deploying an ingress controller
+- Copying the generated certificate here: /home/snowdrop/local-registry.crt
+
+IP address of the VM running docker - Default: 127.0.0.1 ? 10.0.77.176
+Do you want to delete the kind cluster (y|n) - Default: y ? y
+Do you want install ingress nginx (y|n) - Default: y ? n
+Which kubernetes version should we install (1.18 .. 1.25) - Default: latest ? 1.23
+What logging verbosity do you want to use with kind (0..9) - A verbosity setting of 0 logs only critical events - Default: 0 ?
+...
+```
 
 Next, execute the [install.sh](scripts/install.sh) bash script locally or remotely (ssh) and configure the following parameters:
 
@@ -120,8 +143,7 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 to your registry from VMware Tanzu Network registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
 as the images will be copied using `imgpkg tool`.
 
-Execute now the bash script
-
+Example of commands
 ```bash
 REMOTE_HOME_DIR=<REMOTE_HOME_PATH>
 VM_IP=<VM_IP>
@@ -136,22 +158,8 @@ TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN>
 COPY_PACKAGES="false"
 ./scripts/install.sh
 
-ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
-    REMOTE_HOME_DIR=<REMOTE_HOME_PATH> \
-    VM_IP=<VM_IP> \
-    REGISTRY_SERVER=<REGISTRY_SERVER> \
-    REGISTRY_OWNER=<REGISTRY_OWNER> \
-    REGISTRY_USERNAME=<REGISTRY_USERNAME> \
-    REGISTRY_PASSWORD=<REGISTRY_PASSWORD> \
-    REGISTRY_CA_PATH=<REGISTRY_CA_PATH> \
-    TANZU_REG_USERNAME=<TANZU_REG_USERNAME> \
-    TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD> \
-    TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN> \
-    COPY_PACKAGES="false" \
-    "bash -s" -- < ./scripts/install.sh
-```
-Example of configuration where a local container registry is used:
-```bash
+or 
+
 ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     REMOTE_HOME_DIR="/home/snowdrop" \
     VM_IP="10.0.77.176" \
@@ -168,20 +176,24 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     "bash -s" -- < ./scripts/install.sh
 ```
 
+### Testing TAP
+
+See demo page & instructions [here](demo.md) to deploy a Quarkus application using a new Supply Chain, the Quarkus Buildpack builder image, etc.
+
 ### Using a private registry
 
 As mentioned within the previous section, when we plan to use a private local registry such as [Harbor](harbor.md) or docker, some additional steps are required such as:
 
-1. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script
+1. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script (e.g. _tmp/certs/localhost/client.crt)
 
-2. Copy the TAP packages and push them to the private registry
+2. Get the TAP packages and push them to the private registry
 
 ```bash
 imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.3.0 --to-tar packages.tar
 imgpkg copy --tar packages.tar --to-repo <VM_IP>.sslip.io:<PORT>/tap/tap-packages
 ```
 
-3. Set the TAP `shared` top level key of the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-install.html#identify-the-values-for-your-package-5))
+3. Define the TAP `shared` key within the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.1/tap/GUID-install.html#identify-the-values-for-your-package-5))
 ```bash
 shared:
   ca_cert_data: |
@@ -198,51 +210,6 @@ shared:
 
 **REMARK**
 The steps 2 and 3 are managed by the `install.sh` script !
-
-**WARNING**
-
-Unfortunately, some problems still exist using TAP 1.3.0 as the `kapp controller configmap` must be patched manually - see [issue-18](https://github.com/halkyonio/tap/issues/18) using the commands
-to pass the CA certificate of the private registry
-```bash
-configMap='
-data:
-  caCerts: |
-      -----BEGIN CERTIFICATE-----
-      MIIDFDCCAfygAwIBAgIRAJqAGNrteyM97HLF2i1OhpQwDQYJKoZIhvcNAQELBQAw
-      FDESMBAGA1UEAxMJaGFyYm9yLWNhMB4XDTIyMDYwMzEwMDc1M1oXDTIzMDYwMzEw
-      MDc1M1owFDESMBAGA1UEAxMJaGFyYm9yLWNhMIIBIjANBgkqhkiG9w0BAQEFAAOC
-      ...
-      Nf7e6cd9MNVDfCpj/E37NtvhwTzumbccyapRHOWg6Bg2io4/Bjee4qmmuNegxWCs
-      H1H7yyFbxeaRK33ctKxXq2FzEYePYQ0BdTw36O8/R5CXwTMYvbG+kRMmNlRNHhD7
-      82elfYZx4DxrWcap2uqrvrR8A8jnV5oa/sBoqcY6U1rIXG2mkVXvuvihOjIm8wHy
-      8dHt3pESuqbOo2aDt9uP77sBIjho0JBT
-      -----END CERTIFICATE-----
-  dangerousSkipTLSVerify: ""
-  httpProxy: ""
-  httpsProxy: ""
-  noProxy: ""
-'
-kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
-kubectl rollout restart deployment/kapp-controller -n kapp-controller
-```
-Remark: Such a patching is done part of our `install.sh` script !
-
-The Tekton `ClusterTask/image-writer` which is executed by the supply-chain `config-writer` when the image of the bundle is pushed to the registry
-fails as the command `imgpkg copy -b <bundle>` will get a `x509: Certificate signed by unknow authority ...` as the private CA certificate 
-is not passed as parameter. See [issue-16](https://github.com/halkyonio/tap/issues/16).
-
-This problem must be fixed manually (till someone will find how to patch the TektonTask !)
-```bash
-kubectl patch pkgi tap -n tap-install -p '{"spec":{"paused":true}}' --type=merge
-kubectl patch pkgi ootb-templates -n tap-install -p '{"spec":{"paused":true}}' --type=merge
-kubectl edit ClusterTask/image-writer
-and change the following line to pass --registry-verify-certs='False'
-...
-      imgpkg push --registry-verify-certs='False' -b $(params.bundle) -f .
-      cat ./.imgpkg/images.yml
-    securityContext:
-      runAsUser: 0
-```
 
 ### Tanzu Client
 
@@ -265,20 +232,6 @@ install cli/core/v0.11.4/tanzu-core-darwin_amd64 /usr/local/bin/tanzu
 export TANZU_CLI_NO_INIT=true
 tanzu plugin install --local cli all
 tanzu plugin list
-```
-
-### How to remove TAP
-
-Define first the following variable within the [uninstall.sh](scripts/uninstall.sh) bash script
-
-- **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
-
-Next, execute locally or remotely this bash script:
-
-```bash
-REMOTE_HOME_DIR=<HOME_DIR> ./uninstall.sh
-
-ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} REMOTE_HOME_DIR=<HOME_DIR> 'bash -s' -- < ./uninstall.sh
 ```
 
 ### Review what it has been installed
@@ -324,7 +277,7 @@ tanzu package installed get -n tap-install <package_name>
 tanzu package available get ootb-supply-chain-basic.tanzu.vmware.com/0.5.1 -n tap-install --values-schema
 ```
 
-- Next edit and change the `values.yaml` file created
+- Next edit and change the `tap-values.yaml` file created
 - Update finally the TAP package using the following command:
 
 ```bash
@@ -332,10 +285,6 @@ tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-fil
 ```
 
 - To install a package individually, use the following [documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-components.html) page
-
-## Demo
-
-See demo page & instructions [here](demo.md) to deploy a Quarkus application using a new Supply Chain, the Quarkus Buildpack builder image, etc.
 
 ## Clean
 
@@ -347,15 +296,3 @@ $ ./scripts/uninstall.sh
 
 That's all !
 
-## Tanzu community Edition
-
-As, a part of the technology proposed by TAP is currently packaged/proposed by the [https://tanzucommunityedition.io](https://tanzucommunityedition.io), 
-we recommend you to look to [this project](https://github.com/halkyonio/tce) to play with it.
-
-## References
-
-TAP documentation upstream [project](https://github.com/pivotal/docs-tap)
-
-Short introduction about what is TAP is available [here](https://www.youtube.com/watch?v=H6rbIkaJ1xc&ab_channel=VMwareTanzu)
-
-The problem TAP would like to solve is presented within this [video](https://www.youtube.com/watch?v=9oupRtKT_JM)
