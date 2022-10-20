@@ -5,13 +5,14 @@ Table of Contents
 * [Packages](#packages)
 * [Prerequisites](#prerequisites)
 * [Instructions](#instructions)
-    * [Introduction](#introduction)
-    * [How to install TAP](#how-to-install-tap)
-    * [Testing TAP](#testing-tap)
-    * [Using a private registry](#using-a-private-registry)
-    * [Tanzu Client](#tanzu-client)
-    * [Review what it has been installed](#review-what-it-has-been-installed)
-    * [Change TAP configuration](#change-tap-configuration)
+  * [Introduction](#introduction)
+  * [How to install TAP](#how-to-install-tap)
+  * [Testing TAP](#testing-tap)
+* [Additional information](#additional-information)
+  * [Using a private registry](#using-a-private-registry)
+  * [Tanzu Client](#tanzu-client)
+  * [Review what it has been installed](#review-what-it-has-been-installed)
+  * [Change TAP configuration](#change-tap-configuration)
 * [Clean](#clean)
 
 ## What is Tanzu Application Platform - TAP
@@ -205,6 +206,8 @@ Follow the build/deployment and access the service when finished
 tanzu apps workload tail tanzu-java-web-app --namespace demo
 tanzu apps workload get tanzu-java-web-app --namespace demo
 ```
+## Additional information
+
 ### Using a private registry
 
 As mentioned within the previous section, when we plan to use a private local registry such as [Harbor](harbor.md) or docker, some additional steps are required such as:
