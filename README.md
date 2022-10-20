@@ -141,10 +141,27 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 - **VM_IP**: IP address of the VM where the cluster is running
 
 **IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
-to your registry from VMware Tanzu Network registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
+to your registry from the Tanzu registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
 as the images will be copied using `imgpkg tool`.
 
-Example of commands
+**NOTE**: If the `imgpkg` client is already installed on your mahine, you can also copy the images of the repository to a tar file and next upload
+it to the private docker registry using such commands:
+
+```bash
+TAP_VERSION=1.3.0
+
+imgpkg copy \
+  --registry-username="<TANZU_REG_USERNAME>" \
+  --registry-password="<TANZU_REG_PASSWORD>" \
+  -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
+  --to-tar tap-${TAP_VERSION}-packages.tar
+
+imgpkg copy --tar tap-${TAP_VERSION}-packages.tar \
+   --registry-ca-cert-path=$HOME/_tmp/certs/localhost/client.crt \
+   --to-repo ${VM_IP}.sslip.io:5000/tap/tap-packages
+```
+
+Example of installation
 ```bash
 REMOTE_HOME_DIR=<REMOTE_HOME_PATH>
 VM_IP=<VM_IP>
