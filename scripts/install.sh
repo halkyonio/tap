@@ -355,20 +355,20 @@ EOF
 #tanzu package install my-dashboard -p kubernetes-dashboard.halkyonio.io -v 0.1.0 --values-file k8s-ui-values.yml -n $NAMESPACE_TAP
 
 docker pull kubernetesui/dashboard:$K8S_GUI_VERSION
-docker tag kubernetesui/dashboard:$K8S_GUI_VERSION ${ingress_domain}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
-docker push ${ingress_domain}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
+docker tag kubernetesui/dashboard:$K8S_GUI_VERSION ${INGRESS_DOMAIN}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
+docker push ${INGRESS_DOMAIN}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
 
-kind load docker-image ${ingress_domain}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
+kind load docker-image ${INGRESS_DOMAIN}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
 
 #helm uninstall kubernetes-dashboard -n kubernetes-dashboard
 helm upgrade --install kubernetes-dashboard kubernetes-dashboard \
   --repo https://kubernetes.github.io/dashboard/ \
   --namespace kubernetes-dashboard --create-namespace \
-  --set image.repository=${ingress_domain}:5000/kubernetesui/dashboard \
+  --set image.repository=${INGRESS_DOMAIN}:5000/kubernetesui/dashboard \
   --set image.version=${K8S_GUI_VERSION} \
   --set ingress.enabled=true \
   --set ingress.className=contour \
-  --set ingress.hosts[0]=k8s-gui.${ingress_domain} \
+  --set ingress.hosts[0]=k8s-gui.${INGRESS_DOMAIN} \
   --set protocolHttp=true \
   --set serviceAccount.create=false \
   --set serviceAccount.name=admin-user
