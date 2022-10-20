@@ -49,10 +49,10 @@ DEST_DIR="/usr/local/bin"
 TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
 
 log "GREEN" "Remove previously downloaded tar.gz files"
-rm -rf $REMOTE_HOME_DIR/k9s_Linux_x86_64.tar.gz*
-rm $REMOTE_HOME_DIR/get_helm.sh
-rm $REMOTE_HOME_DIR/k9s
-rm $REMOTE_HOME_DIR/pivnet
+rm -rf $REMOTE_HOME_DIR/k9s_Linux_x86_64.tar.gz* || true
+rm $REMOTE_HOME_DIR/get_helm.sh || true
+rm $REMOTE_HOME_DIR/k9s || true
+rm $REMOTE_HOME_DIR/pivnet || true
 
 log "GREEN" "Remove the TAP packages"
 while read -r package; do
@@ -81,18 +81,18 @@ kubectl delete ns tanzu-cluster-essentials
 kubectl delete ns tap-install
 
 log "GREEN" "Removing the Tanzu, Carvel clients and config folders"
-rm -rf $TANZU_TEMP_DIR/cli    # Remove previously downloaded cli files
-sudo rm /usr/local/bin/tanzu  # Remove CLI binary (executable)
-sudo rm /usr/local/bin/kapp
-sudo rm /usr/local/bin/imgpkg
-sudo rm /usr/local/bin/kbld
-sudo rm /usr/local/bin/ytt
+rm -rf $TANZU_TEMP_DIR/cli  || true   # Remove previously downloaded cli files
+sudo rm /usr/local/bin/tanzu || true  # Remove CLI binary (executable)
+sudo rm /usr/local/bin/kapp || true
+sudo rm /usr/local/bin/imgpkg || true
+sudo rm /usr/local/bin/kbld || true
+sudo rm /usr/local/bin/ytt || true
 
-rm -rf $REMOTE_HOME_DIR/.config/tanzu/       # current location # Remove config directory
-rm -rf $REMOTE_HOME_DIR/.tanzu/              # old location # Remove config directory
-rm -rf $REMOTE_HOME_DIR/.cache/tanzu         # remove cached catalog.yaml
+rm -rf $REMOTE_HOME_DIR/.config/tanzu/ || true    # current location # Remove config directory
+rm -rf $REMOTE_HOME_DIR/.tanzu/ || true           # old location # Remove config directory
+rm -rf $REMOTE_HOME_DIR/.cache/tanzu || true      # remove cached catalog.yaml
 
-rm -rf $REMOTE_HOME_DIR/tanzu                # folder where tanzu files have been uploaded, values.yaml populated ...
+rm -rf $REMOTE_HOME_DIR/tanzu || true             # folder where tanzu files have been uploaded, values.yaml populated ...
 
 log "GREEN" "Removing the aliases file"
-rm $REMOTE_HOME_DIR/.bash_aliases
+rm $REMOTE_HOME_DIR/.bash_aliases || true
