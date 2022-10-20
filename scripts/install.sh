@@ -345,12 +345,12 @@ done
 log "CYAN" "List the TAP packages installed"
 tanzu package available list -n $NAMESPACE_TAP
 
-log "CYAN" "Kubernetes dashboard installation ..."
-tanzu package repository add demo-repo --url ghcr.io/halkyonio/packages/demo-repo:0.1.0 -n tap-install
+#log "CYAN" "Kubernetes dashboard installation ..."
+#tanzu package repository add demo-repo --url ghcr.io/halkyonio/packages/demo-repo:0.1.0 -n tap-install
 
-cat <<EOF > k8s-ui-values.yml
-vm_ip: "$VM_IP"
-EOF
+#cat <<EOF > k8s-ui-values.yml
+#vm_ip: "$VM_IP"
+#EOF
 
 #tanzu package install my-dashboard -p kubernetes-dashboard.halkyonio.io -v 0.1.0 --values-file k8s-ui-values.yml -n $NAMESPACE_TAP
 
