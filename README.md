@@ -182,7 +182,7 @@ See demo page & instructions [here](demo.md) covering more examples like also to
 
 Create first a namespace using the command
 ```bash
-./scripts/populate_namespace_tap.sh demo-1
+./scripts/populate_namespace_tap.sh demo
 
 or 
 
