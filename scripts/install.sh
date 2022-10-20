@@ -284,7 +284,7 @@ cnrs:
 contour:
   envoy:
     service:
-      type: LoadBalancer
+      type: ClusterIP
     hostPorts:
       enable: true
 
