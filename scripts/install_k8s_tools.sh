@@ -135,7 +135,8 @@ if ! command -v helm &> /dev/null; then
 fi
 
 if ! command -v kctl &> /dev/null; then
-  curl -s -L github.com/vmware-tanzu/carvel-kapp-controller/releases/download/v0.41.2/kctrl-linux-amd64 > kctrl
+  VERSION=$(wget -q -O- https://api.github.com/repos/vmware-tanzu/carvel-kapp-controller/releases/latest | jq -r '.name')
+  curl -s -L github.com/vmware-tanzu/carvel-kapp-controller/releases/download/${VERSION}/kctrl-linux-amd64 > kctrl
   chmod +x kctrl
   sudo cp kctrl /usr/local/bin
 fi
