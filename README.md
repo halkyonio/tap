@@ -29,6 +29,8 @@ from the development lifecycle process followed by the developers.
 
 ![vision.png](assets/vision.png)
 
+![deploy-tap](assets/deploy-tap.png)
+
 TAP rely on some key components such as:
 
 - `Knative`serving and eventing,
