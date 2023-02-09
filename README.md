@@ -2,7 +2,7 @@ Table of Contents
 =================
 
 * [What is Tanzu Application Platform - TAP](#what-is-tanzu-application-platform---tap)
-* [Packages](#packages)
+* [Components](#components)
 * [Prerequisites](#prerequisites)
 * [Instructions](#instructions)
   * [Introduction](#introduction)
@@ -31,7 +31,9 @@ from the development lifecycle process followed by the developers.
 
 ![deploy-tap](assets/deploy-tap.png)
 
-TAP rely on some key components such as:
+## Components
+
+TAP rely on the following components which are installed as [packages](./packages.md).:
 
 - `Knative`serving and eventing,
 - `kpack` controller able to build images using `Buildpacks`,
@@ -42,12 +44,6 @@ TAP rely on some key components such as:
 - `Convention` controller able to change the `Workloads` according to METADATA (framework, runtime, ...)
 - `Service Binding & Toolkit` able to manage locally the services,
 - `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...).
-
-## Packages
-
-See the following file to get an overview about the different TAP packages [here](./packages.md).
-
-**Note**: To discover how to build your own Carvel package and repository, check this [page](carvel-package/README.md).
 
 ## Prerequisites
 

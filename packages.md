@@ -5,7 +5,7 @@ documentation [page](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/t
 like also from what the `Tanzu community edition`
 references [here](https://github.com/vmware-tanzu/community-edition#packages).
 
-**REMARK**: To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you
+**NOTE**: To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you
 have access to TAP, then execute the following [list-tap-packages.sh](scripts/list-packages.sh)
 
 ```bash
