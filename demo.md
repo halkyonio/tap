@@ -14,7 +14,7 @@ Table of Contents
 ### Prerequisites
 
 - TAP 1.x installed
-- [Tanzu client](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-install-tanzu-cli.html#cli-and-plugin) (>= v0.11) is available
+- [Tanzu client](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-install-tanzu-cli.html#accept-tanzu-application-platform-eulas-and-installing-tanzu-cli)
 - Some kubernetes tools such as [kubernetes tree](https://github.com/ahmetb/kubectl-tree)
 - Have a secret created with the [registry credentials](scripts/populate_namespace_tap.sh) and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
 - Import the config of the kubernetes cluster using the file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools

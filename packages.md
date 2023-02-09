@@ -1,7 +1,7 @@
 ## TAP Packages
 
 The following table list the packages installed using TAP - light profile. The information is coming from the official
-documentation [page](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-components.html)
+documentation [page](https://docs.vmware.com/en/Tanzu-Application-Platform/1.3/tap/GUID-components.html)
 like also from what the `Tanzu community edition`
 references [here](https://github.com/vmware-tanzu/community-edition#packages).
 
