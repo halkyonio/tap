@@ -236,8 +236,8 @@ tanzu plugin install rbac --local linux-amd64
 log "CYAN" "Executing installation Part II of the TAP guide"
 log "CYAN" "Install profiles ..."
 
-log "CYAN" "Create a namespace called tap-install for deploying the packages"
-kubectl create ns tap-install
+log "CYAN" "Create a namespace called ${NAMESPACE_TAP} for deploying the packages"
+kubectl create ns $NAMESPACE_TAP --dry-run=client -o yaml | kubectl apply -f -
 
 log "CYAN" "Create a secret hosting the credentials to access the container registry: $REGISTRY_SERVER"
 tanzu secret registry add registry-credentials \
@@ -364,11 +364,11 @@ log "CYAN" "Installing the packages ..."
 tanzu package install tap -p tap.tanzu.vmware.com -v $TAP_VERSION --values-file tap-values.yml -n $NAMESPACE_TAP
 
 log "CYAN" "Wait till TAP installation is over"
-resp=$(tanzu package installed get tap -n tap-install -o json | jq -r .[].status)
+resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status)
 while [[ "$resp" != "Reconcile succeeded" ]]; do
   echo "TAP installation status: $resp";
   sleep 10s;
-  resp=$(tanzu package installed get tap -n tap-install -o json | jq -r .[].status);
+  resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status);
 done
 
 log "CYAN" "List the TAP packages installed"
