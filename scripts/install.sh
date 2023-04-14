@@ -251,7 +251,7 @@ if [[ "$COPY_PACKAGES" == "true" ]]; then
   docker login $REGISTRY_SERVER -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD
   docker login $TANZU_REG_SERVER -u $TANZU_REG_USERNAME -p $TANZU_REG_PASSWORD
 
-  log "CYAN" "Relocate the repository image bundle from Tanzu to ghcr.io"
+  log "CYAN" "Relocate the repository image bundle from Tanzu to $REGISTRY_SERVER/$REGISTRY_OWNER"
   echo " imgpkg copy --concurrency 1 --registry-ca-cert-path ${REGISTRY_CA_PATH} -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_VERSION --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
   imgpkg copy \
       --concurrency 1 \
