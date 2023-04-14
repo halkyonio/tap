@@ -17,7 +17,7 @@ Table of Contents
 
 ## What is Tanzu Application Platform - TAP
 
-Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
+Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
@@ -38,22 +38,23 @@ TAP rely on the following components which are installed as [packages](./package
 - `Knative`serving and eventing,
 - `kpack` controller able to build images using `Buildpacks`,
 - `Contour` to route the traffic internally or externally using `Ingress`
-- `kapp` controller to install/uninstall K8s resources using templates (ytt, ...)
+- `kapp` controller to install/uninstall k8s resources using templates (ytt, ...)
 - `Application Live & Application Accelerator` to guide the Architects/Developers to design/deploy/monitor applications on k8s.
 - `Tekton pipelines` and `FluxCD` to fetch the sources (git, ...)
 - `Convention` controller able to change the `Workloads` according to METADATA (framework, runtime, ...)
 - `Service Binding & Toolkit` able to manage locally the services,
 - `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...).
+- `Crossplane` control plane framework to deploy services such as: AWS RDS
 
 ## Prerequisites
 
-The following [installation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-prerequisites.html) guide explains what the prerequisites are.
+The following [installation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-prerequisites.html) guide explains what the prerequisites are.
 
 TL&DR; It is needed to:
 
 - Have a [Tanzu account](https://account.run.pivotal.io/z/uaa/sign-up) on `https://network.tanzu.vmware.com/` to download the software or to access the registry `registry.tanzu.vmware.com`,
-- Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
-- Have a kind cluster >= 1.22 installed with a private docker registry. Use this [script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-tls-secured-reg.sh)
+- Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
+- Have a kind cluster >= 1.24 installed with a private docker registry. Use this [script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-tls-secured-reg.sh)
 - Have a Linux VM machine with at least 8 CPUs, 8 GB of RAM and 100Gb (if you plan to use locally a container registry)
 - Private container registry such as docker registry
 
@@ -62,7 +63,7 @@ TL&DR; It is needed to:
 ### Introduction
 
 The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html) have been executed without problem
-to install the release [1.3.0](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-release-notes.html).
+to install the release [1.5.0](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-release-notes.html).
 
 To simplify your life, we have designed a [bash script](scripts/install.sh) which allows to install the different bits in a VM:
 
@@ -73,7 +74,7 @@ To simplify your life, we have designed a [bash script](scripts/install.sh) whic
 2. [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins (package, application, secret, etc)
 3. TAP Repository
 
-   A repository is an image bundle containing different K8s manifests, templates, files able to install/configure the TAP packages.
+   A repository is an image bundle containing different k8s manifests, templates, files able to install/configure the TAP packages.
    Such a repository are managed using the Tanzu command `tanzu package repository ...`
 4. TAP Packages
 
@@ -138,7 +139,7 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
 - **VM_IP**: IP address of the VM where the cluster is running
 
-**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
+**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
 to your registry from the Tanzu registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
 as the images will be copied using `imgpkg tool`.
 
@@ -146,7 +147,7 @@ as the images will be copied using `imgpkg tool`.
 it to the private docker registry using such commands:
 
 ```bash
-TAP_VERSION=1.3.0
+TAP_VERSION=1.5.0
 
 imgpkg copy \
   --registry-username="<TANZU_REG_USERNAME>" \
@@ -232,11 +233,11 @@ As mentioned within the previous section, when we plan to use a private local re
 2. Get the TAP packages and push them to the private registry
 
 ```bash
-imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.3.0 --to-tar packages.tar
+imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.5.0 --to-tar packages.tar
 imgpkg copy --tar packages.tar --to-repo <VM_IP>.sslip.io:<PORT>/tap/tap-packages
 ```
 
-3. Define the TAP `shared` key within the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-view-package-config.html))
+3. Define the TAP `shared` key within the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-view-package-config.html))
 ```bash
 shared:
   ca_cert_data: |
@@ -269,7 +270,7 @@ Next, install the tool using by example the following instructions on a Mac mach
 **Note**: The instructions are equivalent on Linux except the TAR file to be downloaded !
 
 ```bash
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1212837
+pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1212837
 tar -vxf tanzu-framework-darwin-amd64.tar
 install cli/core/v0.11.4/tanzu-core-darwin_amd64 /usr/local/bin/tanzu
 export TANZU_CLI_NO_INIT=true
