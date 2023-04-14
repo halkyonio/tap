@@ -200,7 +200,7 @@ sudo cp kbld ${DEST_DIR}
 cd ..
 
 log "CYAN" "Wait till the pod of kapp-controller is running"
-kubectl wait --for=condition=Ready pods -l app=kapp-controller -n kapp-controller 2>/dev/null
+kubectl rollout status deployment/kapp-controller  -n kapp-controller
 log "CYAN" "Create the variable containing the patch data for caCerts if there is a CA cert"
 patch_kapp_configmap
 
