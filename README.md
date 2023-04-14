@@ -157,7 +157,7 @@ imgpkg copy \
 
 imgpkg copy --tar tap-${TAP_VERSION}-packages.tar \
    --registry-ca-cert-path=$HOME/_tmp/certs/localhost/client.crt \
-   --to-repo ${VM_IP}.sslip.io:5000/tap/tap-packages
+   --to-repo kind-registry:5000/tap/tap-packages
 ```
 
 Example of installation
