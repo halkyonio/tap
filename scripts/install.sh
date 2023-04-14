@@ -113,6 +113,7 @@ REGISTRY_USERNAME=${REGISTRY_USERNAME}
 REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
 REGISTRY_CA_PATH=${REGISTRY_CA_PATH}
 
+# Token stored under your profile: https://network.tanzu.vmware.com/users/dashboard/edit-profile
 TANZU_PIVNET_LEGACY_API_TOKEN=${TANZU_PIVNET_LEGACY_API_TOKEN}
 TANZU_REG_SERVER=${TANZU_REG_SERVER}
 TANZU_REG_USERNAME=${TANZU_REG_USERNAME}
@@ -210,7 +211,7 @@ kubectl rollout restart deployment/kapp-controller -n kapp-controller
 log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION"
 log "CYAN" "Download the Tanzu client and extract it"
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=$TAP_VERSION --product-file-id=$TANZU_CLIENT_FILE_ID
-tar -vxf $TANZU_CLIENT_NAME.tar
+tar -vxf $TANZU_CLIENT_NAME-$TANZU_CLI_VERSION.tar
 
 log "CYAN" "Set env var TANZU_CLI_NO_INIT to true to assure the local downloaded versions of the CLI core and plug-ins are installed"
 export TANZU_CLI_NO_INIT=true
