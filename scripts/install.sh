@@ -129,7 +129,7 @@ PIVNET_CLI_VERSION="3.0.1"
 
 TAP_VERSION="1.5.0"
 
-TANZU_CLI_VERSION="v0.28.1.1"
+TANZU_CLI_VERSION="v0.28.1"
 TANZU_CLIENT_FILE_ID="1446073"
 TANZU_CLIENT_NAME="tanzu-framework-linux-amd64"
 
@@ -208,10 +208,10 @@ log "CYAN" "Patch the kapp_controller configmap and rollout"
 kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
 kubectl rollout restart deployment/kapp-controller -n kapp-controller
 
-log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION"
+log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION.1"
 log "CYAN" "Download the Tanzu client and extract it"
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=$TAP_VERSION --product-file-id=$TANZU_CLIENT_FILE_ID
-tar -vxf $TANZU_CLIENT_NAME-$TANZU_CLI_VERSION.tar
+tar -vxf $TANZU_CLIENT_NAME-$TANZU_CLI_VERSION.1.tar
 
 log "CYAN" "Set env var TANZU_CLI_NO_INIT to true to assure the local downloaded versions of the CLI core and plug-ins are installed"
 export TANZU_CLI_NO_INIT=true
