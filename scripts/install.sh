@@ -239,7 +239,7 @@ log "CYAN" "Install profiles ..."
 log "CYAN" "Create a namespace called tap-install for deploying the packages"
 kubectl create ns tap-install
 
-log "CYAN" "Create a secret hosting the credentials to access your image registry"
+log "CYAN" "Create a secret hosting the credentials to access the container registry: $REGISTRY_SERVER"
 tanzu secret registry add registry-credentials \
   --username $REGISTRY_USERNAME \
   --password $REGISTRY_PASSWORD \
@@ -270,20 +270,31 @@ sleep 10s
 log "CYAN" "Install the Tanzu Application Platform profile: light"
 log "CYAN" "Create first the tap-values.yaml file to configure the 'light' profile ..."
 
+# See: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/install.html#full-profile-3
 cat > tap-values.yml <<EOF
-profile: light
-ceip_policy_disclosed: true # Installation fails if this is set to 'false'
-
 shared:
   ingress_domain: "$INGRESS_DOMAIN"
+  ingress_issuer: # Optional, can denote a cert-manager.io/v1/ClusterIssuer of your choice. Defaults to "tap-ingress-selfsigned".
   image_registry:
-    project_path: "$REGISTRY_SERVER/tap-packages"
-    username: "$REGISTRY_USERNAME"
-    password: "$REGISTRY_PASSWORD"
+    project_path: "$REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
+    secret:
+      name: registry-credentials
+      namespace: $NAMESPACE_TAP
+
+  kubernetes_distribution: # Only required if the distribution is OpenShift and must be used with the following kubernetes_version key.
+  kubernetes_version: "1.26.3" # Required regardless of distribution when Kubernetes version is 1.25 or later.
+
   ca_cert_data: |
 EOF
 generate_ca_cert_data_yaml >> tap-values.yml
 cat << EOF >> tap-values.yml
+ceip_policy_disclosed: true # Installation fails if this is set to 'false'
+
+#The above keys are minimum numbers of entries needed in tap-values.yaml to get a functioning TAP Full profile installation.
+#Below are the keys which may have default values set, but can be overridden.
+
+profile: full # Can take iterate, build, run, view.
+
 cnrs:
   domain_name: "$VM_IP.sslip.io"
   provider: local
@@ -297,24 +308,25 @@ contour:
 
 buildservice:
   # Dockerhub has the form kp_default_repository: "my-dockerhub-user/build-service" or kp_default_repository: "index.docker.io/my-user/build-service"
+  # Takes the value from the shared section by default, but can be overridden by setting a different value.
   kp_default_repository: "$REGISTRY_SERVER/$REGISTRY_OWNER/build-service"
-  kp_default_repository_username: "$REGISTRY_USERNAME"
-  kp_default_repository_password: "$REGISTRY_PASSWORD"
-  tanzunet_username: "$TANZU_REG_USERNAME"
-  tanzunet_password: "$TANZU_REG_PASSWORD"
+  kp_default_repository_secret:
+    name: registry-credentials
+    namespace: $NAMESPACE_TAP
 
-supply_chain: basic
+supply_chain: basic # Can take testing, testing_scanning.
 
-ootb_supply_chain_basic:
+ootb_supply_chain_basic: # Based on supply_chain set above, can be changed to ootb_supply_chain_testing, ootb_supply_chain_testing_scanning.
   service_account: default
   registry:
-    server: "$REGISTRY_SERVER"
-    repository: "$REGISTRY_OWNER"
+    server: # Takes the value from the shared section by default. Can be overridden
+    repository: # Takes the value from the shared section by default. Can be overridden
   gitops:
-    ssh_secret: ""
+    ssh_secret: # Takes "" as value by default; but can be overridden
 
 tap_gui:
   service_type: ClusterIP
+  metadataStoreAutoconfiguration: true # Create a service account, the Kubernetes control plane token and the requisite app_config block to enable communications between Tanzu Application Platform GUI and SCST - Store.
   ingressEnabled: "true"
   ingressDomain: "$INGRESS_DOMAIN"
   app_config:
@@ -330,7 +342,20 @@ tap_gui:
         origin: http://tap-gui.$INGRESS_DOMAIN
 
 metadata_store:
+  ns_for_export_app_cert: ""
   app_service_type: NodePort
+
+scanning:
+  metadataStore:
+    url: "" # Configuration is moved, so set this string to empty.
+
+grype:
+  namespace: "demo"
+  targetImagePullSecret: registry-credentials
+  # In a single cluster, the connection between the scanning pod and the metadata store happens inside the cluster and does not pass through ingress. This is automatically configured, you do not need to provide an ingress connection to the store.
+
+policy:
+  tuf_enabled: false # By default, TUF initialization and keyless verification are deactivated.
 EOF
 
 cat tap-values.yml
