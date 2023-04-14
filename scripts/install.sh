@@ -274,14 +274,14 @@ log "CYAN" "Create first the tap-values.yaml file to configure the 'light' profi
 cat > tap-values.yml <<EOF
 shared:
   ingress_domain: "$INGRESS_DOMAIN"
-  ingress_issuer: # Optional, can denote a cert-manager.io/v1/ClusterIssuer of your choice. Defaults to "tap-ingress-selfsigned".
+  ingress_issuer: "" # Optional, can denote a cert-manager.io/v1/ClusterIssuer of your choice. Defaults to "tap-ingress-selfsigned".
   image_registry:
     project_path: "$REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
     secret:
       name: registry-credentials
       namespace: $NAMESPACE_TAP
 
-  kubernetes_distribution: # Only required if the distribution is OpenShift and must be used with the following kubernetes_version key.
+  kubernetes_distribution: "" # Only required if the distribution is OpenShift and must be used with the following kubernetes_version key.
   kubernetes_version: "1.26.3" # Required regardless of distribution when Kubernetes version is 1.25 or later.
 
   ca_cert_data: |
