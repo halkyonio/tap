@@ -185,7 +185,7 @@ mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd
 log "CYAN" "Install Cluster essentials (kapp, kbld, ytt, imgpkg)"
 log "CYAN" "Configure and run install.sh, which installs kapp-controller and secretgen-controller on your cluster"
 
-kubectl create namespace kapp-controller
+kubectl create namespace kapp-controller --dry-run=client -o yaml | kubectl apply -f -
 kubectl create secret generic kapp-controller-config \
    --namespace kapp-controller \
    --from-file caCerts=$REGISTRY_CA_PATH
