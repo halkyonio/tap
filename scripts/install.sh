@@ -184,6 +184,12 @@ mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd
 
 log "CYAN" "Install Cluster essentials (kapp, kbld, ytt, imgpkg)"
 log "CYAN" "Configure and run install.sh, which installs kapp-controller and secretgen-controller on your cluster"
+
+kubectl create namespace kapp-controller
+kubectl create secret generic kapp-controller-config \
+   --namespace kapp-controller \
+   --from-file caCerts=$REGISTRY_CA_PATH
+
 export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@$TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA
 export INSTALL_REGISTRY_HOSTNAME=$TANZU_REG_SERVER
 export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
@@ -201,12 +207,12 @@ cd ..
 
 log "CYAN" "Wait till the pod of kapp-controller is running"
 kubectl rollout status deployment/kapp-controller  -n kapp-controller
-log "CYAN" "Create the variable containing the patch data for caCerts if there is a CA cert"
-patch_kapp_configmap
-
-log "CYAN" "Patch the kapp_controller configmap and rollout"
-kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
-kubectl rollout restart deployment/kapp-controller -n kapp-controller
+# log "CYAN" "Create the variable containing the patch data for caCerts if there is a CA cert"
+# patch_kapp_configmap
+#
+# log "CYAN" "Patch the kapp_controller configmap and rollout"
+# kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
+# kubectl rollout restart deployment/kapp-controller -n kapp-controller
 
 log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION.1"
 log "CYAN" "Download the Tanzu client and extract it"
