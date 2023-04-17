@@ -1,9 +1,7 @@
 ## TAP Packages
 
-The following table list the packages installed using TAP - light profile. The information is coming from the official
-documentation [page](https://docs.vmware.com/en/Tanzu-Application-Platform/1.5/tap/GUID-components.html)
-like also from what the `Tanzu community edition`
-references [here](https://github.com/vmware-tanzu/community-edition#packages).
+The following table list the packages installed using TAP according to their profile : Full, Iterate, Build, Run or View. The information is coming from the official
+documentation [page](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/about-package-profiles.html).
 
 **NOTE**: To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you
 have access to TAP, then execute the following [list-tap-packages.sh](scripts/list-packages.sh)
