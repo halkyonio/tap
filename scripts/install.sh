@@ -372,7 +372,7 @@ scanning:
     url: "" # Configuration is moved, so set this string to empty.
 
 grype:
-  namespace: "demo"
+  namespace: ${NAMESPACE_DEMO}
   targetImagePullSecret: registry-credentials
   # In a single cluster, the connection between the scanning pod and the metadata store happens inside the cluster and does not pass through ingress. This is automatically configured, you do not need to provide an ingress connection to the store.
 
@@ -393,6 +393,9 @@ cat tap-values.yml
 #   --namespace ${NAMESPACE_TAP}
 #
 # tanzu package install full-tbs-deps -p full-tbs-deps.tanzu.vmware.com -v ${TBS_FULL_VERSION} -n ${NAMESPACE_TAP}
+
+log "CYAN" "Creating for grype the namespace : ${NAMESPACE_DEMO}"
+kubectl create ns ${NAMESPACE_DEMO} --dry-run=client -o yaml | kubectl apply -f -
 
 log "CYAN" "Installing the TAP packages ..."
 tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file tap-values.yml -n ${NAMESPACE_TAP}
