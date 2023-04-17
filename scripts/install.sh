@@ -10,6 +10,7 @@
 # Define the following env vars:
 # - REMOTE_HOME_DIR: home directory where files will be installed within the remote VM
 # - VM_IP: IP address of the VM where the cluster is running
+# - LOCAL_REGISTRY: Boolean used to tell if we will use a local registry
 # - REGISTRY_SERVER: image registry server (docker.io, gcr.io, localhost:5000)
 # - REGISTRY_OWNER: docker user, ghcr.io ORG owner
 # - REGISTRY_USERNAME: username to be used to log on the registry
@@ -107,6 +108,7 @@ DEST_DIR="/usr/local/bin"
 TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
 
 VM_IP=${VM_IP:-127.0.0.1}
+LOCAL_REGISTRY=${LOCAL_REGISTRY:-false}
 REGISTRY_SERVER=${REGISTRY_SERVER:-docker.io}
 REGISTRY_OWNER=${REGISTRY_OWNER}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
@@ -182,14 +184,16 @@ log "CYAN" "Download the tanzu-cluster-essentials ... "
 pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
 mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd64-$TANZU_CLUSTER_ESSENTIALS_VERSION.tgz -C ./tanzu-cluster-essentials
 
+log "CYAN" "Creates a secret containing the local CA certificate for the kapp controller named: kapp-controller-config"
+if [[ "$LOCAL_REGISTRY" == "true" ]]; then
+  kubectl create namespace kapp-controller --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create secret generic kapp-controller-config \
+     --namespace kapp-controller \
+     --from-file caCerts=$REGISTRY_CA_PATH
+fi
+
 log "CYAN" "Install Cluster essentials (kapp, kbld, ytt, imgpkg)"
 log "CYAN" "Configure and run install.sh, which installs kapp-controller and secretgen-controller on your cluster"
-
-kubectl create namespace kapp-controller --dry-run=client -o yaml | kubectl apply -f -
-kubectl create secret generic kapp-controller-config \
-   --namespace kapp-controller \
-   --from-file caCerts=$REGISTRY_CA_PATH
-
 export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@$TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA
 export INSTALL_REGISTRY_HOSTNAME=$TANZU_REG_SERVER
 export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME

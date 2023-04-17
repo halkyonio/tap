@@ -122,6 +122,7 @@ What logging verbosity do you want to use with kind (0..9) - A verbosity setting
 
 Next, execute the [install.sh](scripts/install.sh) bash script locally or remotely (ssh) and configure the following parameters:
 
+- **LOCAL_REGISTRY**: Boolean used to tell if we will use a local registry. Default: false
 - **REGISTRY_SERVER**: registry DNS name (docker.io, ghcr.io, quay.io, registry.harbor.<VM_IP>.nip.io:<PORT>)
 - **REGISTRY_OWNER**: docker user account, ghcr.io ORG owner, container project (e.g: tap - `registry.harbor.<VM_IP>.nip.io:<PORT>/tap`)
 - **REGISTRY_USERNAME**: username to be used to log on to the registry
@@ -183,6 +184,7 @@ or
 ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     REMOTE_HOME_DIR="/home/snowdrop" \
     VM_IP="10.0.77.176" \
+    LOCAL_REGISTRY="true" \
     REGISTRY_SERVER="10.0.77.176.nip.io:5000" \
     REGISTRY_OWNER="tap" \
     REGISTRY_USERNAME="admin" \
