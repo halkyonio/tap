@@ -324,7 +324,7 @@ ootb_supply_chain_basic: # Based on supply_chain set above, can be changed to oo
     server: # Takes the value from the shared section by default. Can be overridden
     repository: # Takes the value from the shared section by default. Can be overridden
   gitops:
-    ssh_secret: # Takes "" as value by default; but can be overridden
+    ssh_secret: "" # Takes "" as value by default; but can be overridden
 
 #cnrs:
 #  domain_name: "$VM_IP.sslip.io"
