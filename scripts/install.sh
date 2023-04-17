@@ -249,7 +249,7 @@ log "CYAN" "Executing installation Part II of the TAP guide"
 log "CYAN" "Install profiles ..."
 
 log "CYAN" "Create a namespace called ${NAMESPACE_TAP} for deploying the packages"
-kubectl create ns $NAMESPACE_TAP --dry-run=client -o yaml | kubectl apply -f -
+kubectl create ns ${NAMESPACE_TAP} --dry-run=client -o yaml | kubectl apply -f -
 
 if [[ "$COPY_PACKAGES" == "true" ]]; then
   log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
@@ -270,17 +270,24 @@ tanzu secret registry add registry-credentials \
   --username ${REGISTRY_USERNAME} \
   --password ${REGISTRY_PASSWORD} \
   --server ${REGISTRY_SERVER} \
-  --namespace $NAMESPACE_TAP \
+  --namespace ${NAMESPACE_TAP} \
   --export-to-all-namespaces \
   --yes
+
+#log "CYAN" "Create a secret hosting the credentials to access the container registry: ${REGISTRY_SERVER} for the build-services."
+#log "YELLOW" "To fix issue: https://github.com/halkyonio/tap/issues/33"
+#tanzu secret registry add kp-default-repository-creds \
+#  --username ${REGISTRY_USERNAME} \
+#  --password ${REGISTRY_PASSWORD} \
+#  --server ${REGISTRY_SERVER} \
+#  --namespace ${NAMESPACE_TAP} \
 
 log "CYAN" "Deploy the TAP package repository"
 tanzu package repository add tanzu-tap-repository \
   --url ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages:${TAP_VERSION} \
-  -n $NAMESPACE_TAP
+  -n ${NAMESPACE_TAP}
 
-#sleep 10s
-head -n 1 >/dev/null
+sleep 10s
 
 log "CYAN" "Create first the tap-values.yaml file to configure the TAP profile ..."
 
@@ -293,7 +300,7 @@ shared:
     project_path: "${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages"
     secret:
       name: registry-credentials
-      namespace: $NAMESPACE_TAP
+      namespace: ${NAMESPACE_TAP}
 
   kubernetes_distribution: "" # Only required if the distribution is OpenShift and must be used with the following kubernetes_version key.
   kubernetes_version: "1.26.3" # Required regardless of distribution when Kubernetes version is 1.25 or later.
@@ -334,9 +341,9 @@ buildservice:
   # Dockerhub has the form kp_default_repository: "my-dockerhub-user/build-service" or kp_default_repository: "index.docker.io/my-user/build-service"
   # Takes the value from the shared section by default, but can be overridden by setting a different value.
   kp_default_repository: "${REGISTRY_SERVER}/${REGISTRY_OWNER}/build-service"
-  kp_default_repository_secret:
-    name: registry-credentials
-    namespace: $NAMESPACE_TAP
+  # kp_default_repository_secret:
+  #   name: kp-default-repository-creds
+  #   namespace: ${NAMESPACE_TAP}
   exclude_dependencies: false # Needed when using profile = full
 
 tap_gui:
@@ -383,12 +390,12 @@ cat tap-values.yml
 #
 # tanzu package repository add tbs-full-deps-repository \
 #   --url ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tbs-full-deps:${TBS_FULL_VERSION} \
-#   --namespace $NAMESPACE_TAP
+#   --namespace ${NAMESPACE_TAP}
 #
-# tanzu package install full-tbs-deps -p full-tbs-deps.tanzu.vmware.com -v ${TBS_FULL_VERSION} -n $NAMESPACE_TAP
+# tanzu package install full-tbs-deps -p full-tbs-deps.tanzu.vmware.com -v ${TBS_FULL_VERSION} -n ${NAMESPACE_TAP}
 
 log "CYAN" "Installing the TAP packages ..."
-tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file tap-values.yml -n $NAMESPACE_TAP
+tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file tap-values.yml -n ${NAMESPACE_TAP}
 
 log "CYAN" "Wait till TAP installation is over"
 resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status)
@@ -399,7 +406,7 @@ while [[ "$resp" != "Reconcile succeeded" ]]; do
 done
 
 log "CYAN" "List the TAP packages installed"
-tanzu package available list -n $NAMESPACE_TAP
+tanzu package available list -n ${NAMESPACE_TAP}
 
 docker pull kubernetesui/dashboard:$K8S_GUI_VERSION
 docker tag kubernetesui/dashboard:$K8S_GUI_VERSION ${INGRESS_DOMAIN}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
