@@ -274,13 +274,13 @@ tanzu secret registry add registry-credentials \
   --export-to-all-namespaces \
   --yes
 
-#log "CYAN" "Create a secret hosting the credentials to access the container registry: ${REGISTRY_SERVER} for the build-services."
-#log "YELLOW" "To fix issue: https://github.com/halkyonio/tap/issues/33"
-#tanzu secret registry add kp-default-repository-creds \
-#  --username ${REGISTRY_USERNAME} \
-#  --password ${REGISTRY_PASSWORD} \
-#  --server ${REGISTRY_SERVER} \
-#  --namespace ${NAMESPACE_TAP} \
+log "CYAN" "Create a secret hosting the credentials to access the container registry: ${REGISTRY_SERVER} for the build-services."
+log "YELLOW" "To fix issue: https://github.com/halkyonio/tap/issues/33"
+tanzu secret registry add kp-default-repository-creds \
+  --username ${REGISTRY_USERNAME} \
+  --password ${REGISTRY_PASSWORD} \
+  --server ${REGISTRY_SERVER} \
+  --namespace ${NAMESPACE_TAP} \
 
 log "CYAN" "Deploy the TAP package repository"
 tanzu package repository add tanzu-tap-repository \
@@ -341,9 +341,9 @@ buildservice:
   # Dockerhub has the form kp_default_repository: "my-dockerhub-user/build-service" or kp_default_repository: "index.docker.io/my-user/build-service"
   # Takes the value from the shared section by default, but can be overridden by setting a different value.
   kp_default_repository: "${REGISTRY_SERVER}/${REGISTRY_OWNER}/build-service"
-  # kp_default_repository_secret:
-  #   name: kp-default-repository-creds
-  #   namespace: ${NAMESPACE_TAP}
+  kp_default_repository_secret:
+     name: kp-default-repository-creds
+     namespace: ${NAMESPACE_TAP}
   exclude_dependencies: false # Needed when using profile = full
 
 tap_gui:
