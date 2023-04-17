@@ -169,7 +169,7 @@ if ! command -v pivnet &> /dev/null; then
 fi
 
 log "CYAN" "Pivnet log in to Tanzu "
-pivnet login --api-token=$TANZU_PIVNET_LEGACY_API_TOKEN
+pivnet login --api-token=${TANZU_PIVNET_LEGACY_API_TOKEN}
 
 log "CYAN" "Create tanzu directory "
 if [ ! -d $TANZU_TEMP_DIR ]; then
@@ -222,7 +222,7 @@ kubectl rollout status deployment/secretgen-controller -n secretgen-controller
 
 log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION.1"
 log "CYAN" "Download the Tanzu client and extract it"
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=$TAP_VERSION --product-file-id=$TANZU_CLIENT_FILE_ID
+pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=${TAP_VERSION} --product-file-id=$TANZU_CLIENT_FILE_ID
 tar -vxf $TANZU_CLIENT_NAME-$TANZU_CLI_VERSION.1.tar
 
 log "CYAN" "Set env var TANZU_CLI_NO_INIT to true to assure the local downloaded versions of the CLI core and plug-ins are installed"
@@ -253,30 +253,30 @@ kubectl create ns $NAMESPACE_TAP --dry-run=client -o yaml | kubectl apply -f -
 
 if [[ "$COPY_PACKAGES" == "true" ]]; then
   log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
-  docker login $REGISTRY_SERVER -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD
-  docker login $TANZU_REG_SERVER -u $TANZU_REG_USERNAME -p $TANZU_REG_PASSWORD
+  docker login ${REGISTRY_SERVER} -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+  docker login ${TANZU_REG_SERVER} -u ${TANZU_REG_USERNAME} -p ${TANZU_REG_PASSWORD}
 
-  log "CYAN" "Relocate the repository image bundle from Tanzu to $REGISTRY_SERVER/$REGISTRY_OWNER"
-  echo " imgpkg copy --concurrency 1 --registry-ca-cert-path ${REGISTRY_CA_PATH} -b $REGISTRY_SERVER/tanzu-application-platform/tap-packages:$TAP_VERSION --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
+  log "CYAN" "Relocate the repository image bundle from Tanzu to ${REGISTRY_SERVER}/${REGISTRY_OWNER}"
+  echo " imgpkg copy --concurrency 1 --registry-ca-cert-path ${REGISTRY_CA_PATH} -b ${REGISTRY_SERVER}/tanzu-application-platform/tap-packages:${TAP_VERSION} --to-repo ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages"
   imgpkg copy \
       --concurrency 1 \
       --registry-ca-cert-path ${REGISTRY_CA_PATH} \
-      -b $REGISTRY_SERVER/tanzu-application-platform/tap-packages:$TAP_VERSION \
-      --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
+      -b ${TANZU_REG_SERVER}/tanzu-application-platform/tap-packages:${TAP_VERSION} \
+      --to-repo ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages
 fi
 
-log "CYAN" "Create a secret hosting the credentials to access the container registry: $REGISTRY_SERVER"
+log "CYAN" "Create a secret hosting the credentials to access the container registry: ${REGISTRY_SERVER}"
 tanzu secret registry add registry-credentials \
-  --username $REGISTRY_USERNAME \
-  --password $REGISTRY_PASSWORD \
-  --server $REGISTRY_SERVER \
+  --username ${REGISTRY_USERNAME} \
+  --password ${REGISTRY_PASSWORD} \
+  --server ${REGISTRY_SERVER} \
   --namespace $NAMESPACE_TAP \
   --export-to-all-namespaces \
   --yes
 
 log "CYAN" "Deploy the TAP package repository"
 tanzu package repository add tanzu-tap-repository \
-  --url $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages:$TAP_VERSION \
+  --url ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages:${TAP_VERSION} \
   -n $NAMESPACE_TAP
 
 #sleep 10s
@@ -290,7 +290,7 @@ shared:
   ingress_domain: "$INGRESS_DOMAIN"
   ingress_issuer: "" # Optional, can denote a cert-manager.io/v1/ClusterIssuer of your choice. Defaults to "tap-ingress-selfsigned".
   image_registry:
-    project_path: "$REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages"
+    project_path: "${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages"
     secret:
       name: registry-credentials
       namespace: $NAMESPACE_TAP
@@ -333,7 +333,7 @@ contour:
 buildservice:
   # Dockerhub has the form kp_default_repository: "my-dockerhub-user/build-service" or kp_default_repository: "index.docker.io/my-user/build-service"
   # Takes the value from the shared section by default, but can be overridden by setting a different value.
-  kp_default_repository: "$REGISTRY_SERVER/$REGISTRY_OWNER/build-service"
+  kp_default_repository: "${REGISTRY_SERVER}/${REGISTRY_OWNER}/build-service"
   kp_default_repository_secret:
     name: registry-credentials
     namespace: $NAMESPACE_TAP
@@ -388,7 +388,7 @@ cat tap-values.yml
 # tanzu package install full-tbs-deps -p full-tbs-deps.tanzu.vmware.com -v ${TBS_FULL_VERSION} -n $NAMESPACE_TAP
 
 log "CYAN" "Installing the TAP packages ..."
-tanzu package install tap -p tap.tanzu.vmware.com -v $TAP_VERSION --values-file tap-values.yml -n $NAMESPACE_TAP
+tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file tap-values.yml -n $NAMESPACE_TAP
 
 log "CYAN" "Wait till TAP installation is over"
 resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status)
