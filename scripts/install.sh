@@ -209,8 +209,10 @@ sudo cp imgpkg ${DEST_DIR}
 sudo cp kbld ${DEST_DIR}
 cd ..
 
-log "CYAN" "Wait till the pod of kapp-controller is running"
-kubectl rollout status deployment/kapp-controller  -n kapp-controller
+log "CYAN" "Wait till the pod of kapp-controller and secretgen-controller are running"
+kubectl rollout status deployment/kapp-controller -n kapp-controller
+kubectl rollout status deployment/secretgen-controller -n secretgen-controller
+
 # log "CYAN" "Create the variable containing the patch data for caCerts if there is a CA cert"
 # patch_kapp_configmap
 #
@@ -249,13 +251,6 @@ log "CYAN" "Install profiles ..."
 log "CYAN" "Create a namespace called ${NAMESPACE_TAP} for deploying the packages"
 kubectl create ns $NAMESPACE_TAP --dry-run=client -o yaml | kubectl apply -f -
 
-log "CYAN" "Create a secret hosting the credentials to access the container registry: $REGISTRY_SERVER"
-tanzu secret registry add registry-credentials \
-  --username $REGISTRY_USERNAME \
-  --password $REGISTRY_PASSWORD \
-  --server $REGISTRY_SERVER \
-  --export-to-all-namespaces --yes --namespace $NAMESPACE_TAP
-
 if [[ "$COPY_PACKAGES" == "true" ]]; then
   log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
   docker login $REGISTRY_SERVER -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD
@@ -270,12 +265,22 @@ if [[ "$COPY_PACKAGES" == "true" ]]; then
       --to-repo $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages
 fi
 
+log "CYAN" "Create a secret hosting the credentials to access the container registry: $REGISTRY_SERVER"
+tanzu secret registry add registry-credentials \
+  --username $REGISTRY_USERNAME \
+  --password $REGISTRY_PASSWORD \
+  --server $REGISTRY_SERVER \
+  --namespace $NAMESPACE_TAP \
+  --export-to-all-namespaces \
+  --yes
+
 log "CYAN" "Deploy the TAP package repository"
 tanzu package repository add tanzu-tap-repository \
   --url $REGISTRY_SERVER/$REGISTRY_OWNER/tap-packages:$TAP_VERSION \
   -n $NAMESPACE_TAP
 
-sleep 10s
+#sleep 10s
+head -n 1 >/dev/null
 
 log "CYAN" "Create first the tap-values.yaml file to configure the TAP profile ..."
 
@@ -332,6 +337,7 @@ buildservice:
   kp_default_repository_secret:
     name: registry-credentials
     namespace: $NAMESPACE_TAP
+  exclude_dependencies: false # Needed when using profile = full
 
 tap_gui:
   service_type: ClusterIP
@@ -369,7 +375,19 @@ EOF
 
 cat tap-values.yml
 
-log "CYAN" "Installing the packages ..."
+# TODO: To be reviewed
+# log "CYAN" "Relocating the build images whn using full profile, installing the repository and packages"
+# TBS_FULL_VERSION=""
+# imgpkg copy -b ${TANZU_REG_SERVER}/tanzu-application-platform/full-tbs-deps-package-repo:${TBS_FULL_VERSION} \
+#   --to-repo ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tbs-full-deps
+#
+# tanzu package repository add tbs-full-deps-repository \
+#   --url ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tbs-full-deps:${TBS_FULL_VERSION} \
+#   --namespace $NAMESPACE_TAP
+#
+# tanzu package install full-tbs-deps -p full-tbs-deps.tanzu.vmware.com -v ${TBS_FULL_VERSION} -n $NAMESPACE_TAP
+
+log "CYAN" "Installing the TAP packages ..."
 tanzu package install tap -p tap.tanzu.vmware.com -v $TAP_VERSION --values-file tap-values.yml -n $NAMESPACE_TAP
 
 log "CYAN" "Wait till TAP installation is over"
