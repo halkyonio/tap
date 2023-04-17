@@ -277,8 +277,7 @@ tanzu package repository add tanzu-tap-repository \
 
 sleep 10s
 
-log "CYAN" "Install the Tanzu Application Platform profile: light"
-log "CYAN" "Create first the tap-values.yaml file to configure the 'light' profile ..."
+log "CYAN" "Create first the tap-values.yaml file to configure the TAP profile ..."
 
 # See: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/install.html#full-profile-3
 cat > tap-values.yml <<EOF
@@ -305,9 +304,19 @@ ceip_policy_disclosed: true # Installation fails if this is set to 'false'
 
 profile: full # Can take iterate, build, run, view.
 
-cnrs:
-  domain_name: "$VM_IP.sslip.io"
-  provider: local
+supply_chain: basic # Can take testing, testing_scanning.
+
+ootb_supply_chain_basic: # Based on supply_chain set above, can be changed to ootb_supply_chain_testing, ootb_supply_chain_testing_scanning.
+  service_account: default
+  registry:
+    server: # Takes the value from the shared section by default. Can be overridden
+    repository: # Takes the value from the shared section by default. Can be overridden
+  gitops:
+    ssh_secret: # Takes "" as value by default; but can be overridden
+
+#cnrs:
+#  domain_name: "$VM_IP.sslip.io"
+#  provider: local
 
 contour:
   envoy:
@@ -323,16 +332,6 @@ buildservice:
   kp_default_repository_secret:
     name: registry-credentials
     namespace: $NAMESPACE_TAP
-
-supply_chain: basic # Can take testing, testing_scanning.
-
-ootb_supply_chain_basic: # Based on supply_chain set above, can be changed to ootb_supply_chain_testing, ootb_supply_chain_testing_scanning.
-  service_account: default
-  registry:
-    server: # Takes the value from the shared section by default. Can be overridden
-    repository: # Takes the value from the shared section by default. Can be overridden
-  gitops:
-    ssh_secret: # Takes "" as value by default; but can be overridden
 
 tap_gui:
   service_type: ClusterIP
@@ -352,8 +351,8 @@ tap_gui:
         origin: http://tap-gui.$INGRESS_DOMAIN
 
 metadata_store:
-  ns_for_export_app_cert: ""
-  app_service_type: NodePort
+  ns_for_export_app_cert: "*"
+  app_service_type: ClusterIP # Defaults to LoadBalancer. If shared.ingress_domain is set earlier, this must be set to ClusterIP.
 
 scanning:
   metadataStore:
