@@ -44,7 +44,10 @@ TAP rely on the following components which are installed as [packages](./package
 - `Convention` controller able to change the `Workloads` according to METADATA (framework, runtime, ...)
 - `Service Binding & Toolkit` able to manage locally the services,
 - `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...).
-- `Crossplane` control plane framework to deploy services such as: AWS RDS
+- `Crossplane` control plane which dynamically deploy service instances (e.g. AWS RDS) with Services Toolkit and the pre-installed Bitnami Services.
+- `Bitnami service` Helm charts supported by TAP (MySQL, PostgreSQL, RabbitMQ and Redis)
+- `Application Configuration Service` component provides a Kubernetes-native experience to enable the runtime configuration of existing Spring applications (instead of using Spring Cloud config server)
+- `Spring Cloud Gateway` component able to route internal or external API requests to application services that expose APIs.
 
 ## Prerequisites
 
