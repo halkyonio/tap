@@ -151,12 +151,17 @@ EOF
 #########################
 ## Help / Usage
 #########################
-function usage() {
+usage() {
   fmt ""
   fmt "Usage: $0 [option]"
   fmt ""
   fmt "\tWhere option is:"
   fmt ""
+}
+
+lisPackages() {
+  log "CYAN" "List the TAP packages installed"
+  tanzu package available list -n ${NAMESPACE_TAP}
 }
 
 KUBE_CFG_FILE=${1:-config}
@@ -473,12 +478,10 @@ while [[ "$resp" != "Reconcile succeeded" ]]; do
   resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status);
 done
 
-log "CYAN" "List the TAP packages installed"
-tanzu package available list -n ${NAMESPACE_TAP}
-
 popd
 
 case $1 in
     -h) usage; exit;;
     deployKubernetesDashboard) "$@"; exit;;
+    listPackages)              "$@"; exit;;
 esac
