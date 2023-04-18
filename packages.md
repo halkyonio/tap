@@ -4,11 +4,7 @@ The following table list the packages installed using TAP according to their pro
 documentation [page](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/about-package-profiles.html).
 
 **NOTE**: To generate the list of the packages hereafter, if `Tanzu CLI` is installed on your machine and that you
-have access to TAP, then execute the following [list-tap-packages.sh](scripts/list-packages.sh)
-
-```bash
-./list-packages.sh
-```
+have access to TAP, then execute the following command `tanzu package installed list -A`
 
 | Name                          | Description                                                                                                                                                                                                 | Package name                                 | Version |
 |-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|--|
