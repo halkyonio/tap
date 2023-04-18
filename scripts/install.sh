@@ -187,6 +187,7 @@ mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd
 log "CYAN" "Creates a secret containing the local CA certificate for the kapp controller named: kapp-controller-config"
 if [[ "$LOCAL_REGISTRY" == "true" ]]; then
   kubectl create namespace kapp-controller --dry-run=client -o yaml | kubectl apply -f -
+  kubectl delete secret kapp-controller-config --namespace kapp-controller --ignore-not-found=true
   kubectl create secret generic kapp-controller-config \
      --namespace kapp-controller \
      --from-file caCerts=$REGISTRY_CA_PATH
