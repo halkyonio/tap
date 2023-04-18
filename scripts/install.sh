@@ -240,6 +240,9 @@ listTapPackages() {
 }
 
 tanzuCli() {
+  check_os
+  check_distro
+
   log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
   if [[ $DISTRO == 'fedora' ]]; then
     sudo yum install git wget unzip bash-completion openssl jq -y
