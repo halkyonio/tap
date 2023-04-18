@@ -24,7 +24,59 @@
 
 set -e
 
-# Defining some colors for output
+KUBE_CFG_FILE=${1:-config}
+export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
+
+COPY_PACKAGES=${COPY_PACKAGES:-false}
+REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
+DEST_DIR="/usr/local/bin"
+TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
+
+VM_IP=${VM_IP:-127.0.0.1}
+LOCAL_REGISTRY=${LOCAL_REGISTRY:-false}
+REGISTRY_SERVER=${REGISTRY_SERVER:-docker.io}
+REGISTRY_OWNER=${REGISTRY_OWNER}
+REGISTRY_USERNAME=${REGISTRY_USERNAME}
+REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
+REGISTRY_CA_PATH=${REGISTRY_CA_PATH}
+
+# Token stored under your profile: https://network.tanzu.vmware.com/users/dashboard/edit-profile
+TANZU_PIVNET_LEGACY_API_TOKEN=${TANZU_PIVNET_LEGACY_API_TOKEN}
+TANZU_REG_SERVER=${TANZU_REG_SERVER}
+TANZU_REG_USERNAME=${TANZU_REG_USERNAME}
+TANZU_REG_PASSWORD=${TANZU_REG_PASSWORD}
+
+INGRESS_DOMAIN=$VM_IP.sslip.io
+
+NAMESPACE_DEMO="tap-demo"
+NAMESPACE_TAP="tap-install"
+
+# https://github.com/pivotal-cf/pivnet-cli/releases
+PIVNET_CLI_VERSION="3.0.1"
+
+TAP_VERSION="1.5.0"
+
+TANZU_CLI_VERSION="v0.28.1"
+TANZU_CLIENT_FILE_ID="1446073"
+TANZU_CLIENT_NAME="tanzu-framework-linux-amd64"
+
+TANZU_CLUSTER_ESSENTIALS_VERSION="1.5.0"
+TANZU_CLUSTER_ESSENTIALS_FILE_ID="1460876"
+TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:79abddbc3b49b44fc368fede0dab93c266ff7c1fe305e2d555ed52d00361b446"
+
+TAP_AUTH_FILE_ID="1309818"
+TAP_AUTH_NAME="tap-auth"
+TAP_AUTH_VERSION="1.1.0-beta.1"
+
+# Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
+TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
+
+# Kubernetes Dashboard
+K8S_GUI_VERSION=v2.8.0
+
+###################
+# Global parameters
+###################
 NC='\033[0m' # No Color
 COLOR_RESET="\033[0m" # Reset color
 BLACK="\033[0;30m"
@@ -41,6 +93,9 @@ YELLOW='\033[0;33m'
 
 newline=$'\n'
 
+###############
+## Functions ##
+###############
 generate_eyecatcher(){
   COLOR=${1}
 	for i in {1..50}; do echo -ne "${!COLOR}$2${NC}"; done
@@ -159,206 +214,161 @@ usage() {
   fmt ""
 }
 
-lisPackages() {
+listTapPackages() {
   log "CYAN" "List the TAP packages installed"
   tanzu package available list -n ${NAMESPACE_TAP}
 }
 
-KUBE_CFG_FILE=${1:-config}
-export KUBECONFIG=$HOME/.kube/${KUBE_CFG_FILE}
+tanzuCli() {
+  log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
+  if [[ $DISTRO == 'fedora' ]]; then
+    sudo yum install git wget unzip bash-completion openssl jq -y
+  else
+    sudo yum install git wget unzip epel-release bash-completion jq -y
+  fi
 
-COPY_PACKAGES=${COPY_PACKAGES:-false}
-REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
-DEST_DIR="/usr/local/bin"
-TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
+  if ! command -v pivnet &> /dev/null; then
+    log "CYAN" "Executing installation Part I of the TAP guide"
+    log "CYAN" "Installing pivnet tool ..."
+    wget -q -c https://github.com/pivotal-cf/pivnet-cli/releases/download/v$PIVNET_CLI_VERSION/pivnet-linux-amd64-$PIVNET_CLI_VERSION
+    chmod +x pivnet-linux-amd64-$PIVNET_CLI_VERSION && mv pivnet-linux-amd64-$PIVNET_CLI_VERSION pivnet && sudo cp pivnet ${DEST_DIR}
+    pivnet version
+  fi
 
-VM_IP=${VM_IP:-127.0.0.1}
-LOCAL_REGISTRY=${LOCAL_REGISTRY:-false}
-REGISTRY_SERVER=${REGISTRY_SERVER:-docker.io}
-REGISTRY_OWNER=${REGISTRY_OWNER}
-REGISTRY_USERNAME=${REGISTRY_USERNAME}
-REGISTRY_PASSWORD=${REGISTRY_PASSWORD}
-REGISTRY_CA_PATH=${REGISTRY_CA_PATH}
+  log "CYAN" "Pivnet log in to Tanzu "
+  pivnet login --api-token=${TANZU_PIVNET_LEGACY_API_TOKEN}
 
-# Token stored under your profile: https://network.tanzu.vmware.com/users/dashboard/edit-profile
-TANZU_PIVNET_LEGACY_API_TOKEN=${TANZU_PIVNET_LEGACY_API_TOKEN}
-TANZU_REG_SERVER=${TANZU_REG_SERVER}
-TANZU_REG_USERNAME=${TANZU_REG_USERNAME}
-TANZU_REG_PASSWORD=${TANZU_REG_PASSWORD}
+  log "CYAN" "Create tanzu directory "
+  if [ ! -d $TANZU_TEMP_DIR ]; then
+      mkdir -p $TANZU_TEMP_DIR
+  fi
 
-INGRESS_DOMAIN=$VM_IP.sslip.io
+  pushd $TANZU_TEMP_DIR
 
-NAMESPACE_DEMO="tap-demo"
-NAMESPACE_TAP="tap-install"
+  # Download Cluster Essentials for VMware Tanzu
+  log "CYAN" "Set the Cluster Essentials product ID for version $TANZU_CLUSTER_ESSENTIALS_VERSION"
+  log "CYAN" "Download the tanzu-cluster-essentials ... "
+  pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
+  mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd64-$TANZU_CLUSTER_ESSENTIALS_VERSION.tgz -C ./tanzu-cluster-essentials
 
-# https://github.com/pivotal-cf/pivnet-cli/releases
-PIVNET_CLI_VERSION="3.0.1"
+  log "CYAN" "Creates a secret containing the local CA certificate for the kapp controller named: kapp-controller-config"
+  if [[ "$LOCAL_REGISTRY" == "true" ]]; then
+    kubectl create namespace kapp-controller --dry-run=client -o yaml | kubectl apply -f -
+    kubectl delete secret kapp-controller-config --namespace kapp-controller --ignore-not-found=true
+    kubectl create secret generic kapp-controller-config \
+       --namespace kapp-controller \
+       --from-file caCerts=$REGISTRY_CA_PATH
+  fi
 
-TAP_VERSION="1.5.0"
+  log "CYAN" "Install Cluster essentials (kapp, kbld, ytt, imgpkg)"
+  log "CYAN" "Configure and run install.sh, which installs kapp-controller and secretgen-controller on your cluster"
+  export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@$TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA
+  export INSTALL_REGISTRY_HOSTNAME=$TANZU_REG_SERVER
+  export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
+  export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
+  cd ./tanzu-cluster-essentials
+  export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
+  ./install.sh -y
 
-TANZU_CLI_VERSION="v0.28.1"
-TANZU_CLIENT_FILE_ID="1446073"
-TANZU_CLIENT_NAME="tanzu-framework-linux-amd64"
+  log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
+  sudo cp ytt ${DEST_DIR}
+  sudo cp kapp ${DEST_DIR}
+  sudo cp imgpkg ${DEST_DIR}
+  sudo cp kbld ${DEST_DIR}
+  cd ..
 
-TANZU_CLUSTER_ESSENTIALS_VERSION="1.5.0"
-TANZU_CLUSTER_ESSENTIALS_FILE_ID="1460876"
-TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA="sha256:79abddbc3b49b44fc368fede0dab93c266ff7c1fe305e2d555ed52d00361b446"
+  log "CYAN" "Wait till the pod of kapp-controller and secretgen-controller are running"
+  kubectl rollout status deployment/kapp-controller -n kapp-controller
+  kubectl rollout status deployment/secretgen-controller -n secretgen-controller
 
-TAP_AUTH_FILE_ID="1309818"
-TAP_AUTH_NAME="tap-auth"
-TAP_AUTH_VERSION="1.1.0-beta.1"
+  # log "CYAN" "Create the variable containing the patch data for caCerts if there is a CA cert"
+  # patch_kapp_configmap
+  #
+  # log "CYAN" "Patch the kapp_controller configmap and rollout"
+  # kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
+  # kubectl rollout restart deployment/kapp-controller -n kapp-controller
 
-# Do not use the RAW URL but instead the Github HTTPS URL followed by blob/main
-TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
+  log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION.1"
+  log "CYAN" "Download the Tanzu client and extract it"
+  pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=${TAP_VERSION} --product-file-id=$TANZU_CLIENT_FILE_ID
+  tar -vxf $TANZU_CLIENT_NAME-$TANZU_CLI_VERSION.1.tar
 
-# Kubernetes Dashboard
-K8S_GUI_VERSION=v2.8.0
+  log "CYAN" "Set env var TANZU_CLI_NO_INIT to true to assure the local downloaded versions of the CLI core and plug-ins are installed"
+  export TANZU_CLI_NO_INIT=true
+  mkdir -p $HOME/.tanzu
+  sudo install cli/core/$TANZU_CLI_VERSION/tanzu-core-linux_amd64 ${DEST_DIR}/tanzu
+  tanzu version
 
-# Check OS TYPE and/or linux distro
-check_os
-check_distro
+  log "CYAN" "Enable tanzu completion for bash"
+  printf "\n# Tanzu shell completion\nsource '$HOME/.tanzu/completion.bash.inc'\n" >> $HOME/.bash_profile
+  tanzu completion bash > $HOME/.tanzu/completion.bash.inc
 
-log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
-if [[ $DISTRO == 'fedora' ]]; then
-  sudo yum install git wget unzip bash-completion openssl jq -y
-else
-  sudo yum install git wget unzip epel-release bash-completion jq -y
-fi
+  log "CYAN" "Clean install Tanzu CLI plug-ins now"
+  export TANZU_CLI_NO_INIT=true
+  tanzu plugin install --local cli all
+  tanzu plugin list
 
-if ! command -v pivnet &> /dev/null; then
-  log "CYAN" "Executing installation Part I of the TAP guide"
-  log "CYAN" "Installing pivnet tool ..."
-  wget -q -c https://github.com/pivotal-cf/pivnet-cli/releases/download/v$PIVNET_CLI_VERSION/pivnet-linux-amd64-$PIVNET_CLI_VERSION
-  chmod +x pivnet-linux-amd64-$PIVNET_CLI_VERSION && mv pivnet-linux-amd64-$PIVNET_CLI_VERSION pivnet && sudo cp pivnet ${DEST_DIR}
-  pivnet version
-fi
+  log "CYAN" "Install the RBAC/AUTH plugin"
+  pivnet download-product-files --product-slug=$TAP_AUTH_NAME --release-version=$TAP_AUTH_VERSION --product-file-id=$TAP_AUTH_FILE_ID
+  tar -vxf tanzu-auth-plugin_$TAP_AUTH_VERSION.tar.gz
+  tanzu plugin install rbac --local linux-amd64
+  popd
+}
 
-log "CYAN" "Pivnet log in to Tanzu "
-pivnet login --api-token=${TANZU_PIVNET_LEGACY_API_TOKEN}
+relocateImages() {
+  if [[ "$COPY_PACKAGES" == "true" ]]; then
+    log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
+    docker login ${REGISTRY_SERVER} -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+    docker login ${TANZU_REG_SERVER} -u ${TANZU_REG_USERNAME} -p ${TANZU_REG_PASSWORD}
 
-log "CYAN" "Create tanzu directory "
-if [ ! -d $TANZU_TEMP_DIR ]; then
-    mkdir -p $TANZU_TEMP_DIR
-fi
+    log "CYAN" "Relocate the repository image bundle from Tanzu to ${REGISTRY_SERVER}/${REGISTRY_OWNER}"
+    echo " imgpkg copy --concurrency 1 --registry-ca-cert-path ${REGISTRY_CA_PATH} -b ${TANZU_REG_SERVER}/tanzu-application-platform/tap-packages:${TAP_VERSION} --to-repo ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages"
+    imgpkg copy \
+        --concurrency 1 \
+        --registry-ca-cert-path ${REGISTRY_CA_PATH} \
+        -b ${TANZU_REG_SERVER}/tanzu-application-platform/tap-packages:${TAP_VERSION} \
+        --to-repo ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages
+  fi
+}
 
-pushd $TANZU_TEMP_DIR
+setupTapNamespaces() {
+  log "CYAN" "Create a namespace called ${NAMESPACE_TAP} for deploying the packages"
+  kubectl create ns ${NAMESPACE_TAP} --dry-run=client -o yaml | kubectl apply -f -
 
-# Download Cluster Essentials for VMware Tanzu
-log "CYAN" "Set the Cluster Essentials product ID for version $TANZU_CLUSTER_ESSENTIALS_VERSION"
-log "CYAN" "Download the tanzu-cluster-essentials ... "
-pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
-mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd64-$TANZU_CLUSTER_ESSENTIALS_VERSION.tgz -C ./tanzu-cluster-essentials
+  log "CYAN" "Creating for grype the namespace : ${NAMESPACE_DEMO}"
+  kubectl create ns ${NAMESPACE_DEMO} --dry-run=client -o yaml | kubectl apply -f -
+}
 
-log "CYAN" "Creates a secret containing the local CA certificate for the kapp controller named: kapp-controller-config"
-if [[ "$LOCAL_REGISTRY" == "true" ]]; then
-  kubectl create namespace kapp-controller --dry-run=client -o yaml | kubectl apply -f -
-  kubectl delete secret kapp-controller-config --namespace kapp-controller --ignore-not-found=true
-  kubectl create secret generic kapp-controller-config \
-     --namespace kapp-controller \
-     --from-file caCerts=$REGISTRY_CA_PATH
-fi
+createRegistryCreds() {
+  log "CYAN" "Create a secret hosting the credentials to access the container registry: ${REGISTRY_SERVER}"
+  tanzu secret registry add registry-credentials \
+    --username ${REGISTRY_USERNAME} \
+    --password ${REGISTRY_PASSWORD} \
+    --server ${REGISTRY_SERVER} \
+    --namespace ${NAMESPACE_TAP} \
+    --export-to-all-namespaces \
+    --yes
 
-log "CYAN" "Install Cluster essentials (kapp, kbld, ytt, imgpkg)"
-log "CYAN" "Configure and run install.sh, which installs kapp-controller and secretgen-controller on your cluster"
-export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@$TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA
-export INSTALL_REGISTRY_HOSTNAME=$TANZU_REG_SERVER
-export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
-export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
-cd ./tanzu-cluster-essentials
-export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
-./install.sh -y
+  log "CYAN" "Create a secret hosting the credentials to access the container registry: ${REGISTRY_SERVER} for the build-services."
+  log "YELLOW" "To fix issue: https://github.com/halkyonio/tap/issues/33"
+  tanzu secret registry add kp-default-repository-creds \
+    --username ${REGISTRY_USERNAME} \
+    --password ${REGISTRY_PASSWORD} \
+    --server ${REGISTRY_SERVER} \
+    --namespace ${NAMESPACE_TAP}
+}
 
-log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
-sudo cp ytt ${DEST_DIR}
-sudo cp kapp ${DEST_DIR}
-sudo cp imgpkg ${DEST_DIR}
-sudo cp kbld ${DEST_DIR}
-cd ..
+addTapRepository() {
+  log "CYAN" "Deploy the TAP package repository"
+  tanzu package repository add tanzu-tap-repository \
+    --url ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages:${TAP_VERSION} \
+    -n ${NAMESPACE_TAP}
+}
 
-log "CYAN" "Wait till the pod of kapp-controller and secretgen-controller are running"
-kubectl rollout status deployment/kapp-controller -n kapp-controller
-kubectl rollout status deployment/secretgen-controller -n secretgen-controller
-
-# log "CYAN" "Create the variable containing the patch data for caCerts if there is a CA cert"
-# patch_kapp_configmap
-#
-# log "CYAN" "Patch the kapp_controller configmap and rollout"
-# kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
-# kubectl rollout restart deployment/kapp-controller -n kapp-controller
-
-log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION.1"
-log "CYAN" "Download the Tanzu client and extract it"
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version=${TAP_VERSION} --product-file-id=$TANZU_CLIENT_FILE_ID
-tar -vxf $TANZU_CLIENT_NAME-$TANZU_CLI_VERSION.1.tar
-
-log "CYAN" "Set env var TANZU_CLI_NO_INIT to true to assure the local downloaded versions of the CLI core and plug-ins are installed"
-export TANZU_CLI_NO_INIT=true
-mkdir -p $HOME/.tanzu
-sudo install cli/core/$TANZU_CLI_VERSION/tanzu-core-linux_amd64 ${DEST_DIR}/tanzu
-tanzu version
-
-log "CYAN" "Enable tanzu completion for bash"
-printf "\n# Tanzu shell completion\nsource '$HOME/.tanzu/completion.bash.inc'\n" >> $HOME/.bash_profile
-tanzu completion bash > $HOME/.tanzu/completion.bash.inc
-
-log "CYAN" "Clean install Tanzu CLI plug-ins now"
-export TANZU_CLI_NO_INIT=true
-tanzu plugin install --local cli all
-tanzu plugin list
-
-log "CYAN" "Install the RBAC/AUTH plugin"
-pivnet download-product-files --product-slug=$TAP_AUTH_NAME --release-version=$TAP_AUTH_VERSION --product-file-id=$TAP_AUTH_FILE_ID
-tar -vxf tanzu-auth-plugin_$TAP_AUTH_VERSION.tar.gz
-tanzu plugin install rbac --local linux-amd64
-
-log "CYAN" "Executing installation Part II of the TAP guide"
-log "CYAN" "Install profiles ..."
-
-log "CYAN" "Create a namespace called ${NAMESPACE_TAP} for deploying the packages"
-kubectl create ns ${NAMESPACE_TAP} --dry-run=client -o yaml | kubectl apply -f -
-
-if [[ "$COPY_PACKAGES" == "true" ]]; then
-  log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
-  docker login ${REGISTRY_SERVER} -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
-  docker login ${TANZU_REG_SERVER} -u ${TANZU_REG_USERNAME} -p ${TANZU_REG_PASSWORD}
-
-  log "CYAN" "Relocate the repository image bundle from Tanzu to ${REGISTRY_SERVER}/${REGISTRY_OWNER}"
-  echo " imgpkg copy --concurrency 1 --registry-ca-cert-path ${REGISTRY_CA_PATH} -b ${TANZU_REG_SERVER}/tanzu-application-platform/tap-packages:${TAP_VERSION} --to-repo ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages"
-  imgpkg copy \
-      --concurrency 1 \
-      --registry-ca-cert-path ${REGISTRY_CA_PATH} \
-      -b ${TANZU_REG_SERVER}/tanzu-application-platform/tap-packages:${TAP_VERSION} \
-      --to-repo ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages
-fi
-
-log "CYAN" "Create a secret hosting the credentials to access the container registry: ${REGISTRY_SERVER}"
-tanzu secret registry add registry-credentials \
-  --username ${REGISTRY_USERNAME} \
-  --password ${REGISTRY_PASSWORD} \
-  --server ${REGISTRY_SERVER} \
-  --namespace ${NAMESPACE_TAP} \
-  --export-to-all-namespaces \
-  --yes
-
-log "CYAN" "Create a secret hosting the credentials to access the container registry: ${REGISTRY_SERVER} for the build-services."
-log "YELLOW" "To fix issue: https://github.com/halkyonio/tap/issues/33"
-tanzu secret registry add kp-default-repository-creds \
-  --username ${REGISTRY_USERNAME} \
-  --password ${REGISTRY_PASSWORD} \
-  --server ${REGISTRY_SERVER} \
-  --namespace ${NAMESPACE_TAP} \
-
-log "CYAN" "Deploy the TAP package repository"
-tanzu package repository add tanzu-tap-repository \
-  --url ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages:${TAP_VERSION} \
-  -n ${NAMESPACE_TAP}
-
-sleep 10s
-
-log "CYAN" "Create first the tap-values.yaml file to configure the TAP profile ..."
-
-# See: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/install.html#full-profile-3
-cat > tap-values.yml <<EOF
+createConfigFile() {
+  log "CYAN" "Create first the tap-values.yaml file to configure the TAP profile ..."
+  # See: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/install.html#full-profile-3
+  cat > tap-values.yml <<EOF
 shared:
   ingress_domain: "$INGRESS_DOMAIN"
   ingress_issuer: "" # Optional, can denote a cert-manager.io/v1/ClusterIssuer of your choice. Defaults to "tap-ingress-selfsigned".
@@ -445,8 +455,26 @@ grype:
 policy:
   tuf_enabled: false # By default, TUF initialization and keyless verification are deactivated.
 EOF
+  cat tap-values.yml
+}
 
-cat tap-values.yml
+
+installTapPackages() {
+  log "CYAN" "Installing the TAP packages ..."
+  tanzu package install tap -p tap.tanzu.vmware.com \
+    --wait-check-interval 10 \
+    -v ${TAP_VERSION} \
+    --values-file tap-values.yml \
+    -n ${NAMESPACE_TAP}
+
+  log "CYAN" "Wait till TAP installation is over"
+  resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status)
+  while [[ "$resp" != "Reconcile succeeded" ]]; do
+    echo "TAP installation status: $resp";
+    sleep 10s;
+    resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status);
+  done
+}
 
 # TODO: To be reviewed
 # log "CYAN" "Relocating the build images whn using full profile, installing the repository and packages"
@@ -460,28 +488,24 @@ cat tap-values.yml
 #
 # tanzu package install full-tbs-deps -p full-tbs-deps.tanzu.vmware.com -v ${TBS_FULL_VERSION} -n ${NAMESPACE_TAP}
 
-log "CYAN" "Creating for grype the namespace : ${NAMESPACE_DEMO}"
-kubectl create ns ${NAMESPACE_DEMO} --dry-run=client -o yaml | kubectl apply -f -
-
-log "CYAN" "Installing the TAP packages ..."
-tanzu package install tap -p tap.tanzu.vmware.com \
-  --wait-check-interval 10 \
-  -v ${TAP_VERSION} \
-  --values-file tap-values.yml \
-  -n ${NAMESPACE_TAP}
-
-log "CYAN" "Wait till TAP installation is over"
-resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status)
-while [[ "$resp" != "Reconcile succeeded" ]]; do
-  echo "TAP installation status: $resp";
-  sleep 10s;
-  resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status);
-done
-
-popd
-
 case $1 in
     -h) usage; exit;;
+    tanzuCli)                  "$@"; exit;;
+    relocateImages)            "$@"; exit;;
+    createRegistryCreds)       "$@"; exit;;
+    addTapRepository)          "$@"; exit;;
+    installTapPackages)        "$@"; exit;;
+    listTapPackages)           "$@"; exit;;
     deployKubernetesDashboard) "$@"; exit;;
-    listPackages)              "$@"; exit;;
 esac
+
+check_os
+check_distro
+
+relocateImages
+setupTapNamespaces
+createRegistryCreds
+addTapRepository
+createConfigFile
+installTapPackages
+listTapPackages
