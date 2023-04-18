@@ -262,7 +262,7 @@ tanzuCli() {
   log "CYAN" "Pivnet log in to Tanzu "
   pivnet login --api-token=${TANZU_PIVNET_LEGACY_API_TOKEN}
 
-  pushd $TANZU_TEMP_DIR
+  pushd ${TANZU_TEMP_DIR}
 
   log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION.1"
   log "CYAN" "Download the Tanzu client and extract it"
@@ -292,7 +292,7 @@ tanzuCli() {
 }
 
 clusterEssentials() {
-    pushd $TANZU_TEMP_DIR
+    pushd ${TANZU_TEMP_DIR}
 
     # Download Cluster Essentials for VMware Tanzu
     log "CYAN" "Set the Cluster Essentials product ID for version $TANZU_CLUSTER_ESSENTIALS_VERSION"
@@ -392,7 +392,7 @@ addTapRepository() {
 createConfigFile() {
   log "CYAN" "Create first the tap-values.yaml file to configure the TAP profile ..."
   # See: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/install.html#full-profile-3
-  cat > tap-values.yml <<EOF
+  cat > ${TANZU_TEMP_DIR}/tap-values.yml <<EOF
 shared:
   ingress_domain: "$INGRESS_DOMAIN"
   ingress_issuer: "" # Optional, can denote a cert-manager.io/v1/ClusterIssuer of your choice. Defaults to "tap-ingress-selfsigned".
@@ -408,7 +408,7 @@ shared:
   ca_cert_data: |
 EOF
 generate_ca_cert_data_yaml >> tap-values.yml
-cat << EOF >> tap-values.yml
+cat << EOF >> ${TANZU_TEMP_DIR}/tap-values.yml
 ceip_policy_disclosed: true # Installation fails if this is set to 'false'
 
 #The above keys are minimum numbers of entries needed in tap-values.yaml to get a functioning TAP Full profile installation.
@@ -479,7 +479,7 @@ grype:
 policy:
   tuf_enabled: false # By default, TUF initialization and keyless verification are deactivated.
 EOF
-  cat tap-values.yml
+  cat ${TANZU_TEMP_DIR}/tap-values.yml
 }
 
 
@@ -488,7 +488,7 @@ installTapPackages() {
   tanzu package install tap -p tap.tanzu.vmware.com \
     --wait-check-interval 10s \
     -v ${TAP_VERSION} \
-    --values-file tap-values.yml \
+    --values-file ${TANZU_TEMP_DIR}/tap-values.yml \
     -n ${NAMESPACE_TAP} || true
 
   log "CYAN" "Wait till TAP installation is over"
@@ -528,8 +528,8 @@ check_os
 check_distro
 
 log "CYAN" "Create tanzu directory "
-if [ ! -d $TANZU_TEMP_DIR ]; then
-    mkdir -p $TANZU_TEMP_DIR
+if [ ! -d ${TANZU_TEMP_DIR} ]; then
+    mkdir -p ${TANZU_TEMP_DIR}
 fi
 
 clusterEssentials
