@@ -73,7 +73,7 @@ TAP_AUTH_VERSION="1.1.0-beta.1"
 TAP_GIT_CATALOG_REPO=https://github.com/halkyonio/tap-catalog-blank/blob/main
 
 # Kubernetes Dashboard
-K8S_GUI_VERSION=v2.8.0
+K8S_GUI_VERSION=v2.7.0
 
 ###################
 # Global parameters
