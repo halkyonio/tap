@@ -96,6 +96,12 @@ newline=$'\n'
 ###############
 ## Functions ##
 ###############
+fmt() {
+  COLOR="CYAN"
+  MSG="${@:1}"
+  echo -e "${!COLOR} ${MSG}${NC}"
+}
+
 generate_eyecatcher(){
   COLOR=${1}
 	for i in {1..50}; do echo -ne "${!COLOR}$2${NC}"; done
