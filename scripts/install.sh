@@ -407,7 +407,7 @@ shared:
 
   ca_cert_data: |
 EOF
-generate_ca_cert_data_yaml >> tap-values.yml
+generate_ca_cert_data_yaml >> ${TANZU_TEMP_DIR}/tap-values.yml
 cat << EOF >> ${TANZU_TEMP_DIR}/tap-values.yml
 ceip_policy_disclosed: true # Installation fails if this is set to 'false'
 
