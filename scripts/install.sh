@@ -232,6 +232,7 @@ usage() {
   fmt "\tinstallTapPackages   \tInstall the Tanzu TAP package"
   fmt "\tlistTapPackages      \tList the Tanzu packages installed"
   fmt "\ttanzuCli             \tInstall the Tanzu client and Cluster Essentials"
+  fmt "\tclusterEssentials    \tInstall the cluster Essentials tools and controllers (kapp, secretgen)."
 }
 
 listTapPackages() {
@@ -261,55 +262,7 @@ tanzuCli() {
   log "CYAN" "Pivnet log in to Tanzu "
   pivnet login --api-token=${TANZU_PIVNET_LEGACY_API_TOKEN}
 
-  log "CYAN" "Create tanzu directory "
-  if [ ! -d $TANZU_TEMP_DIR ]; then
-      mkdir -p $TANZU_TEMP_DIR
-  fi
-
   pushd $TANZU_TEMP_DIR
-
-  # Download Cluster Essentials for VMware Tanzu
-  log "CYAN" "Set the Cluster Essentials product ID for version $TANZU_CLUSTER_ESSENTIALS_VERSION"
-  log "CYAN" "Download the tanzu-cluster-essentials ... "
-  pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
-  mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd64-$TANZU_CLUSTER_ESSENTIALS_VERSION.tgz -C ./tanzu-cluster-essentials
-
-  log "CYAN" "Creates a secret containing the local CA certificate for the kapp controller named: kapp-controller-config"
-  if [[ "$LOCAL_REGISTRY" == "true" ]]; then
-    kubectl create namespace kapp-controller --dry-run=client -o yaml | kubectl apply -f -
-    kubectl delete secret kapp-controller-config --namespace kapp-controller --ignore-not-found=true
-    kubectl create secret generic kapp-controller-config \
-       --namespace kapp-controller \
-       --from-file caCerts=$REGISTRY_CA_PATH
-  fi
-
-  log "CYAN" "Install Cluster essentials (kapp, kbld, ytt, imgpkg)"
-  log "CYAN" "Configure and run install.sh, which installs kapp-controller and secretgen-controller on your cluster"
-  export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@$TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA
-  export INSTALL_REGISTRY_HOSTNAME=$TANZU_REG_SERVER
-  export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
-  export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
-  cd ./tanzu-cluster-essentials
-  export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
-  ./install.sh -y
-
-  log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
-  sudo cp ytt ${DEST_DIR}
-  sudo cp kapp ${DEST_DIR}
-  sudo cp imgpkg ${DEST_DIR}
-  sudo cp kbld ${DEST_DIR}
-  cd ..
-
-  log "CYAN" "Wait till the pod of kapp-controller and secretgen-controller are running"
-  kubectl rollout status deployment/kapp-controller -n kapp-controller
-  kubectl rollout status deployment/secretgen-controller -n secretgen-controller
-
-  # log "CYAN" "Create the variable containing the patch data for caCerts if there is a CA cert"
-  # patch_kapp_configmap
-  #
-  # log "CYAN" "Patch the kapp_controller configmap and rollout"
-  # kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
-  # kubectl rollout restart deployment/kapp-controller -n kapp-controller
 
   log "CYAN" "Install the Tanzu client & plug-ins for version: $TANZU_CLI_VERSION.1"
   log "CYAN" "Download the Tanzu client and extract it"
@@ -336,6 +289,54 @@ tanzuCli() {
   tar -vxf tanzu-auth-plugin_$TAP_AUTH_VERSION.tar.gz
   tanzu plugin install rbac --local linux-amd64
   popd
+}
+
+clusterEssentials() {
+    pushd $TANZU_TEMP_DIR
+
+    # Download Cluster Essentials for VMware Tanzu
+    log "CYAN" "Set the Cluster Essentials product ID for version $TANZU_CLUSTER_ESSENTIALS_VERSION"
+    log "CYAN" "Download the tanzu-cluster-essentials ... "
+    pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version=$TANZU_CLUSTER_ESSENTIALS_VERSION --product-file-id=$TANZU_CLUSTER_ESSENTIALS_FILE_ID
+    mkdir -p tanzu-cluster-essentials && tar -xvf tanzu-cluster-essentials-linux-amd64-$TANZU_CLUSTER_ESSENTIALS_VERSION.tgz -C ./tanzu-cluster-essentials
+
+    log "CYAN" "Creates a secret containing the local CA certificate for the kapp controller named: kapp-controller-config"
+    if [[ "$LOCAL_REGISTRY" == "true" ]]; then
+      kubectl create namespace kapp-controller --dry-run=client -o yaml | kubectl apply -f -
+      kubectl delete secret kapp-controller-config --namespace kapp-controller --ignore-not-found=true
+      kubectl create secret generic kapp-controller-config \
+         --namespace kapp-controller \
+         --from-file caCerts=$REGISTRY_CA_PATH
+    fi
+
+    log "CYAN" "Install Cluster essentials (kapp, kbld, ytt, imgpkg)"
+    log "CYAN" "Configure and run install.sh, which installs kapp-controller and secretgen-controller on your cluster"
+    export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@$TANZU_CLUSTER_ESSENTIALS_IMAGE_SHA
+    export INSTALL_REGISTRY_HOSTNAME=$TANZU_REG_SERVER
+    export INSTALL_REGISTRY_USERNAME=$TANZU_REG_USERNAME
+    export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
+    cd ./tanzu-cluster-essentials
+    export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
+    ./install.sh -y
+
+    log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
+    sudo cp ytt ${DEST_DIR}
+    sudo cp kapp ${DEST_DIR}
+    sudo cp imgpkg ${DEST_DIR}
+    sudo cp kbld ${DEST_DIR}
+
+    popd
+
+    log "CYAN" "Wait till the pod of kapp-controller and secretgen-controller are running"
+    kubectl rollout status deployment/kapp-controller -n kapp-controller
+    kubectl rollout status deployment/secretgen-controller -n secretgen-controller
+
+    # log "CYAN" "Create the variable containing the patch data for caCerts if there is a CA cert"
+    # patch_kapp_configmap
+    #
+    # log "CYAN" "Patch the kapp_controller configmap and rollout"
+    # kubectl patch -n kapp-controller cm/kapp-controller-config --type merge --patch "$configMap"
+    # kubectl rollout restart deployment/kapp-controller -n kapp-controller
 }
 
 relocateImages() {
@@ -525,6 +526,12 @@ esac
 check_os
 check_distro
 
+log "CYAN" "Create tanzu directory "
+if [ ! -d $TANZU_TEMP_DIR ]; then
+    mkdir -p $TANZU_TEMP_DIR
+fi
+
+clusterEssentials
 relocateImages
 setupTapNamespaces
 createRegistryCreds
