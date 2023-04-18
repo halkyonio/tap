@@ -16,7 +16,7 @@ Table of Contents
 - TAP 1.x installed
 - [Tanzu client](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-tanzu-cli.html#accept-tanzu-application-platform-eulas-and-installing-tanzu-cli)
 - Some kubernetes tools such as [kubernetes tree](https://github.com/ahmetb/kubectl-tree)
-- Have a secret created with the [registry credentials](scripts/populate_namespace_tap.sh) and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
+- Have a secret created with the [registry credentials](scripts/install.sh) and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
 - Import the config of the kubernetes cluster using the file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools
 
 ### Demo 1: Tanzu Java Web
@@ -263,7 +263,7 @@ kubectl rollout status deployment -n controller -n knative-serving
 When done, we can install the Quarkus supply chain and templates files as an application using kapp
 
 ```bash
-./scripts/populate_namespace_tap.sh demo-4
+./scripts/install.sh populateNamespace demo-4
 pushd supplychain/quarkus-sc
 kapp deploy --yes -a quarkus-supply-chain \
   -n demo-4 \

@@ -234,6 +234,7 @@ usage() {
   fmt "\ttanzuCli                   \tInstall the Tanzu client and Cluster Essentials"
   fmt "\tclusterEssentials          \tInstall the cluster Essentials tools and controllers (kapp, secretgen)."
   fmt "\tdeployKubernetesDashboard  \tInstall the kubernetes dashboard (optional)"
+  fmt "\tpopulateUserNamespace      \tPopulate the user namespace with the proper RBAC and registry credentials"
 }
 
 listTapPackages() {
@@ -501,6 +502,67 @@ installTapPackages() {
   done
 }
 
+populateUserNamespace() {
+  if [ -v 1 ]; then
+    NAMESPACE_DEMO=$1
+  else
+    NAMESPACE_DEMO=demo
+  fi
+
+  cat <<EOF | kubectl -n ${NAMESPACE_DEMO} create -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${NAMESPACE_DEMO}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-credentials
+  annotations:
+    secretgen.carvel.dev/image-pull-secret: ""
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: e30K
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+secrets:
+  - name: registry-credentials
+imagePullSecrets:
+  - name: registry-credentials
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-permit-deliverable
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: deliverable
+subjects:
+  - kind: ServiceAccount
+    name: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-permit-workload
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: workload
+subjects:
+  - kind: ServiceAccount
+    name: default
+EOF
+
+# kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"secrets": [{"name":"registry-credentials"}]}'
+# kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"imagePullSecrets": [{"name":"registry-credentials"}]}'
+}
+
 # TODO: To be reviewed
 # log "CYAN" "Relocating the build images whn using full profile, installing the repository and packages"
 # TBS_FULL_VERSION=""
@@ -524,6 +586,7 @@ case $1 in
     installTapPackages)        installTapPackages;        exit;;
     listTapPackages)           listTapPackages;           exit;;
     deployKubernetesDashboard) deployKubernetesDashboard; exit;;
+    populateUserNamespace)     "$@";                      exit;;
 esac
 
 check_os

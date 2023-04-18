@@ -204,12 +204,12 @@ See demo page & instructions [here](demo.md) covering more examples like also to
 
 Create first a namespace using the command
 ```bash
-./scripts/populate_namespace_tap.sh demo
+./scripts/install.sh populateNamespace demo
 
 or 
 
 ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
-    "bash -s" -- < ./scripts/populate_namespace_tap.sh demo
+    "bash -s" -- < ./scripts/install.sh populateNamespace demo
 ```
 Next deploy a Web Application using the tanzu client and a workload
 ```bash
