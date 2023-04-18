@@ -26,13 +26,18 @@ set -e
 
 # Defining some colors for output
 NC='\033[0m' # No Color
-RED='\033[0;31m'
-YELLOW='\033[0;33m'
-GREEN='\033[0;32m'
+COLOR_RESET="\033[0m" # Reset color
+BLACK="\033[0;30m"
 BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
+BROWN="\033[0;33m"
+GREEN='\033[0;32m'
+GREY="\033[0;90m"
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+RED='\033[0;31m'
+PURPLE="\033[0;35m"
 WHITE='\033[0;37m'
+YELLOW='\033[0;33m'
 
 newline=$'\n'
 
@@ -97,6 +102,61 @@ data:
 EOF
 )
   fi
+}
+
+deployKubernetesDashboard() {
+  docker pull kubernetesui/dashboard:${K8S_GUI_VERSION}
+  docker tag kubernetesui/dashboard:${K8S_GUI_VERSION} ${REGISTRY_SERVER}/kubernetesui/dashboard:${K8S_GUI_VERSION}
+  docker push ${REGISTRY_SERVER}/kubernetesui/dashboard:${K8S_GUI_VERSION}
+
+  kind load docker-image ${REGISTRY_SERVER}/kubernetesui/dashboard:${K8S_GUI_VERSION}
+
+  #helm uninstall kubernetes-dashboard -n kubernetes-dashboard
+  helm upgrade --install kubernetes-dashboard kubernetes-dashboard \
+    --repo https://kubernetes.github.io/dashboard/ \
+    --namespace kubernetes-dashboard --create-namespace \
+    --set image.repository=${REGISTRY_SERVER}/kubernetesui/dashboard \
+    --set image.version=${K8S_GUI_VERSION} \
+    --set ingress.enabled=true \
+    --set ingress.className=contour \
+    --set ingress.hosts[0]=k8s-gui.${INGRESS_DOMAIN} \
+    --set protocolHttp=true \
+    --set serviceAccount.create=false \
+    --set serviceAccount.name=admin-user
+
+  cat << EOF | kubectl apply -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+EOF
+
+  log_line "YELLOW" "Kubernetes dashboard URL: http://k8s-gui.$VM_IP.sslip.io"
+}
+
+#########################
+## Help / Usage
+#########################
+function usage() {
+  fmt ""
+  fmt "Usage: $0 [option]"
+  fmt ""
+  fmt "\tWhere option is:"
+  fmt ""
 }
 
 KUBE_CFG_FILE=${1:-config}
@@ -399,7 +459,11 @@ log "CYAN" "Creating for grype the namespace : ${NAMESPACE_DEMO}"
 kubectl create ns ${NAMESPACE_DEMO} --dry-run=client -o yaml | kubectl apply -f -
 
 log "CYAN" "Installing the TAP packages ..."
-tanzu package install tap -p tap.tanzu.vmware.com -v ${TAP_VERSION} --values-file tap-values.yml -n ${NAMESPACE_TAP}
+tanzu package install tap -p tap.tanzu.vmware.com \
+  --wait-check-interval 10 \
+  -v ${TAP_VERSION} \
+  --values-file tap-values.yml \
+  -n ${NAMESPACE_TAP}
 
 log "CYAN" "Wait till TAP installation is over"
 resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status)
@@ -412,47 +476,9 @@ done
 log "CYAN" "List the TAP packages installed"
 tanzu package available list -n ${NAMESPACE_TAP}
 
-docker pull kubernetesui/dashboard:$K8S_GUI_VERSION
-docker tag kubernetesui/dashboard:$K8S_GUI_VERSION ${INGRESS_DOMAIN}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
-docker push ${INGRESS_DOMAIN}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
-
-kind load docker-image ${INGRESS_DOMAIN}:5000/kubernetesui/dashboard:${K8S_GUI_VERSION}
-
-#helm uninstall kubernetes-dashboard -n kubernetes-dashboard
-helm upgrade --install kubernetes-dashboard kubernetes-dashboard \
-  --repo https://kubernetes.github.io/dashboard/ \
-  --namespace kubernetes-dashboard --create-namespace \
-  --set image.repository=${INGRESS_DOMAIN}:5000/kubernetesui/dashboard \
-  --set image.version=${K8S_GUI_VERSION} \
-  --set ingress.enabled=true \
-  --set ingress.className=contour \
-  --set ingress.hosts[0]=k8s-gui.${INGRESS_DOMAIN} \
-  --set protocolHttp=true \
-  --set serviceAccount.create=false \
-  --set serviceAccount.name=admin-user
-
-cat << EOF | kubectl apply -f -
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: admin-user
-  namespace: kubernetes-dashboard
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: admin-user
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: admin-user
-  namespace: kubernetes-dashboard
-EOF
-
-log_line "YELLOW" "Kubernetes dashboard URL: http://k8s-gui.$VM_IP.sslip.io"
-
 popd
-exit
+
+case $1 in
+    -h) usage; exit;;
+    deployKubernetesDashboard) "$@"; exit;;
+esac
