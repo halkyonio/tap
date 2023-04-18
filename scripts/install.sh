@@ -234,7 +234,7 @@ usage() {
   fmt "\ttanzuCli                   \tInstall the Tanzu client and Cluster Essentials"
   fmt "\tclusterEssentials          \tInstall the cluster Essentials tools and controllers (kapp, secretgen)."
   fmt "\tdeployKubernetesDashboard  \tInstall the kubernetes dashboard (optional)"
-  fmt "\tpopulateUserNamespace      \tPopulate the user namespace with the proper RBAC and registry credentials"
+  fmt "\tpopulateUserNamespace      \tPopulate the user namespace passed as parameter with the proper RBAC and registry credentials"
 }
 
 listTapPackages() {
