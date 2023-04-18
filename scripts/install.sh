@@ -488,7 +488,7 @@ installTapPackages() {
     --wait-check-interval 10 \
     -v ${TAP_VERSION} \
     --values-file tap-values.yml \
-    -n ${NAMESPACE_TAP} >/dev/null 2>&1
+    -n ${NAMESPACE_TAP} || true
 
   log "CYAN" "Wait till TAP installation is over"
   resp=$(tanzu package installed get tap -n ${NAMESPACE_TAP} -o json | jq -r .[].status)
