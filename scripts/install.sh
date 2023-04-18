@@ -233,6 +233,7 @@ usage() {
   fmt "\tlistTapPackages      \tList the Tanzu packages installed"
   fmt "\ttanzuCli             \tInstall the Tanzu client and Cluster Essentials"
   fmt "\tclusterEssentials    \tInstall the cluster Essentials tools and controllers (kapp, secretgen)."
+  fmt "\tdeployKubernetesDashboard \tInstall the kubernetes dashboard (optional)"
 }
 
 listTapPackages() {
