@@ -516,6 +516,7 @@ case $1 in
     -h) usage; exit;;
     tanzuCli)                  tanzuCli;                  exit;;
     clusterEssentials)         clusterEssentials;         exit;;
+    createConfigFile)          createConfigFile;          exit;;
     relocateImages)            relocateImages;            exit;;
     createRegistryCreds)       createRegistryCreds;       exit;;
     addTapRepository)          addTapRepository;          exit;;
