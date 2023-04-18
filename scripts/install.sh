@@ -486,7 +486,7 @@ EOF
 installTapPackages() {
   log "CYAN" "Installing the TAP packages ..."
   tanzu package install tap -p tap.tanzu.vmware.com \
-    --wait-check-interval 10 \
+    --wait-check-interval 10s \
     -v ${TAP_VERSION} \
     --values-file tap-values.yml \
     -n ${NAMESPACE_TAP} || true
