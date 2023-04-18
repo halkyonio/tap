@@ -70,7 +70,7 @@ to install the release [1.5.0](https://docs.vmware.com/en/VMware-Tanzu-Applicati
 
 To simplify your life, we have designed a [bash script](scripts/install.sh) which allows to install the different bits in a VM:
 
-1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Carvel Tools & 2 Kubernetes controllers)
+1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Carvel Tools & Kubernetes controllers)
    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
    - [Kapp controller](https://carvel.dev/kapp-controller/),
    - [Secretgen controller](https://github.com/vmware-tanzu/carvel-secretgen-controller)
@@ -84,7 +84,7 @@ To simplify your life, we have designed a [bash script](scripts/install.sh) whic
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
    They are managed using the following command `tanzu package installed ...`
 
-**NOTE**: Some additional tools which are very helpfull can be installed using the [install_k8s_tools.sh](scripts/install_k8s_tools.sh) bash script such as: unzip, k9s, helm, kubectl krew, kctrl !
+**NOTE**: Some additional tools which are very helpful can be installed using the [install_k8s_tools.sh](scripts/install_k8s_tools.sh) bash script such as: k9s, helm, krew !
 
 ### How to install TAP
 
@@ -123,6 +123,7 @@ What logging verbosity do you want to use with kind (0..9) - A verbosity setting
 Next, execute the [install.sh](scripts/install.sh) bash script locally or remotely (ssh) and configure the following parameters:
 
 - **LOCAL_REGISTRY**: Boolean used to tell if we will use a local registry. Default: false
+- **INSTALL_TANZU_CLI**: Boolean used to install the Tanzu tools: pivnet and Tanzu client. Default: true
 - **REGISTRY_SERVER**: registry DNS name (docker.io, ghcr.io, quay.io, registry.harbor.<VM_IP>.nip.io:<PORT>)
 - **REGISTRY_OWNER**: docker user account, ghcr.io ORG owner, container project (e.g: tap - `registry.harbor.<VM_IP>.nip.io:<PORT>/tap`)
 - **REGISTRY_USERNAME**: username to be used to log on to the registry
@@ -147,7 +148,7 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 to your registry from the Tanzu registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
 as the images will be copied using `imgpkg tool`.
 
-**NOTE**: If the `imgpkg` client is already installed on your mahine, you can also copy the images of the repository to a tar file and next upload
+**NOTE**: If the `imgpkg` client is already installed on your machine, you can also copy the images to a tar file and next upload
 it to the private docker registry using such commands:
 
 ```bash
@@ -177,6 +178,7 @@ TANZU_REG_USERNAME=<TANZU_REG_USERNAME>
 TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD>
 TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN>
 COPY_PACKAGES="false"
+INSTALL_TANZU_CLI="true"
 ./scripts/install.sh
 
 or 
@@ -195,6 +197,7 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     TANZU_REG_PASSWORD="<TANZU_REG_USERNAME" \
     TANZU_PIVNET_LEGACY_API_TOKEN="<TANZU_PIVNET_LEGACY_API_TOKEN>" \
     COPY_PACKAGES="false" \
+    INSTALL_TANZU_CLI="true" \
     "bash -s" -- < ./scripts/install.sh
 ```
 

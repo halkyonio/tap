@@ -21,6 +21,7 @@
 # - TANZU_REG_PASSWORD: password to be used to be authenticated against the Tanzu image registry
 # - COPY_PACKAGES: Copy package image bundles from Tanzu to your favorite image registries
 # - REGISTRY_CA_PATH: Path of the CA certificate used by the local private container registry
+# - INSTALL_TANZU_CLI: Boolean used to install the Tanzu tools: pivnet and Tanzu client
 
 set -e
 
@@ -35,6 +36,7 @@ TANZU_TEMP_DIR="$REMOTE_HOME_DIR/tanzu"
 
 VM_IP=${VM_IP:-127.0.0.1}
 LOCAL_REGISTRY=${LOCAL_REGISTRY:-false}
+INSTALL_TANZU_CLI=${INSTALL_TANZU_CLI:-true}
 REGISTRY_SERVER=${REGISTRY_SERVER:-docker.io}
 REGISTRY_OWNER=${REGISTRY_OWNER}
 REGISTRY_USERNAME=${REGISTRY_USERNAME}
@@ -585,9 +587,12 @@ check_distro
 
 log "CYAN" "Create tanzu directory "
 if [ ! -d ${TANZU_TEMP_DIR} ]; then
-    mkdir -p ${TANZU_TEMP_DIR}
+  mkdir -p ${TANZU_TEMP_DIR}
 fi
 
+if [[ "$INSTALL_TANZU_CLI" == "true" ]]; then
+  tanzuCli
+fi
 clusterEssentials
 relocateImages
 setupTapNamespaces

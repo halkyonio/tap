@@ -133,11 +133,3 @@ if ! command -v helm &> /dev/null; then
   chmod 700 get_helm.sh
   ./get_helm.sh
 fi
-
-if ! command -v kctrl &> /dev/null; then
-    log "CYAN" "Installing kctrl"
-  VERSION=$(wget -q -O- https://api.github.com/repos/vmware-tanzu/carvel-kapp-controller/releases/latest | jq -r '.name')
-  curl -s -L github.com/vmware-tanzu/carvel-kapp-controller/releases/download/${VERSION}/kctrl-linux-amd64 > kctrl
-  chmod +x kctrl
-  sudo cp kctrl /usr/local/bin
-fi
