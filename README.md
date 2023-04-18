@@ -103,15 +103,7 @@ bash <(curl -s -L https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind
                                                             | |
                                                             |_|
  Kind installation script
-
-- Deploying a local secured (using htpasswd) docker registry
-- Generating a selfsigned certificate (using openssl) to expose the registry as a HTTP/HTTPS endpoint
-- Setting a docker network between the containers: kind and registry and alias "registry.local"
-- Allowing to access the repository using as address "registry.local:5000" within a pod, from laptop or when a pod is created
-- Exposing 2 additional NodePort: 30000 and 31000
-- Deploying an ingress controller
-- Copying the generated certificate here: /home/snowdrop/local-registry.crt
-
+...
 IP address of the VM running docker - Default: 127.0.0.1 ? 10.0.77.176
 Do you want to delete the kind cluster (y|n) - Default: y ? y
 Do you want install ingress nginx (y|n) - Default: y ? n
@@ -165,6 +157,11 @@ imgpkg copy --tar tap-${TAP_VERSION}-packages.tar \
    --to-repo kind-registry:5000/tap/tap-packages
 ```
 
+You can gt the script help usage:
+```bash
+./scripts/install.sh -h
+```
+
 Example of installation
 ```bash
 REMOTE_HOME_DIR=<REMOTE_HOME_PATH>
@@ -207,12 +204,12 @@ See demo page & instructions [here](demo.md) covering more examples like also to
 
 Create first a namespace using the command
 ```bash
-./scripts/install.sh populateNamespace demo
+./scripts/install.sh populateUserNamespace demo1
 
 or 
 
 ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
-    "bash -s" -- < ./scripts/install.sh populateNamespace demo
+    "bash -s" -- < ./scripts/install.sh populateUserNamespace demo1
 ```
 Next deploy a Web Application using the tanzu client and a workload
 ```bash
@@ -223,26 +220,33 @@ tanzu apps workload create tanzu-java-web-app \
   --type web \
   --label app.kubernetes.io/part-of=tanzu-java-web-app \
   --yes \
-  --namespace demo
+  --namespace demo1
 ```
 Follow the build/deployment and access the service when finished
 ```bash
-tanzu apps workload tail tanzu-java-web-app --namespace demo
-tanzu apps workload get tanzu-java-web-app --namespace demo
+tanzu apps workload tail tanzu-java-web-app --namespace demo1 --timestamp --since 1h
+tanzu apps workload get tanzu-java-web-app --namespace demo1
 ```
+Look to the URL of the service to open it within your browser:
+```
+🚢 Knative Services
+NAME                 READY   URL
+tanzu-java-web-app   Ready   http://tanzu-java-web-app.demo1.10.0.77.164.sslip.io
+```
+
 ## Additional information
 
 ### Using a private registry
 
-As mentioned within the previous section, when we plan to use a private local registry such as [Harbor](harbor.md) or docker, some additional steps are required such as:
+As mentioned within the previous section, when we plan to use a private local registry such as [Harbor](harbor.md) or docker registry, some additional steps are required such as:
 
-1. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script (e.g. _tmp/certs/localhost/client.crt)
+1. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script
 
 2. Get the TAP packages and push them to the private registry
 
 ```bash
 imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.5.0 --to-tar packages.tar
-imgpkg copy --tar packages.tar --to-repo <VM_IP>.sslip.io:<PORT>/tap/tap-packages
+imgpkg copy --tar packages.tar --to-repo <REGISTRY_HOST>/tap/tap-packages
 ```
 
 3. Define the TAP `shared` key within the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-view-package-config.html))
@@ -260,8 +264,9 @@ shared:
 ...      
 ```
 
-**REMARK**
-The steps 2 and 3 are managed by the `install.sh` script !
+> **NOTE**: The steps 2 and 3 are managed by the `install.sh` script !
+
+> **Tip**: You can set up a docker registry using our [kind secured script](https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh) :-)
 
 ### Tanzu Client
 
@@ -340,11 +345,8 @@ tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-fil
 
 ## Clean
 
-To delete TAP, execute the following bash script able to delete the packages, repository, workload and installed controllers
-
-```console
-$ ./scripts/uninstall.sh
-```
+To uninstall TAP, check to the [Tanzu documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/uninstall.html)
+or create a new kind kubernetes cluster.
 
 That's all !
 

@@ -226,7 +226,7 @@ usage() {
   fmt ""
   fmt "\tWhere option is:"
   fmt "\t-h                         \tPrints help"
-  fmt "\trelocateImages             \tRelocate th packages from ${TANZU_REG_SERVER} to the ${REGISTRY_SERVER}"
+  fmt "\trelocateImages             \tRelocate the packages from the ${TANZU_REG_SERVER} to the ${REGISTRY_SERVER}"
   fmt "\tsetupTapNamespaces         \tCreate the different Tanzu namespaces: tap-install, grype"
   fmt "\tcreateRegistryCreds        \tCreate the Container registry crdentials"
   fmt "\taddTapRepository           \tAdd the Tanzu TAP repository"
