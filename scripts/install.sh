@@ -173,18 +173,7 @@ deployKubernetesDashboard() {
 
   kind load docker-image ${REGISTRY_SERVER}/kubernetesui/dashboard:${K8S_GUI_VERSION}
 
-  #helm uninstall kubernetes-dashboard -n kubernetes-dashboard
-  helm upgrade --install kubernetes-dashboard kubernetes-dashboard \
-    --repo https://kubernetes.github.io/dashboard/ \
-    --namespace kubernetes-dashboard --create-namespace \
-    --set image.repository=${REGISTRY_SERVER}/kubernetesui/dashboard \
-    --set image.version=${K8S_GUI_VERSION} \
-    --set ingress.enabled=true \
-    --set ingress.className=contour \
-    --set ingress.hosts[0]=k8s-gui.${INGRESS_DOMAIN} \
-    --set protocolHttp=true \
-    --set serviceAccount.create=false \
-    --set serviceAccount.name=admin-user
+  kubectl create ns kubernetes-dashboard --dry-run=client -o yaml | kubectl apply -f -
 
   cat << EOF | kubectl apply -f -
 apiVersion: v1
@@ -206,6 +195,19 @@ subjects:
   name: admin-user
   namespace: kubernetes-dashboard
 EOF
+
+  #helm uninstall kubernetes-dashboard -n kubernetes-dashboard
+  helm upgrade --install kubernetes-dashboard kubernetes-dashboard \
+    --repo https://kubernetes.github.io/dashboard/ \
+    --namespace kubernetes-dashboard \
+    --set image.repository=${REGISTRY_SERVER}/kubernetesui/dashboard \
+    --set image.version=${K8S_GUI_VERSION} \
+    --set ingress.enabled=true \
+    --set ingress.className=contour \
+    --set ingress.hosts[0]=k8s-gui.${INGRESS_DOMAIN} \
+    --set protocolHttp=true \
+    --set serviceAccount.create=false \
+    --set serviceAccount.name=admin-user
 
   log_line "YELLOW" "Kubernetes dashboard URL: http://k8s-gui.$VM_IP.sslip.io"
 }
