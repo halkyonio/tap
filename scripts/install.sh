@@ -173,6 +173,9 @@ deployKubernetesDashboard() {
 
   kind load docker-image ${REGISTRY_SERVER}/kubernetesui/dashboard:${K8S_GUI_VERSION}
 
+  log "YELLOW" "Command executed to avoid the error: failed calling webhook \"validate.nginx.ingress.kubernetes.io\": failed to call webhook"
+  kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+
   kubectl create ns kubernetes-dashboard --dry-run=client -o yaml | kubectl apply -f -
 
   cat << EOF | kubectl apply -f -
