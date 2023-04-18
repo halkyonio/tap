@@ -525,15 +525,6 @@ type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: e30K
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: default
-secrets:
-  - name: registry-credentials
-imagePullSecrets:
-  - name: registry-credentials
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
