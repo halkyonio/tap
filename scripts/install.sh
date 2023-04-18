@@ -559,8 +559,8 @@ subjects:
     name: default
 EOF
 
-# kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"secrets": [{"name":"registry-credentials"}]}'
-# kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"imagePullSecrets": [{"name":"registry-credentials"}]}'
+kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"secrets": [{"name":"registry-credentials"}]}'
+kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"imagePullSecrets": [{"name":"registry-credentials"}]}'
 }
 
 # TODO: To be reviewed
