@@ -497,13 +497,13 @@ installTapPackages() {
 
 case $1 in
     -h) usage; exit;;
-    tanzuCli)                  exit;;
-    relocateImages)            exit;;
-    createRegistryCreds)       exit;;
-    addTapRepository)          exit;;
-    installTapPackages)        exit;;
-    listTapPackages)           exit;;
-    deployKubernetesDashboard) exit;;
+    tanzuCli)                  tanzuCli;                  exit;;
+    relocateImages)            relocateImages;            exit;;
+    createRegistryCreds)       createRegistryCreds;       exit;;
+    addTapRepository)          addTapRepository;          exit;;
+    installTapPackages)        installTapPackages;        exit;;
+    listTapPackages)           listTapPackages;           exit;;
+    deployKubernetesDashboard) deployKubernetesDashboard; exit;;
 esac
 
 check_os
