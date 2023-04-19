@@ -100,7 +100,7 @@ newline=$'\n'
 ## Functions ##
 ###############
 fmt() {
-  COLOR="CYAN"
+  COLOR="WHITE"
   MSG="${@:1}"
   echo -e "${!COLOR} ${MSG}${NC}"
 }
@@ -227,17 +227,26 @@ usage() {
   fmt "\tWhere option is:"
   fmt "\t-h                         \tPrints help"
   fmt "\tinstall                    \tAll in one command to install TAP: client, cluster Essentials, repository, packages, etc"
+  fmt ""
   fmt "\trelocateImages             \tRelocate the packages from the ${TANZU_REG_SERVER} to the ${REGISTRY_SERVER}"
   fmt "\tsetupTapNamespaces         \tCreate the different Tanzu namespaces: tap-install, grype"
   fmt "\tcreateRegistryCreds        \tCreate the Container registry credentials"
   fmt "\taddTapRepository           \tAdd the Tanzu TAP repository"
-  fmt "\tcreateConfigFile           \tCreate the TAP config fil"
+  fmt "\tcreateConfigFile           \tCreate the TAP values config file"
   fmt "\tinstallTapPackages         \tInstall the Tanzu TAP package"
   fmt "\tlistTapPackages            \tList the Tanzu packages installed"
   fmt "\ttanzuCli                   \tInstall the Tanzu client and Cluster Essentials"
   fmt "\tclusterEssentials          \tInstall the cluster Essentials tools and controllers (kapp, secretgen)."
-  fmt "\tdeployKubernetesDashboard  \tInstall the kubernetes dashboard (optional)"
   fmt "\tpopulateUserNamespace      \tPopulate the user namespace passed as parameter with the proper RBAC and registry credentials"
+  fmt ""
+  fmt "\tdeployKubernetesDashboard  \tInstall the kubernetes dashboard (optional)"
+}
+
+init() {
+  log "CYAN" "Create tanzu directory "
+  if [ ! -d ${TANZU_TEMP_DIR} ]; then
+    mkdir -p ${TANZU_TEMP_DIR}
+  fi
 }
 
 listTapPackages() {
@@ -567,22 +576,14 @@ kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"imagePullSecrets
 #
 # tanzu package install full-tbs-deps -p full-tbs-deps.tanzu.vmware.com -v ${TBS_FULL_VERSION} -n ${NAMESPACE_TAP}
 
-check_os
-check_distro
-
-log "CYAN" "Create tanzu directory "
-if [ ! -d ${TANZU_TEMP_DIR} ]; then
-  mkdir -p ${TANZU_TEMP_DIR}
-fi
-
 case $1 in
     -h) usage; exit;;
     install)
+        init
         if [[ "$INSTALL_TANZU_CLI" == "true" ]]; then
           tanzuCli
         fi
         clusterEssentials
-
         if [[ "$COPY_PACKAGES" == "true" ]]; then
           relocateImages
         fi
@@ -594,9 +595,20 @@ case $1 in
         listTapPackages
         exit
         ;;
-    tanzuCli)                  tanzuCli;                  exit;;
-    clusterEssentials)         clusterEssentials;         exit;;
-    createConfigFile)          createConfigFile;          exit;;
+    tanzuCli)
+        init
+        tanzuCli
+        exit
+        ;;
+    clusterEssentials)
+        init
+        clusterEssentials
+        exit
+        ;;
+    createConfigFile)
+        init
+        createConfigFile
+        exit;;
     relocateImages)            relocateImages;            exit;;
     createRegistryCreds)       createRegistryCreds;       exit;;
     addTapRepository)          addTapRepository;          exit;;
@@ -604,4 +616,5 @@ case $1 in
     listTapPackages)           listTapPackages;           exit;;
     deployKubernetesDashboard) deployKubernetesDashboard; exit;;
     populateUserNamespace)     "$@";                      exit;;
+    *) usage; exit;;
 esac
