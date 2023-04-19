@@ -224,6 +224,8 @@ usage() {
   fmt ""
   fmt "Usage: $0 [option]"
   fmt ""
+  fmt "Utility script to install TAP, cluster essentials, repository, packages, etc"
+  fmt ""
   fmt "\tWhere option is:"
   fmt "\t-h                         \tPrints help"
   fmt "\tinstall                    \tAll in one command to install TAP: client, cluster Essentials, repository, packages, etc"
