@@ -3,51 +3,43 @@
 Table of Contents
 =================
 
-* [Prerequisites](#prerequisites)
-* [Demo 1: Tanzu Java Web](#demo-1-tanzu-java-web)
-* [Demo 2: Spring Petclinic &amp; TAP GUI](#demo-2-spring-petclinic--tap-gui)
-* [Demo 3: Spring Petclinic &amp; Postgresql](#demo-3-spring-petclinic--postgresql)
-* [Demo 4: Quarkus App + DB](#demo-4-quarkus-app--db)
+* [Demo 1: Tanzu Java Web](#demo1-tanzu-java-web)
+* [Demo 2: Spring Petclinic &amp; TAP GUI](#demo2-spring-petclinic--tap-gui)
+* [Demo 3: Spring Petclinic &amp; Postgresql](#demo3-spring-petclinic--postgresql)
+* [Demo 4: Quarkus App + DB](#demo4-quarkus-app--db)
 * [Tearing down the quarkus-app](#tearing-down-the-quarkus-app)
 * [Issues](#issues)
 
-### Prerequisites
-
-- TAP 1.x installed
-- [Tanzu client](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-tanzu-cli.html#accept-tanzu-application-platform-eulas-and-installing-tanzu-cli)
-- Some kubernetes tools such as [kubernetes tree](https://github.com/ahmetb/kubectl-tree)
-- Have a secret created with the [registry credentials](scripts/tap.sh) and linked to the ServiceAccount `default` of the demoed namespace (e.g `tap-demo`)
-- Import the config of the kubernetes cluster using the file `/etc/kubernetes/admin.conf` within your local `~/.kube/config` using `kubectl konfig` and `kubectx` tools
-
 ### Demo 1: Tanzu Java Web
 
-**Note**: As the tanzu client do not allow to pass as parameter the CA certificate of the registry server where the code source is pushed, it is then needed to perform the following demo using
-a public container registry
-
 - Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
-- Select the `Tanzu Java Web App` accelerator and within the screen `Generate accelerator` change the `Prefix for the container image repository*`
+- Select the `Tanzu Java Restful Web App` accelerator and within the screen `Generate accelerators` change the `The source image repository prefix to use when pushing the source`
+  to use your registry (e.g kind-registry:5000/demo1)
 - Next download the zipped project and unzip it locally
-- Create on the TAP cluster, a new `demo-1` namespace, secret & RBAC using the bash script `./scripts/populate_namespace_tap.sh demo-1`.
-- Upload the project under VisualCode (drag-and-drop)
-- Open the project under VScode
-- Change the default namespace to `NAMESPACE = os.getenv("NAMESPACE", default='demo-1')` within the Tilt config file
-- If the TAP is not running locally, use the following Tilt parameter to pass the kube context `allow_k8s_contexts('kubernetes-admin@kubernetes')` within the Tilt config file
-- Launch `Tanzu: Live Update start` using CTRL-Shift-P command and wait till it runs 
+- Create a new github repository (e.g. https://github.com/<YOUR_ORG>/tanzu-demo1) and push the project
+- Create on the TAP cluster, a `demo1` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo1`.
+- Upload the project under VisualCode (drag-and-drop) or IntelliJ
+- Open the project within the IDE
+- Modify some Tiltfile parameters like:
+  - Change the default namespace to `NAMESPACE = os.getenv("NAMESPACE", default='demo1')`
+  - Use as `SOURCE_IMAGE`, the following default name `SOURCE_IMAGE = os.getenv("SOURCE_IMAGE", default='kind-registry:5000/tanzu/demo1')`
+  - If TAP is not running locally, add this parameter `allow_k8s_contexts('kubernetes-admin@kubernetes')` to use the context to access the k8s cluster
+- Review the instructions of the TAP [Getting started](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/getting-started-iterate-new-app-intellij.html#prepare-your-ide-to-iterate-on-your-application-1) to launch it with IntelliJ or VSCode
 - Access the `localhost:8080` service like the Knative service
-- Do some code change and check that it has been updated locally or remotely using the URL of the service deployed `http://tanzu-java-web-app.demo-1.$VM_IP.nip.io`
+- Do some code change and check that it has been updated locally or remotely using the URL of the service deployed `http://tanzu-java-web-app.demo1.$VM_IP.nip.io`
 
 ### Demo 2: Spring Petclinic & TAP GUI
 
 - Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
 - Download a zipped project from the accelerators such as `Spring Petclinic app` and unzip it
-- Create on the TAP cluster, a `demo-2` namespace, secret & RBAC using the bash script `./scripts/populate_namespace_tap.sh demo-2`.
+- Create on the TAP cluster, a `demo2` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo2`.
 - Look to the code and next create a `workload`
 
 ```bash
 PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
 tanzu apps workload apply $APP \
-   -n demo-2 \
+   -n demo2 \
    --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
    --annotation "autoscaling.knative.dev/minScale=1" \
    --git-repo https://github.com/halkyonio/$APP.git \
@@ -60,8 +52,8 @@ tanzu apps workload apply $APP \
 - Tail to check the build process or status of the workload/component
 
 ```bash
-tanzu apps -n demo-2 workload tail $APP --since 1m --timestamp
-tanzu apps -n demo-2 workload get $APP
+tanzu apps -n demo2 workload tail $APP --since 1m --timestamp
+tanzu apps -n demo2 workload get $APP
 # $APP: Ready
 ---
 lastTransitionTime: "2022-02-28T09:06:34Z"
@@ -86,21 +78,21 @@ NAME      READY   URL
 - Cleanup
 
 ```bash
-tanzu apps workload -n demo-2 delete $APP
+tanzu apps workload -n demo2 delete $APP
 ```
 
 ### Demo 3: Spring Petclinic & Postgresql
 
 This example extends the previous and will demonstrate how to bind a Postgresql DB with the Spring application.
 
-- First, install the Postgresql DB operator and next create an instance, claim within the `demo-3` namespace using the bash scripts:
+- First, install the Postgresql DB operator and next create an instance, claim within the `demo3` namespace using the bash scripts:
 
 ```bash
 REGISTRY_USERNAME="xxxxx" # Your registry account/username to access registry.pivotal.io
 REGISTRY_PASSWORD="yyyyyyyy" # Your registry password to access registry.pivotal.io
 ./scripts/install_postgresql.sh # To install the Postgresql Operator using a helm chart
 
-NAMESPACE=demo-3
+NAMESPACE=demo3
 ./scripts/claim_postgresql.sh # To create a postgres instance, the clusterrole allowing to access the resources, the resourceclaim, etc
 ```
 **Note**: It is needed to have an account on `https://network.tanzu.vmware.com/` to access the Tanzu/Pivotal registry !
@@ -142,11 +134,11 @@ spec:
 - Obtain a Service Claim reference by running the following command:
 
 ```bash
-tanzu service claim get  postgres-1 -n demo-3
+tanzu service claim get  postgres-1 -n demo3
 Name: postgres-1
 Status:
   Ready: True
-Namespace: demo-3
+Namespace: demo3
 Claim Reference: services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:postgres-1
 Resource to Claim:
   Name: postgres-db
@@ -155,14 +147,14 @@ Resource to Claim:
   Version: v1
   Kind: Postgres
 ```
-- Create on the TAP cluster, a `demo-3` namespace, secret & RBAC using the bash script `./scripts/populate_namespace_tap.sh demo-3`.
+- Create on the TAP cluster, a `demo3` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo3`.
 - Use the `Workload` of the [git repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
 
 ```bash
 PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
 tanzu apps workload create $APP \
-     -n demo-3 \
+     -n demo3 \
      -f $PROJECT_DIR/$APP/config/workload.yaml \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
@@ -173,7 +165,7 @@ tanzu apps workload create $APP \
 - Check the status of the workload, if a new build succeeded and application has been redeployed
 
 ```bash
-tanzu apps workload get -n demo-3 spring-tap-petclinic
+tanzu apps workload get -n demo3 spring-tap-petclinic
 ...
 NAME                                                     STATUS      RESTARTS   AGE
 spring-tap-petclinic-build-10-build-pod                  Succeeded   0          5h18m
@@ -183,7 +175,7 @@ spring-tap-petclinic-00015-deployment-75575545fd-k4b27   Running     0          
 - Review some resources such as `ServiceBinding` and pod to verify if the postgresql user Secret has been mounted as a volume within the pod of the application
 
 ```bash
-kubectl get pod -l "app=spring-tap-petclinic-00002" -n demo-3 -o yaml | grep -A 4 volume
+kubectl get pod -l "app=spring-tap-petclinic-00002" -n demo3 -o yaml | grep -A 4 volume
     volumeMounts:
     - mountPath: /bindings/db
       name: binding-d9cb99c4e655c91104670a7cc22c8bff9585d79a
@@ -204,15 +196,15 @@ kubectl get pod -l "app=spring-tap-petclinic-00002" -n demo-3 -o yaml | grep -A 
 ```
 - (optional) Check the content of the `Deliverable` resource to get the SHA of the bundle and download it to get the YAML resources content ;-)
 ```bash
-IMG_SHA=$(kubectl get deliverable/spring-tap-petclinic -n demo-3 -o jsonpath='{.spec.source.image}')
+IMG_SHA=$(kubectl get deliverable/spring-tap-petclinic -n demo3 -o jsonpath='{.spec.source.image}')
 imgpkg pull --registry-verify-certs=false \
-  -b registry.harbor.10.0.77.176.nip.io:32443/tap/spring-tap-petclinic-demo-3-bundle:26302cbb-6ab7-4c5a-a4ef-ac20caeeedc7 \
+  -b registry.harbor.10.0.77.176.nip.io:32443/tap/spring-tap-petclinic-demo3-bundle:26302cbb-6ab7-4c5a-a4ef-ac20caeeedc7 \
   -o _temp/sb
 ```
 - Cleanup
 
 ```bash
-tanzu apps workload -n demo-3 delete $APP
+tanzu apps workload -n demo3 delete $APP
 ```
 
 ### Demo 4: Quarkus App + DB
@@ -263,10 +255,10 @@ kubectl rollout status deployment -n controller -n knative-serving
 When done, we can install the Quarkus supply chain and templates files as an application using kapp
 
 ```bash
-./scripts/tap.sh populateNamespace demo-4
+./scripts/tap.sh populateUserNamespace demo4
 pushd supplychain/quarkus-sc
 kapp deploy --yes -a quarkus-supply-chain \
-  -n demo-4 \
+  -n demo4 \
   -f <(ytt --ignore-unknown-comments -f ./values.yaml -f helpers.lib.yml -f ./k8s -f ./templates -f supply-chain.yaml)
 ```
 **Note**: If you use a local private registry, override the values of the values.yaml file using the ytt parameter `-v image_prefix=registry.harbor.10.0.77.176.nip.io:32443/quarkus`
@@ -274,7 +266,7 @@ kapp deploy --yes -a quarkus-supply-chain \
 When done, deploy the `quarkus-app` workload using either `kapp`
 
 ```bash
-kapp deploy --yes -a quarkus-app -n demo-4 \
+kapp deploy --yes -a quarkus-app -n demo4 \
   -f <(ytt --ignore-unknown-comments -f workload.yaml -f ./values.yaml)
 popd  
 ```
@@ -283,19 +275,19 @@ or create the workload using the `Tanzu client`
 
 ```bash
 tanzu apps workload create quarkus-app \
-  -n demo-4 \
+  -n demo4 \
   --git-repo https://github.com/halkyonio/quarkus-tap-petclinic.git \
   --git-branch main \
   --type quarkus \
   --label app.kubernetes.io/part-of=quarkus-petclinic-app \
   -y
-tanzu apps workload -n demo-4 tail quarkus-app --since 10m --timestamp
+tanzu apps workload -n demo4 tail quarkus-app --since 10m --timestamp
 ```
 
 Observe the build/deployment of the application
 
 ```bash
-tanzu apps workload get quarkus-app -n demo-4
+tanzu apps workload get quarkus-app -n demo4
 # quarkus-app: Ready
 ---
 lastTransitionTime: "2022-02-09T15:58:01Z"
@@ -311,22 +303,22 @@ quarkus-app-build-1-build-pod   Succeeded   2m20s
 or using the kubectl tree plugin 
 
 ## List the supply chain resources created to perform the build
-kubectl tree workload quarkus-app -n demo-4
+kubectl tree workload quarkus-app -n demo4
 NAMESPACE  NAME                                     READY  REASON               AGE  
-demo-4   Workload/quarkus-app                     True   Ready                2m55s
-demo-4   ├─App/quarkus-app                        -                           102s 
-demo-4   ├─GitRepository/quarkus-app              True   GitOperationSucceed  2m49s
-demo-4   └─Image/quarkus-app                      True                        2m40s
-demo-4     ├─Build/quarkus-app-build-1            -                           2m40s
-demo-4     │ └─Pod/quarkus-app-build-1-build-pod  False  PodCompleted         2m39s
-demo-4     └─SourceResolver/quarkus-app-source    True                        2m40s
+demo4   Workload/quarkus-app                     True   Ready                2m55s
+demo4   ├─App/quarkus-app                        -                           102s 
+demo4   ├─GitRepository/quarkus-app              True   GitOperationSucceed  2m49s
+demo4   └─Image/quarkus-app                      True                        2m40s
+demo4     ├─Build/quarkus-app-build-1            -                           2m40s
+demo4     │ └─Pod/quarkus-app-build-1-build-pod  False  PodCompleted         2m39s
+demo4     └─SourceResolver/quarkus-app-source    True                        2m40s
 ```
 
 wait till the deployment is done and get then the URL fo the service
 ```bash
-kubectl get ksvc/quarkus-app -n demo-4
+kubectl get ksvc/quarkus-app -n demo4
 NAME          URL                                               LATESTCREATED       LATESTREADY         READY   REASON
-quarkus-app   http://quarkus-app.demo-4.<VM_IP>.nip.io   quarkus-app-00001   quarkus-app-00001   True
+quarkus-app   http://quarkus-app.demo4.<VM_IP>.nip.io   quarkus-app-00001   quarkus-app-00001   True
 ```
 
 And now, do the job to bind the microservice to a postgresql DB ;-)
@@ -343,7 +335,7 @@ Finally, do the binding
 
 ```bash
 tanzu apps workload apply quarkus-app \
-  -n demo-4 \
+  -n demo4 \
   --git-repo https://github.com/halkyonio/quarkus-tap-petclinic.git \
   --git-branch service-binding \
   --type quarkus \
@@ -360,7 +352,7 @@ apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ResourceClaimPolicy
 metadata:
   name: postgres-db-cross-namespace
-  namespace: demo-4
+  namespace: demo4
 spec:
   consumingNamespaces:
   - '*'
@@ -375,17 +367,17 @@ Enjoy !!
 To cleanup
 
 ```bash
-tanzu apps workload delete quarkus-app -n demo-4
-kapp delete -n demo-4 -a quarkus-supply-chain -y
+tanzu apps workload delete quarkus-app -n demo4
+kapp delete -n demo4 -a quarkus-supply-chain -y
 ```
 
 ### Issues
 
-Component cannot be built by `kpack` as we got the following [error](https://community.pivotal.io/s/question/0D54y00007DRNzjCAH/why-is-tap-workload-returning-as-error-error-failed-to-get-previous-image-missing-os-for-image-ghcriohalkyoniospringtappetclinictapdemo-) `ERROR: failed to get previous image: missing OS for image "ghcr.io/halkyonio/spring-tap-petclinic-tap-demo` if we create a project using a `sopurce-image` and this command
+Component cannot be built by `kpack` as we got the following [error](https://community.pivotal.io/s/question/0D54y00007DRNzjCAH/why-is-tap-workload-returning-as-error-error-failed-to-get-previous-image-missing-os-for-image-ghcriohalkyoniospringtappetclinictapdemo) `ERROR: failed to get previous image: missing OS for image "ghcr.io/halkyonio/spring-tap-petclinic-tap-demo` if we create a project using a `sopurce-image` and this command
 
 ```bash
 tanzu apps workload create $APP \
-   --source-image ghcr.io/halkyonio/$APP-demo-source \
+   --source-image ghcr.io/halkyonio/$APP-demosource \
    --local-path $PROJECT_DIR/$APP  \
    --type web \
    --label app.kubernetes.io/part-of=$APP \

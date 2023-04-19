@@ -89,9 +89,10 @@ To simplify your life, we have designed a [bash script](scripts/tap.sh) which al
 
 To install TAP, create first a kind cluster and secured container registry using this script:
 ```bash
-curl -s -L "https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh" | bash -s install --secure-registry --skip-ingress-installation --registry-user admin --registry-password snowdrop
+curl -s -L "https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh" | bash -s install --secure-registry --skip-ingress-installation --registry-user admin --registry-password snowdrop --server-ip <VM_IP>
 ```
 > **Tip**: Use the `-h` of the kind.sh script to see the others options !
+> **Warning**: If you deploy TAP on a remote VM, then it is mandatory to specify the option `--server-ip ` to expose the kubernetes API server at this address in order to access remotely
 
 Next, execute the [tap.sh](scripts/tap.sh) bash script locally and configure the following parameters:
 
@@ -177,7 +178,7 @@ Create first a namespace using the command
 or 
 
 ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
-    "bash -s" -- < ./scripts/tap.sh populateUserNamespace demo1
+    "bash -s" -- < ./scripts/tap.sh populateUserNamespace demo0
 ```
 Next deploy a Web Application using the tanzu client and a workload
 ```bash
@@ -188,18 +189,18 @@ tanzu apps workload create tanzu-java-web-app \
   --type web \
   --label app.kubernetes.io/part-of=tanzu-java-web-app \
   --yes \
-  --namespace demo1
+  --namespace demo0
 ```
 Follow the build/deployment and access the service when finished
 ```bash
-tanzu apps workload tail tanzu-java-web-app --namespace demo1 --timestamp --since 1h
-tanzu apps workload get tanzu-java-web-app --namespace demo1
+tanzu apps workload tail tanzu-java-web-app --namespace demo0 --timestamp --since 1h
+tanzu apps workload get tanzu-java-web-app --namespace demo0
 ```
 Look to the URL of the service to open it within your browser:
 ```
 🚢 Knative Services
 NAME                 READY   URL
-tanzu-java-web-app   Ready   http://tanzu-java-web-app.demo1.10.0.77.164.sslip.io
+tanzu-java-web-app   Ready   http://tanzu-java-web-app.demo0.10.0.77.164.sslip.io
 ```
 
 ## Additional information
