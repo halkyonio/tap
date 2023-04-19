@@ -56,8 +56,8 @@ The following [installation](https://docs.vmware.com/en/VMware-Tanzu-Application
 TL&DR; It is needed to:
 
 - Have a [Tanzu account](https://account.run.pivotal.io/z/uaa/sign-up) on `https://network.tanzu.vmware.com/` to download the software or to access the registry `registry.tanzu.vmware.com`,
-- Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
-- Have a kind cluster >= 1.24 installed with a private docker registry. Use this [script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-tls-secured-reg.sh)
+- Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
+- Have a kind cluster >= 1.24 installed with a private docker registry. Use this [script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind.sh)
 - Have a Linux VM machine with at least 8 CPUs, 8 GB of RAM and 100Gb (if you plan to use locally a container registry)
 - Private container registry such as docker registry
 
@@ -65,12 +65,11 @@ TL&DR; It is needed to:
 
 ### Introduction
 
-The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html) have been executed without problem
-to install the release [1.5.0](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-release-notes.html).
+The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/overview.html) have been followed to install the release [1.5.0](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-release-notes.html).
 
 To simplify your life, we have designed a [bash script](scripts/tap.sh) which allows to install the different bits in a VM:
 
-1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Carvel Tools & Kubernetes controllers)
+1. [Cluster Essentials](https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/)
    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
    - [Kapp controller](https://carvel.dev/kapp-controller/),
    - [Secretgen controller](https://github.com/vmware-tanzu/carvel-secretgen-controller)
@@ -84,35 +83,17 @@ To simplify your life, we have designed a [bash script](scripts/tap.sh) which al
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
    They are managed using the following command `tanzu package installed ...`
 
-**NOTE**: Some additional tools which are very helpful can be installed using the [install_k8s_tools.sh](scripts/install_k8s_tools.sh) bash script such as: k9s, helm, krew !
-
+> **NOTE**: Some additional tools which are very helpful (e.g: k9s, helm, krew) can be installed using the command `./scripts/tap.sh kube-tools`
+> 
 ### How to install TAP
 
-To install TAP, create first a kind cluster and private docker registry:
+To install TAP, create first a kind cluster and secured container registry using this script:
 ```bash
-bash <(curl -s -L https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind-tls-secured-reg.sh)
+curl -s -L "https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh" | bash -s install --secure-registry --skip-ingress-installation --registry-user admin --registry-password snowdrop
 ```
-**Important**: Different questions will be asked such as IP of the VM machine, k8s version. Do not install ingress nginx as TAP will deploy ingress contour !
-```bash
-   _____                                  _
-  / ____|                                | |
- | (___    _ __     ___   __      __   __| |  _ __    ___    _ __
-  \___ \  | '_ \   / _ \  \ \ /\ / /  / _  | |  __|  / _ \  | \ _ \
-  ____) | | | | | | (_) |  \ V  V /  | (_| | | |    | (_) | | |_) |
- |_____/  |_| |_|  \___/    \_/\_/    \__,_| |_|     \___/  |  __/
-                                                            | |
-                                                            |_|
- Kind installation script
-...
-IP address of the VM running docker - Default: 127.0.0.1 ? 10.0.77.176
-Do you want to delete the kind cluster (y|n) - Default: y ? y
-Do you want install ingress nginx (y|n) - Default: y ? n
-Which kubernetes version should we install (1.18 .. 1.25) - Default: latest ? 1.23
-What logging verbosity do you want to use with kind (0..9) - A verbosity setting of 0 logs only critical events - Default: 0 ?
-...
-```
+> **Tip**: Use the `-h` of the kind.sh script to see the others options !
 
-Next, execute the [install.sh](scripts/tap.sh) bash script locally or remotely (ssh) and configure the following parameters:
+Next, execute the [tap.sh](scripts/tap.sh) bash script locally and configure the following parameters:
 
 - **LOCAL_REGISTRY**: Boolean used to tell if we will use a local registry. Default: false
 - **INSTALL_TANZU_CLI**: Boolean used to install the Tanzu tools: pivnet and Tanzu client. Default: true
@@ -126,51 +107,38 @@ Next, execute the [install.sh](scripts/tap.sh) bash script locally or remotely (
 - **TANZU_REG_PASSWORD**: password to be used to be authenticated against the Tanzu registry
 
 As the script will download different `products` from the https://network.tanzu.vmware.com/ server 
-using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then this is why must also configure the following variable
+using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then this is why we must also configure the following parameters
 and have a [Tanzu network account like an API account](https://tanzu.vmware.com/developer/guides/tanzu-network-gs/):
 
 - **TANZU_PIVNET_LEGACY_API_TOKEN**: Token used by pivnet CLI to login to the Tanzu products website
 
 Finally, define the home directory and IP address of the VM hosting TAP and the kubernetes cluster:
 
-- **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
+- **REMOTE_HOME_DIR**: home directory where files will be installed within the VM. Default: $HOME
 - **VM_IP**: IP address of the VM where the cluster is running
 
 **IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
-to your registry from the Tanzu registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
-as the images will be copied using `imgpkg tool`.
+to your registry from the Tanzu registry before to perform the installation. 
 
-**NOTE**: If the `imgpkg` client is already installed on your machine, you can also copy the images to a tar file and next upload
-it to the private docker registry using such commands:
+In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP as the images will be copied using `imgpkg tool`.
+
+**NOTE**: If the `imgpkg` client is already installed on the machine, you can also copy the images to a tar file and next upload
+them to the private docker registry using this command:
 
 ```bash
-TAP_VERSION=1.5.0
-
-imgpkg copy \
-  --registry-username="<TANZU_REG_USERNAME>" \
-  --registry-password="<TANZU_REG_PASSWORD>" \
-  -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
-  --to-tar tap-${TAP_VERSION}-packages.tar
-
-imgpkg copy --tar tap-${TAP_VERSION}-packages.tar \
-   --registry-ca-cert-path=$HOME/_tmp/certs/localhost/client.crt \
-   --to-repo kind-registry:5000/tap/tap-packages
-```
-
-You can gt the script help usage:
-```bash
-./scripts/tap.sh -h
+./scripts/tap.sh relocateImages
 ```
 
 Example of installation
 ```bash
-REMOTE_HOME_DIR=<REMOTE_HOME_PATH>
 VM_IP=<VM_IP>
+LOCAL_REGISTRY="true"
 REGISTRY_SERVER=<REGISTRY_SERVER>
 REGISTRY_OWNER=<REGISTRY_OWNER>
 REGISTRY_USERNAME=<REGISTRY_USERNAME>
 REGISTRY_PASSWORD=<REGISTRY_PASSWORD>
 REGISTRY_CA_PATH=<REGISTRY_CA_PATH>
+TANZU_REG_SERVER=<TANZU_REG_SERVER>
 TANZU_REG_USERNAME=<TANZU_REG_USERNAME>
 TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD>
 TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN>
@@ -188,7 +156,7 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     REGISTRY_OWNER="tap" \
     REGISTRY_USERNAME="admin" \
     REGISTRY_PASSWORD="snowdrop" \
-    REGISTRY_CA_PATH="/home/snowdrop/_tmp/certs/localhost/client.crt" \
+    REGISTRY_CA_PATH="/home/snowdrop/.registry/certs/kind-registry/client.crt" \
     TANZU_REG_SERVER="registry.tanzu.vmware.com" \
     TANZU_REG_USERNAME="<TANZU_REG_USERNAME>" \
     TANZU_REG_PASSWORD="<TANZU_REG_USERNAME" \
@@ -345,8 +313,9 @@ tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-fil
 
 ## Clean
 
-To uninstall TAP, check to the [Tanzu documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/uninstall.html)
-or create a new kind kubernetes cluster.
+To uninstall the TAP repository and the packages, execute this command `./scripts/tap.sh remove`.
+
+> **Tip**: If you want to clean everything (e.g demo namespaces), then create a new kind kubernetes cluster ;-)
 
 That's all !
 

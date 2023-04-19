@@ -229,6 +229,8 @@ usage() {
   fmt "\tWhere option is:"
   fmt "\t-h                         \tPrints help"
   fmt "\tinstall                    \tAll in one command to install TAP: client, cluster Essentials, repository, packages, etc"
+  fmt "\tremove                     \tRemove TAP packages, repository"
+  fmt "\tkube-tools                 \tHelpfull kube tools: k9s, helm, kubectl krew, ktree"
   fmt ""
   fmt "\trelocateImages             \tRelocate the packages from the ${TANZU_REG_SERVER} to the ${REGISTRY_SERVER}"
   fmt "\tsetupTapNamespaces         \tCreate the different Tanzu namespaces: tap-install, grype"
@@ -566,6 +568,90 @@ kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"secrets": [{"nam
 kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"imagePullSecrets": [{"name":"registry-credentials"}]}'
 }
 
+remove() {
+  log "MAGENTA" "Consult TAP documentation for more detail: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/uninstall.html"
+  log "GREEN" "Removing the TAP packages ..."
+  tanzu package installed delete tap -n $NAMESPACE_TAP -y
+  log "GREEN" "Removing the TAP repository ..."
+  while read -r package; do
+    name=$(echo $package | jq -r '.name')
+    repo=$(echo $package | jq -r '.repository')
+    tag=$(echo $package | jq -r '.tag')
+    echo "Deleting the repository: $name"
+    tanzu package repository delete $name -n $NAMESPACE_TAP -y
+  done <<< "$(tanzu package repository list -n $NAMESPACE_TAP -o json | jq -c '.[]')"
+}
+
+kubeTools() {
+  # Terminal UI to interact with a Kubernetes cluster
+  K9S_VERSION=$(curl --silent "https://api.github.com/repos/derailed/k9s/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
+
+  REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
+  DEST_DIR="/usr/local/bin"
+
+  # Check OS TYPE and/or linux distro
+  check_os
+  check_distro
+
+  log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
+  if [[ $DISTRO == 'fedora' ]]; then
+    sudo yum install git wget unzip bash-completion openssl -y
+  else
+    sudo yum install git wget unzip epel-release bash-completion -y
+  fi
+
+  if ! command -v k9s &> /dev/null; then
+    sudo yum install jq -y
+    wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
+    sudo cp k9s ${DEST_DIR}
+  fi
+
+  if ! command -v ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew &> /dev/null; then
+    log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
+    (
+      set -x; cd "$(mktemp -d)" &&
+      OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+      ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+      KREW="krew-${OS}_${ARCH}" &&
+      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+      tar zxvf "${KREW}.tar.gz" &&
+      ./"${KREW}" install krew
+    )
+
+    log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
+    ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
+    ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
+    ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
+    ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
+
+    log "CYAN" "Creating some nice aliases, export PATH"
+    cat <<EOF > ${REMOTE_HOME_DIR}/.bash_aliases
+### kubectl krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+### kubectl shortcut -> kc
+alias kc='kubectl'
+### kubectl shortcut -> k
+alias k='kubectl'
+### kubectl tree
+alias ktree='kubectl tree'
+### kubectl ns
+alias kubens='kubectl ns'
+### kubectl ctx
+alias kubectx='kubectl ctx'
+### kubectl konfig
+alias konfig='kubectl konfig'
+EOF
+  fi
+
+  if ! command -v helm &> /dev/null; then
+    log "CYAN" "Installing Helm"
+    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    chmod 700 get_helm.sh
+    ./get_helm.sh
+  fi
+}
+
 # TODO: To be reviewed
 # log "CYAN" "Relocating the build images whn using full profile, installing the repository and packages"
 # TBS_FULL_VERSION=""
@@ -580,6 +666,7 @@ kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"imagePullSecrets
 
 case $1 in
     -h) usage; exit;;
+    kube-tools)             kubeTools;            exit;;
     install)
         init
         if [[ "$INSTALL_TANZU_CLI" == "true" ]]; then
@@ -597,6 +684,7 @@ case $1 in
         listTapPackages
         exit
         ;;
+    remove)                   remove;                  exit;;
     tanzuCli)
         init
         tanzuCli
