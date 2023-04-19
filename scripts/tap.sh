@@ -226,9 +226,10 @@ usage() {
   fmt ""
   fmt "\tWhere option is:"
   fmt "\t-h                         \tPrints help"
+  fmt "\tinstall                    \tAll in one command to install TAP: client, cluster Essentials, repository, packages, etc"
   fmt "\trelocateImages             \tRelocate the packages from the ${TANZU_REG_SERVER} to the ${REGISTRY_SERVER}"
   fmt "\tsetupTapNamespaces         \tCreate the different Tanzu namespaces: tap-install, grype"
-  fmt "\tcreateRegistryCreds        \tCreate the Container registry crdentials"
+  fmt "\tcreateRegistryCreds        \tCreate the Container registry credentials"
   fmt "\taddTapRepository           \tAdd the Tanzu TAP repository"
   fmt "\tcreateConfigFile           \tCreate the TAP config fil"
   fmt "\tinstallTapPackages         \tInstall the Tanzu TAP package"
@@ -344,7 +345,6 @@ clusterEssentials() {
 }
 
 relocateImages() {
-  if [[ "$COPY_PACKAGES" == "true" ]]; then
     log "CYAN" "Login to the Tanzu and target registries where we will copy the packages"
     docker login ${REGISTRY_SERVER} -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
     docker login ${TANZU_REG_SERVER} -u ${TANZU_REG_USERNAME} -p ${TANZU_REG_PASSWORD}
@@ -356,7 +356,6 @@ relocateImages() {
         --registry-ca-cert-path ${REGISTRY_CA_PATH} \
         -b ${TANZU_REG_SERVER}/tanzu-application-platform/tap-packages:${TAP_VERSION} \
         --to-repo ${REGISTRY_SERVER}/${REGISTRY_OWNER}/tap-packages
-  fi
 }
 
 setupTapNamespaces() {
@@ -568,8 +567,33 @@ kubectl patch serviceaccount default -n ${NAMESPACE_DEMO} -p '{"imagePullSecrets
 #
 # tanzu package install full-tbs-deps -p full-tbs-deps.tanzu.vmware.com -v ${TBS_FULL_VERSION} -n ${NAMESPACE_TAP}
 
+check_os
+check_distro
+
+log "CYAN" "Create tanzu directory "
+if [ ! -d ${TANZU_TEMP_DIR} ]; then
+  mkdir -p ${TANZU_TEMP_DIR}
+fi
+
 case $1 in
     -h) usage; exit;;
+    install)
+        if [[ "$INSTALL_TANZU_CLI" == "true" ]]; then
+          tanzuCli
+        fi
+        clusterEssentials
+
+        if [[ "$COPY_PACKAGES" == "true" ]]; then
+          relocateImages
+        fi
+        setupTapNamespaces
+        createRegistryCreds
+        addTapRepository
+        createConfigFile
+        installTapPackages
+        listTapPackages
+        exit
+        ;;
     tanzuCli)                  tanzuCli;                  exit;;
     clusterEssentials)         clusterEssentials;         exit;;
     createConfigFile)          createConfigFile;          exit;;
@@ -581,23 +605,3 @@ case $1 in
     deployKubernetesDashboard) deployKubernetesDashboard; exit;;
     populateUserNamespace)     "$@";                      exit;;
 esac
-
-check_os
-check_distro
-
-log "CYAN" "Create tanzu directory "
-if [ ! -d ${TANZU_TEMP_DIR} ]; then
-  mkdir -p ${TANZU_TEMP_DIR}
-fi
-
-if [[ "$INSTALL_TANZU_CLI" == "true" ]]; then
-  tanzuCli
-fi
-clusterEssentials
-relocateImages
-setupTapNamespaces
-createRegistryCreds
-addTapRepository
-createConfigFile
-installTapPackages
-listTapPackages
