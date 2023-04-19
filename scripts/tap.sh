@@ -335,7 +335,7 @@ clusterEssentials() {
     export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
     cd ./tanzu-cluster-essentials
     export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
-    ./tap.sh -y
+    ./install.sh -y
 
     log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
     sudo cp ytt ${DEST_DIR}
