@@ -155,7 +155,7 @@ To get the chart files locally
 
 Generate a selfsigned certificate
 ```bash
-VM_IP=192.168.1.90 REMOTE_HOME_DIR=$(pwd) ../scripts/gen-selfsigned-cert.sh
+VM_IP=192.168.1.90 REMOTE_HOME_DIR=$(pwd) ../scripts/tools/gen-selfsigned-cert.sh
 ```
 To logon using a robot token - see: https://veducate.co.uk/authenticate-docker-harbor-robot/
 ```bash

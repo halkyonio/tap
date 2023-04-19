@@ -68,7 +68,7 @@ TL&DR; It is needed to:
 The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html) have been executed without problem
 to install the release [1.5.0](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-release-notes.html).
 
-To simplify your life, we have designed a [bash script](scripts/install.sh) which allows to install the different bits in a VM:
+To simplify your life, we have designed a [bash script](scripts/tap.sh) which allows to install the different bits in a VM:
 
 1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Carvel Tools & Kubernetes controllers)
    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
@@ -112,7 +112,7 @@ What logging verbosity do you want to use with kind (0..9) - A verbosity setting
 ...
 ```
 
-Next, execute the [install.sh](scripts/install.sh) bash script locally or remotely (ssh) and configure the following parameters:
+Next, execute the [install.sh](scripts/tap.sh) bash script locally or remotely (ssh) and configure the following parameters:
 
 - **LOCAL_REGISTRY**: Boolean used to tell if we will use a local registry. Default: false
 - **INSTALL_TANZU_CLI**: Boolean used to install the Tanzu tools: pivnet and Tanzu client. Default: true
@@ -159,7 +159,7 @@ imgpkg copy --tar tap-${TAP_VERSION}-packages.tar \
 
 You can gt the script help usage:
 ```bash
-./scripts/install.sh -h
+./scripts/tap.sh -h
 ```
 
 Example of installation
@@ -176,7 +176,7 @@ TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD>
 TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN>
 COPY_PACKAGES="false"
 INSTALL_TANZU_CLI="true"
-./scripts/install.sh
+./scripts/tap.sh
 
 or 
 
@@ -195,7 +195,7 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     TANZU_PIVNET_LEGACY_API_TOKEN="<TANZU_PIVNET_LEGACY_API_TOKEN>" \
     COPY_PACKAGES="false" \
     INSTALL_TANZU_CLI="true" \
-    "bash -s" -- < ./scripts/install.sh
+    "bash -s" -- < ./scripts/tap.sh
 ```
 
 ### Testing TAP
@@ -204,12 +204,12 @@ See demo page & instructions [here](demo.md) covering more examples like also to
 
 Create first a namespace using the command
 ```bash
-./scripts/install.sh populateUserNamespace demo1
+./scripts/tap.sh populateUserNamespace demo1
 
 or 
 
 ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
-    "bash -s" -- < ./scripts/install.sh populateUserNamespace demo1
+    "bash -s" -- < ./scripts/tap.sh populateUserNamespace demo1
 ```
 Next deploy a Web Application using the tanzu client and a workload
 ```bash

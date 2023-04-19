@@ -5,7 +5,7 @@
 # ./install
 #
 # or remotely
-# ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./install.sh
+# ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./tap.sh
 #
 # Define the following env vars:
 # - REMOTE_HOME_DIR: home directory where files will be installed within the remote VM
@@ -321,7 +321,7 @@ clusterEssentials() {
     export INSTALL_REGISTRY_PASSWORD=$TANZU_REG_PASSWORD
     cd ./tanzu-cluster-essentials
     export KUBECONFIG=${REMOTE_HOME_DIR}/.kube/config
-    ./install.sh -y
+    ./tap.sh -y
 
     log "CYAN" "Install the carvel tools: kapp, ytt, imgpkg & kbld onto your $PATH:"
     sudo cp ytt ${DEST_DIR}
