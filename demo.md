@@ -151,6 +151,7 @@ tanzu apps workload create $APP \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --label app.kubernetes.io/part-of=$APP \
+     --type web \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
      --service-ref "db=services.apps.tanzu.vmware.com/v1alpha1:ClassClaim:$CLAIM_REF"
 ```
