@@ -74,22 +74,22 @@ The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu
 
 To simplify your life, we have designed a [bash script](scripts/tap.sh) which allows to install the different bits in a VM:
 
-1. [Cluster Essentials](https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/)
+1[Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins (package, application, secret, etc)
+2[Cluster Essentials](https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/)
    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
    - [Kapp controller](https://carvel.dev/kapp-controller/),
    - [Secretgen controller](https://github.com/vmware-tanzu/carvel-secretgen-controller)
-2. [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins (package, application, secret, etc)
 3. TAP Repository
 
    A repository is an image bundle containing different k8s manifests, templates, files able to install/configure the TAP packages.
-   Such a repository are managed using the Tanzu command `tanzu package repository ...`
+   Such a repository is managed using the Tanzu command `tanzu package repository ...`
 4. TAP Packages
 
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
-   They are managed using the following command `tanzu package installed ...`
+   They are managed using the following command `tanzu package available | tanzu package installed ...`
 
-> **NOTE**: Some additional tools which are very helpful (e.g: k9s, helm, krew) can be installed using the command `./scripts/tap.sh kube-tools`
-> 
+> **NOTE**: Some additional kubernetes tools which are very helpful (e.g: k9s, helm, krew) can be installed using the command `./scripts/tap.sh kube-tools`
+
 ### How to install TAP
 
 To install TAP, create first a kind cluster and secured container registry using this script:
