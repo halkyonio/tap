@@ -18,12 +18,11 @@ See Getting started [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-
 
 - Create on the TAP cluster, a `demo2` namespace:
 ```bash
-./scripts/tap.sh populateUserNamespace demo2`
+./scripts/tap.sh populateUserNamespace demo2
 ```
 - Create a `workload` using the following github project
 
 ```bash
-PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
 tanzu apps workload apply $APP \
    -n demo2 \
