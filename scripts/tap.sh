@@ -615,7 +615,7 @@ kubeTools() {
 
   log "CYAN" "Checking if kubectl is installed..."
   if ! command -v kubectl &> /dev/null; then
-     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${PLATFORM}/${ARCH}/kubectl
+     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${PLATFORM}/${ARCH}/kubectl"
      chmod +x ./kubectl; sudo mv ./kubectl ${DEST_DIR}/kubectl
   fi
 
