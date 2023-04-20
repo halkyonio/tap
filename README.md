@@ -181,8 +181,6 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
 
 ### Testing TAP
 
-See demo page & instructions [here](demo.md) covering more examples like also to deploy a Quarkus application using a new Supply Chain, the Quarkus Buildpack builder image, etc.
-
 Create first a namespace using the command
 ```bash
 ./scripts/tap.sh populateUserNamespace demo1
@@ -214,6 +212,8 @@ Look to the URL of the service to open it within your browser:
 NAME                 READY   URL
 tanzu-java-web-app   Ready   http://tanzu-java-web-app.demo0.10.0.77.164.sslip.io
 ```
+
+>**Note**: See our demo page [here](demo.md) which covers more examples.
 
 ## Additional information
 
