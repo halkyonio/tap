@@ -97,6 +97,7 @@ To install TAP, create first a kind cluster and secured container registry using
 curl -s -L "https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh" | bash -s install --secure-registry --skip-ingress-installation --registry-user admin --registry-password snowdrop --server-ip <VM_IP>
 ```
 > **Tip**: Use the `-h` of the kind.sh script to see the others options !
+
 > **Warning**: If you deploy TAP on a remote VM, then it is mandatory to specify the option `--server-ip ` to expose the kubernetes API server at this address in order to access remotely
 
 Next, execute the [tap.sh](scripts/tap.sh) bash script locally and configure the following parameters:
