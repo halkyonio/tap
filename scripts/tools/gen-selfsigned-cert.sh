@@ -6,11 +6,11 @@
 #
 # Execute this command locally
 #
-# ./gen-selfsigned-cert.sh
-# VM_IP=10.0.76.43 ./gen-selfsigned-cert.sh
+# ./tools/gen-selfsigned-cert.sh
+# VM_IP=10.0.76.43 ./tools/gen-selfsigned-cert.sh
 #
 # or remotely
-# ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./gen-selfsigned-cert.sh
+# ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./tools/gen-selfsigned-cert.sh
 #
 # Define the following env vars:
 # - REMOTE_HOME_DIR: home directory where files will be installed within the remote VM

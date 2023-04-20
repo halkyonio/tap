@@ -17,7 +17,7 @@ Table of Contents
 
 ## What is Tanzu Application Platform - TAP
 
-Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
+Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
@@ -38,22 +38,26 @@ TAP rely on the following components which are installed as [packages](./package
 - `Knative`serving and eventing,
 - `kpack` controller able to build images using `Buildpacks`,
 - `Contour` to route the traffic internally or externally using `Ingress`
-- `kapp` controller to install/uninstall K8s resources using templates (ytt, ...)
+- `kapp` controller to install/uninstall k8s resources using templates (ytt, ...)
 - `Application Live & Application Accelerator` to guide the Architects/Developers to design/deploy/monitor applications on k8s.
 - `Tekton pipelines` and `FluxCD` to fetch the sources (git, ...)
 - `Convention` controller able to change the `Workloads` according to METADATA (framework, runtime, ...)
 - `Service Binding & Toolkit` able to manage locally the services,
 - `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...).
+- `Crossplane` control plane which dynamically deploy service instances (e.g. AWS RDS) with Services Toolkit and the pre-installed Bitnami Services.
+- `Bitnami service` Helm charts supported by TAP (MySQL, PostgreSQL, RabbitMQ and Redis)
+- `Application Configuration Service` component provides a Kubernetes-native experience to enable the runtime configuration of existing Spring applications (instead of using Spring Cloud config server)
+- `Spring Cloud Gateway` component able to route internal or external API requests to application services that expose APIs.
 
 ## Prerequisites
 
-The following [installation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-prerequisites.html) guide explains what the prerequisites are.
+The following [installation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-prerequisites.html) guide explains what the prerequisites are.
 
 TL&DR; It is needed to:
 
 - Have a [Tanzu account](https://account.run.pivotal.io/z/uaa/sign-up) on `https://network.tanzu.vmware.com/` to download the software or to access the registry `registry.tanzu.vmware.com`,
-- Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
-- Have a kind cluster >= 1.22 installed with a private docker registry. Use this [script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind-tls-secured-reg.sh)
+- Accept the needed [EULA](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/install-tanzu-cli.html#accept-the-end-user-license-agreements-0)
+- Have a kind cluster >= 1.24 installed with a private docker registry. Use this [script](https://github.com/snowdrop/k8s-infra/blob/main/kind/kind.sh)
 - Have a Linux VM machine with at least 8 CPUs, 8 GB of RAM and 100Gb (if you plan to use locally a container registry)
 - Private container registry such as docker registry
 
@@ -61,63 +65,39 @@ TL&DR; It is needed to:
 
 ### Introduction
 
-The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html) have been executed without problem
-to install the release [1.3.0](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-release-notes.html).
+The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/overview.html) have been followed to install the release [1.5.0](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-release-notes.html).
 
-To simplify your life, we have designed a [bash script](scripts/install.sh) which allows to install the different bits in a VM:
+To simplify your life, we have designed a [bash script](scripts/tap.sh) which allows to install the different bits in a VM:
 
-1. Cluster Essentials (= [bundle image](registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle) packaging Carvel Tools & 2 Kubernetes controllers)
+1. [Cluster Essentials](https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/)
    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
    - [Kapp controller](https://carvel.dev/kapp-controller/),
    - [Secretgen controller](https://github.com/vmware-tanzu/carvel-secretgen-controller)
 2. [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins (package, application, secret, etc)
 3. TAP Repository
 
-   A repository is an image bundle containing different K8s manifests, templates, files able to install/configure the TAP packages.
+   A repository is an image bundle containing different k8s manifests, templates, files able to install/configure the TAP packages.
    Such a repository are managed using the Tanzu command `tanzu package repository ...`
 4. TAP Packages
 
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
    They are managed using the following command `tanzu package installed ...`
 
-**NOTE**: Some additional tools which are very helpfull can be installed using the [install_k8s_tools.sh](scripts/install_k8s_tools.sh) bash script such as: unzip, k9s, helm, kubectl krew, kctrl !
-
+> **NOTE**: Some additional tools which are very helpful (e.g: k9s, helm, krew) can be installed using the command `./scripts/tap.sh kube-tools`
+> 
 ### How to install TAP
 
-To install TAP, create first a kind cluster and private docker registry:
+To install TAP, create first a kind cluster and secured container registry using this script:
 ```bash
-bash <(curl -s -L https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind-tls-secured-reg.sh)
+curl -s -L "https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh" | bash -s install --secure-registry --skip-ingress-installation --registry-user admin --registry-password snowdrop --server-ip <VM_IP>
 ```
-**Important**: Different questions will be asked such as IP of the VM machine, k8s version. Do not install ingress nginx as TAP will deploy ingress contour !
-```bash
-   _____                                  _
-  / ____|                                | |
- | (___    _ __     ___   __      __   __| |  _ __    ___    _ __
-  \___ \  | '_ \   / _ \  \ \ /\ / /  / _  | |  __|  / _ \  | \ _ \
-  ____) | | | | | | (_) |  \ V  V /  | (_| | | |    | (_) | | |_) |
- |_____/  |_| |_|  \___/    \_/\_/    \__,_| |_|     \___/  |  __/
-                                                            | |
-                                                            |_|
- Kind installation script
+> **Tip**: Use the `-h` of the kind.sh script to see the others options !
+> **Warning**: If you deploy TAP on a remote VM, then it is mandatory to specify the option `--server-ip ` to expose the kubernetes API server at this address in order to access remotely
 
-- Deploying a local secured (using htpasswd) docker registry
-- Generating a selfsigned certificate (using openssl) to expose the registry as a HTTP/HTTPS endpoint
-- Setting a docker network between the containers: kind and registry and alias "registry.local"
-- Allowing to access the repository using as address "registry.local:5000" within a pod, from laptop or when a pod is created
-- Exposing 2 additional NodePort: 30000 and 31000
-- Deploying an ingress controller
-- Copying the generated certificate here: /home/snowdrop/local-registry.crt
+Next, execute the [tap.sh](scripts/tap.sh) bash script locally and configure the following parameters:
 
-IP address of the VM running docker - Default: 127.0.0.1 ? 10.0.77.176
-Do you want to delete the kind cluster (y|n) - Default: y ? y
-Do you want install ingress nginx (y|n) - Default: y ? n
-Which kubernetes version should we install (1.18 .. 1.25) - Default: latest ? 1.23
-What logging verbosity do you want to use with kind (0..9) - A verbosity setting of 0 logs only critical events - Default: 0 ?
-...
-```
-
-Next, execute the [install.sh](scripts/install.sh) bash script locally or remotely (ssh) and configure the following parameters:
-
+- **LOCAL_REGISTRY**: Boolean used to tell if we will use a local registry. Default: false
+- **INSTALL_TANZU_CLI**: Boolean used to install the Tanzu tools: pivnet and Tanzu client. Default: true
 - **REGISTRY_SERVER**: registry DNS name (docker.io, ghcr.io, quay.io, registry.harbor.<VM_IP>.nip.io:<PORT>)
 - **REGISTRY_OWNER**: docker user account, ghcr.io ORG owner, container project (e.g: tap - `registry.harbor.<VM_IP>.nip.io:<PORT>/tap`)
 - **REGISTRY_USERNAME**: username to be used to log on to the registry
@@ -128,68 +108,63 @@ Next, execute the [install.sh](scripts/install.sh) bash script locally or remote
 - **TANZU_REG_PASSWORD**: password to be used to be authenticated against the Tanzu registry
 
 As the script will download different `products` from the https://network.tanzu.vmware.com/ server 
-using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then this is why must also configure the following variable
+using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then this is why we must also configure the following parameters
 and have a [Tanzu network account like an API account](https://tanzu.vmware.com/developer/guides/tanzu-network-gs/):
 
 - **TANZU_PIVNET_LEGACY_API_TOKEN**: Token used by pivnet CLI to login to the Tanzu products website
 
 Finally, define the home directory and IP address of the VM hosting TAP and the kubernetes cluster:
 
-- **REMOTE_HOME_DIR**: home directory where files will be installed within the VM
+- **REMOTE_HOME_DIR**: home directory where files will be installed within the VM. Default: $HOME
 - **VM_IP**: IP address of the VM where the cluster is running
 
-**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
-to your registry from the Tanzu registry before attempting installation. In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP 
-as the images will be copied using `imgpkg tool`.
+**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
+to your registry from the Tanzu registry before to perform the installation. 
 
-**NOTE**: If the `imgpkg` client is already installed on your mahine, you can also copy the images of the repository to a tar file and next upload
-it to the private docker registry using such commands:
+In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP as the images will be copied using `imgpkg tool`.
+
+**NOTE**: If the `imgpkg` client is already installed on the machine, you can also copy the images to a tar file and next upload
+them to the private docker registry using this command:
 
 ```bash
-TAP_VERSION=1.3.0
-
-imgpkg copy \
-  --registry-username="<TANZU_REG_USERNAME>" \
-  --registry-password="<TANZU_REG_PASSWORD>" \
-  -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
-  --to-tar tap-${TAP_VERSION}-packages.tar
-
-imgpkg copy --tar tap-${TAP_VERSION}-packages.tar \
-   --registry-ca-cert-path=$HOME/_tmp/certs/localhost/client.crt \
-   --to-repo ${VM_IP}.sslip.io:5000/tap/tap-packages
+./scripts/tap.sh relocateImages
 ```
 
 Example of installation
 ```bash
-REMOTE_HOME_DIR=<REMOTE_HOME_PATH>
 VM_IP=<VM_IP>
+LOCAL_REGISTRY="true"
 REGISTRY_SERVER=<REGISTRY_SERVER>
 REGISTRY_OWNER=<REGISTRY_OWNER>
 REGISTRY_USERNAME=<REGISTRY_USERNAME>
 REGISTRY_PASSWORD=<REGISTRY_PASSWORD>
 REGISTRY_CA_PATH=<REGISTRY_CA_PATH>
+TANZU_REG_SERVER=<TANZU_REG_SERVER>
 TANZU_REG_USERNAME=<TANZU_REG_USERNAME>
 TANZU_REG_PASSWORD=<TANZU_REG_PASSWORD>
 TANZU_PIVNET_LEGACY_API_TOKEN=<TANZU_PIVNET_LEGACY_API_TOKEN>
 COPY_PACKAGES="false"
-./scripts/install.sh
+INSTALL_TANZU_CLI="true"
+./scripts/tap.sh
 
 or 
 
 ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     REMOTE_HOME_DIR="/home/snowdrop" \
     VM_IP="10.0.77.176" \
+    LOCAL_REGISTRY="true" \
     REGISTRY_SERVER="10.0.77.176.nip.io:5000" \
     REGISTRY_OWNER="tap" \
     REGISTRY_USERNAME="admin" \
     REGISTRY_PASSWORD="snowdrop" \
-    REGISTRY_CA_PATH="/home/snowdrop/_tmp/certs/localhost/client.crt" \
+    REGISTRY_CA_PATH="/home/snowdrop/.registry/certs/kind-registry/client.crt" \
     TANZU_REG_SERVER="registry.tanzu.vmware.com" \
     TANZU_REG_USERNAME="<TANZU_REG_USERNAME>" \
     TANZU_REG_PASSWORD="<TANZU_REG_USERNAME" \
     TANZU_PIVNET_LEGACY_API_TOKEN="<TANZU_PIVNET_LEGACY_API_TOKEN>" \
     COPY_PACKAGES="false" \
-    "bash -s" -- < ./scripts/install.sh
+    INSTALL_TANZU_CLI="true" \
+    "bash -s" -- < ./scripts/tap.sh
 ```
 
 ### Testing TAP
@@ -198,12 +173,12 @@ See demo page & instructions [here](demo.md) covering more examples like also to
 
 Create first a namespace using the command
 ```bash
-./scripts/populate_namespace_tap.sh demo
+./scripts/tap.sh populateUserNamespace demo1
 
 or 
 
 ssh -i ${SSH_KEY} ${USER}@${IP} -p ${PORT} \
-    "bash -s" -- < ./scripts/populate_namespace_tap.sh demo
+    "bash -s" -- < ./scripts/tap.sh populateUserNamespace demo0
 ```
 Next deploy a Web Application using the tanzu client and a workload
 ```bash
@@ -214,29 +189,36 @@ tanzu apps workload create tanzu-java-web-app \
   --type web \
   --label app.kubernetes.io/part-of=tanzu-java-web-app \
   --yes \
-  --namespace demo
+  --namespace demo0
 ```
 Follow the build/deployment and access the service when finished
 ```bash
-tanzu apps workload tail tanzu-java-web-app --namespace demo
-tanzu apps workload get tanzu-java-web-app --namespace demo
+tanzu apps workload tail tanzu-java-web-app --namespace demo0 --timestamp --since 1h
+tanzu apps workload get tanzu-java-web-app --namespace demo0
 ```
+Look to the URL of the service to open it within your browser:
+```
+🚢 Knative Services
+NAME                 READY   URL
+tanzu-java-web-app   Ready   http://tanzu-java-web-app.demo0.10.0.77.164.sslip.io
+```
+
 ## Additional information
 
 ### Using a private registry
 
-As mentioned within the previous section, when we plan to use a private local registry such as [Harbor](harbor.md) or docker, some additional steps are required such as:
+As mentioned within the previous section, when we plan to use a private local registry such as Harbor, docker registry, etc some additional steps are required such as:
 
-1. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script (e.g. _tmp/certs/localhost/client.crt)
+1. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script
 
 2. Get the TAP packages and push them to the private registry
 
 ```bash
-imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.3.0 --to-tar packages.tar
-imgpkg copy --tar packages.tar --to-repo <VM_IP>.sslip.io:<PORT>/tap/tap-packages
+imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.5.0 --to-tar packages.tar
+imgpkg copy --tar packages.tar --to-repo <REGISTRY_HOST>/tap/tap-packages
 ```
 
-3. Define the TAP `shared` key within the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.3/tap/GUID-view-package-config.html))
+3. Define the TAP `shared` key within the `tap-values.yaml` file to pass the `ca_cert_data` (see [doc](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-view-package-config.html))
 ```bash
 shared:
   ca_cert_data: |
@@ -251,8 +233,9 @@ shared:
 ...      
 ```
 
-**REMARK**
-The steps 2 and 3 are managed by the `install.sh` script !
+> **NOTE**: The steps 2 and 3 are managed by the `install.sh` script !
+
+> **Tip**: You can set up a docker registry using our [kind secured script](https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh) :-)
 
 ### Tanzu Client
 
@@ -269,7 +252,7 @@ Next, install the tool using by example the following instructions on a Mac mach
 **Note**: The instructions are equivalent on Linux except the TAR file to be downloaded !
 
 ```bash
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.3.0' --product-file-id=1212837
+pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.5.0' --product-file-id=1212837
 tar -vxf tanzu-framework-darwin-amd64.tar
 install cli/core/v0.11.4/tanzu-core-darwin_amd64 /usr/local/bin/tanzu
 export TANZU_CLI_NO_INIT=true
@@ -331,11 +314,9 @@ tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-fil
 
 ## Clean
 
-To delete TAP, execute the following bash script able to delete the packages, repository, workload and installed controllers
+To uninstall the TAP repository and the packages, execute this command `./scripts/tap.sh remove`.
 
-```console
-$ ./scripts/uninstall.sh
-```
+> **Tip**: If you want to clean everything (e.g demo namespaces), then create a new kind kubernetes cluster ;-)
 
 That's all !
 

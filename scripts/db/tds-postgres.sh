@@ -17,7 +17,7 @@ CYAN='\033[0;36m'
 WHITE='\033[0;37m'
 
 HELP_CONTENT="
-Usage: tds-postgres.sh [OPTIONS]
+Usage: db/tds-postgres.sh [OPTIONS]
 Options:
 
 [Global Mandatory Flags]

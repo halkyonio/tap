@@ -2,10 +2,10 @@
 
 # Execute this command locally
 #
-# ./uninstall_postgresql.sh
+# ./db/uninstall_postgresql.sh
 #
 # or remotely
-# ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./uninstall_postgresql.sh
+# ssh -i <PUB_KEY_FILE_PATH> <USER>@<IP> -p <PORT> "bash -s" -- < ./db/uninstall_postgresql.sh
 #
 # Define the following env vars:
 # - NAMESPACE: Namespace where the postgresql instance should be deleted
