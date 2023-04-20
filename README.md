@@ -207,7 +207,7 @@ tanzu-java-web-app   Ready   http://tanzu-java-web-app.demo0.10.0.77.164.sslip.i
 
 ### Using a private registry
 
-As mentioned within the previous section, when we plan to use a private local registry such as [Harbor](harbor.md) or docker registry, some additional steps are required such as:
+As mentioned within the previous section, when we plan to use a private local registry such as Harbor, docker registry, etc some additional steps are required such as:
 
 1. Get the CA certificate file from the registry and set the parameter `REGISTRY_CA_PATH` for the bash script
 

@@ -12,28 +12,12 @@ Table of Contents
 
 ### Demo 1: Tanzu Java Web
 
-- Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
-- Select the `Tanzu Java Restful Web App` accelerator and within the screen `Generate accelerators` change the `The source image repository prefix to use when pushing the source`
-  to use your registry (e.g kind-registry:5000/demo1)
-- Next download the zipped project and unzip it locally
-- Create a new github repository (e.g. https://github.com/<YOUR_ORG>/tanzu-demo1) and push the project
-- Create on the TAP cluster, a `demo1` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo1`.
-- Upload the project under VisualCode (drag-and-drop) or IntelliJ
-- Open the project within the IDE
-- Modify some Tiltfile parameters like:
-  - Change the default namespace to `NAMESPACE = os.getenv("NAMESPACE", default='demo1')`
-  - Use as `SOURCE_IMAGE`, the following default name `SOURCE_IMAGE = os.getenv("SOURCE_IMAGE", default='kind-registry:5000/tanzu/demo1')`
-  - If TAP is not running locally, add this parameter `allow_k8s_contexts('kubernetes-admin@kubernetes')` to use the context to access the k8s cluster
-- Review the instructions of the TAP [Getting started](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/getting-started-iterate-new-app-intellij.html#prepare-your-ide-to-iterate-on-your-application-1) to launch it with IntelliJ or VSCode
-- Access the `localhost:8080` service like the Knative service
-- Do some code change and check that it has been updated locally or remotely using the URL of the service deployed `http://tanzu-java-web-app.demo1.$VM_IP.nip.io`
+See Getting started [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/getting-started.html) of Tap 1.5
 
 ### Demo 2: Spring Petclinic & TAP GUI
 
-- Look to the accelerators available on the backstage UI `http://tap-gui.<TAP_DNS_HOSTNAME>/create`
-- Download a zipped project from the accelerators such as `Spring Petclinic app` and unzip it
 - Create on the TAP cluster, a `demo2` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo2`.
-- Look to the code and next create a `workload`
+- Create a `workload` using the following github project
 
 ```bash
 PROJECT_DIR=$HOME/code/tanzu/tap
@@ -54,27 +38,54 @@ tanzu apps workload apply $APP \
 ```bash
 tanzu apps -n demo2 workload tail $APP --since 1m --timestamp
 tanzu apps -n demo2 workload get $APP
-# $APP: Ready
----
-lastTransitionTime: "2022-02-28T09:06:34Z"
-message: ""
-reason: Ready
-status: "True"
-type: Ready
 
-Workload pods
-NAME                                        STATUS      RESTARTS   AGE
-$APP-00001-deployment-749dd9d8b5-fbz6f   Running     0          110s
-$APP-build-1-build-pod                   Succeeded   0          5m45s
-$APP-config-writer-t6ffb-pod             Succeeded   0          4m48s
+[snowdrop@tap15 tap]$ tanzu apps workload get spring-tap-petclinic --namespace demo2
+📡 Overview
+   name:        spring-tap-petclinic
+   type:        web
+   namespace:   demo2
 
-Workload Knative Services
-NAME      READY   URL
+💾 Source
+   type:     git
+   url:      https://github.com/halkyonio/spring-tap-petclinic.git
+   branch:   main
+
+📦 Supply Chain
+   name:   source-to-url
+
+   NAME               READY   HEALTHY   UPDATED   RESOURCE
+   source-provider    True    True      4m33s     gitrepositories.source.toolkit.fluxcd.io/spring-tap-petclinic
+   image-provider     True    True      2m51s     images.kpack.io/spring-tap-petclinic
+   config-provider    True    True      2m44s     podintents.conventions.carto.run/spring-tap-petclinic
+   app-config         True    True      2m44s     configmaps/spring-tap-petclinic
+   service-bindings   True    True      2m44s     configmaps/spring-tap-petclinic-with-claims
+   api-descriptors    True    True      2m44s     configmaps/spring-tap-petclinic-with-api-descriptors
+   config-writer      True    True      2m35s     runnables.carto.run/spring-tap-petclinic-config-writer
+
+🚚 Delivery
+   name:   delivery-basic
+
+   NAME              READY   HEALTHY   UPDATED   RESOURCE
+   source-provider   True    True      2m30s     imagerepositories.source.apps.tanzu.vmware.com/spring-tap-petclinic-delivery
+   deployer          True    True      2m24s     apps.kappctrl.k14s.io/spring-tap-petclinic
+
+💬 Messages
+   No messages found.
+
+🛶 Pods
+   NAME                                                     READY   STATUS      RESTARTS   AGE
+   spring-tap-petclinic-00001-deployment-65ffccfd47-dmqwc   2/2     Running     0          2m31s
+   spring-tap-petclinic-build-1-build-pod                   0/1     Completed   0          4m34s
+   spring-tap-petclinic-config-writer-cfrpg-pod             0/1     Completed   0          2m45s
+
+🚢 Knative Services
+   NAME                   READY   URL
+   spring-tap-petclinic   Ready   http://spring-tap-petclinic.demo2.10.0.77.164.sslip.io
 ...
 ```
-
-- Add using the `TAP GUI` a new component using as url: `https://github.com/halkyonio/$APP/blob/main/catalog-info.yaml`
-- Look to the resource health, beans, ....
+- Open the URL of the service within your browser: http://spring-tap-petclinic.demo2.<VM_IP>.sslip.io/
+- Next, register the catalog-onfo.yaml file of the project `https://github.com/halkyonio/$APP/blob/main/catalog-info.yaml` using the screen `http://tap-gui.<VM_IP>.sslip.io/catalog-import`
+- Look to the resource health, beans, etc information using the screen `http://tap-gui.<VM_IP>.sslip.io/catalog/default/component/spring-tap-petclinic/workloads/pod`
 - Cleanup
 
 ```bash
@@ -85,84 +96,68 @@ tanzu apps workload -n demo2 delete $APP
 
 This example extends the previous and will demonstrate how to bind a Postgresql DB with the Spring application.
 
-- First, install the Postgresql DB operator and next create an instance, claim within the `demo3` namespace using the bash scripts:
-
+- First, review if the Posgresql service is available using the `tanzu service class` command:
 ```bash
-REGISTRY_USERNAME="xxxxx" # Your registry account/username to access registry.pivotal.io
-REGISTRY_PASSWORD="yyyyyyyy" # Your registry password to access registry.pivotal.io
-./scripts/install_postgresql.sh # To install the Postgresql Operator using a helm chart
+tanzu service class get postgresql-unmanaged
+NAME:           postgresql-unmanaged
+DESCRIPTION:    PostgreSQL by Bitnami
+READY:          true
 
-NAMESPACE=demo3
-./scripts/claim_postgresql.sh # To create a postgres instance, the clusterrole allowing to access the resources, the resourceclaim, etc
+PARAMETERS:
+  KEY        DESCRIPTION                                                  TYPE     DEFAULT  REQUIRED
+  storageGB  The desired storage capacity of the database, in Gigabytes.  integer  1        false
 ```
-**Note**: It is needed to have an account on `https://network.tanzu.vmware.com/` to access the Tanzu/Pivotal registry !
+- Next, create a new namespace `demo3`
+```bash
+./scripts/tap.sh populateUserNamespace demo3
+```
+- Claim a service within the namespace `demo3"` using the class `postgresql-unmanaged`
+```bash
+tanzu service class-claim create postgresql-1 --class postgresql-unmanaged -n demo3 
+```
+- Please run `tanzu services class-claims get postgresql-1 --namespace demo3` to see the progress of create
 
-**Remark**: In order to let the Service Toolkit to access the resources of the Postgresql DB, to claim them, it has been needed to create the following RBAC during the installation of the Postgresql database
-```yaml
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: resource-claims-postgresql
-  labels:
-    resourceclaims.services.apps.tanzu.vmware.com/controller: "true"
-    servicebinding.io/controller: "true"
-rules:
-  - apiGroups:
-    - sql.tanzu.vmware.com
-    resources:
-    - postgres
-    verbs: ["get", "list", "watch", "update"]
-```
-and to register the Postgresql service to make it claimable: 
-```yaml
-apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-kind: ClusterInstanceClass
-metadata:
-  name: postgresql
-spec:
-  description:
-    short: It's a PostgreSQL cluster!
-  pool:
-    group: sql.tanzu.vmware.com
-    kind: Postgres
-```
-
-- Wait a few moments to be sure that the DB is up and running
 - When the DB pod is ready, then grant the user to fix the issue `permission denied for schema` that the spring petclinic log will report otherwise
   `kubectl exec -it postgres-db-0 -n service-instances -- bash -c "psql -d postgres-db -c \"GRANT postgres to pgappuser;\""`
-- Obtain a Service Claim reference by running the following command:
+- 
+- Obtain the Service Claim reference by running the following command:
 
 ```bash
-tanzu service claim get  postgres-1 -n demo3
-Name: postgres-1
+tanzu service class-claim get postgresql-1 -n demo3
+Name: postgresql-1
+Namespace: demo3
+Claim Reference: services.apps.tanzu.vmware.com/v1alpha1:ClassClaim:postgresql-1
+Class Reference:
+  Name: postgresql-unmanaged
+Parameters: None
 Status:
   Ready: True
-Namespace: demo3
-Claim Reference: services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:postgres-1
-Resource to Claim:
-  Name: postgres-db
-  Namespace: service-instances
-  Group: sql.tanzu.vmware.com
-  Version: v1
-  Kind: Postgres
+  Claimed Resource:
+    Name: b839bb44-8bdf-404f-8641-a8e422dfdb16
+    Namespace: demo3
+    Group:
+    Version: v1
+    Kind: Secret
 ```
+>**Tip**: You can get the name of th claim using `kubectl get classClaim/postgresql-1 -n demo3 -ojson | jq -r .metadata.name`
 - Create on the TAP cluster, a `demo3` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo3`.
 - Use the `Workload` of the [git repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
 
 ```bash
 PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
+CLAIM_NAME=postgresql-1
+CLAIM_REF=$(kubectl get classClaim/$CLAIM_NAME -n demo3 -ojson | jq -r .metadata.name)
 tanzu apps workload create $APP \
      -n demo3 \
      -f $PROJECT_DIR/$APP/config/workload.yaml \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
-     --service-ref "db=services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:postgres-1"
+     --service-ref "db=services.apps.tanzu.vmware.com/v1alpha1:ClassClaim:$CLAIM_REF"
 ```
 
-- Check the status of the workload, if a new build succeeded and application has been redeployed
+- Check the status of the workload
 
 ```bash
 tanzu apps workload get -n demo3 spring-tap-petclinic
@@ -209,9 +204,7 @@ tanzu apps workload -n demo3 delete $APP
 
 ### Demo 4: Quarkus App + DB
 
-TODO: To be reviewed as the way to claim a service has changed since 1.2.0 and it is not longer to create a `ResourceClaim` when the 
-application is running within the same namespace as the DB but only to pass the reference using as convention `ApiVersion:Kind:Name`.
-If the DB runs in a different namespace, then a `ResourceClailPolicy` must be created as its reference used as serviceRef !!
+TODO: To be reviewed !!
 
 This example illustrates how to use the quarkus runtime and a Database service on a platform running TAP. As the current platform is not able to build by default
 the fat-jar used by Quarkus, it has been needed to create a new supply chain able to perform such a build. The scenario that we will follow part of this demo will
