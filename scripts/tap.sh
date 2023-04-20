@@ -513,7 +513,7 @@ installTapPackages() {
   log "WARN" "Due to the following X.505 Cert issue: https://github.com/halkyonio/tap/issues/34, it is needed to create another Crossplane ConfigMap to load the registry CA certificate"
   kubectl create ns crossplane-system --dry-run=client -o yaml | kubectl apply -f -
   kubectl -n crossplane-system create cm ca-bundle-config \
-  --from-file=ca-bundle=./${REGISTRY_CA_PATH}
+  --from-file=ca-bundle=${REGISTRY_CA_PATH}
 
   log "CYAN" "Installing the TAP packages ..."
   tanzu package install tap -p tap.tanzu.vmware.com \
