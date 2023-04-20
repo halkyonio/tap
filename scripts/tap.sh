@@ -642,14 +642,16 @@ alias k='kubectl'
 ### kubectl tree
 alias ktree='kubectl tree'
 ### kubectl ns
-alias kubens='kubectl ns'
+alias kns='kubectl ns'
 ### kubectl ctx
-alias kubectx='kubectl ctx'
+alias kctx='kubectl ctx'
 ### kubectl konfig
 alias konfig='kubectl konfig'
 EOF
   fi
-  . $HOME/.bashrc
+
+  log "CYAN" $(cat ${BASHRC_D_DIR}/aliases)
+  log "WARN" "Source now the .bashrc file: \". $HOME/.bashrc\"" in your termnal"
 
   if ! command -v helm &> /dev/null; then
     log "CYAN" "Installing Helm"
