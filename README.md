@@ -21,10 +21,11 @@ Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
-The first TAP version (1.0.0) has been released in January 2022. Full list of releases is available from the [releases page](https://network.pivotal.io/products/tanzu-application-platform/releases).
+The first TAP version (1.0.0) has been released in January 2022. The full list of the releases and their EOL support
+is available from the [releases page](https://network.pivotal.io/products/tanzu-application-platform/releases).
 
 By supporting the [Supply Chain choreograph](https://cartographer.sh/) pattern, TAP allows
-to decouple the path to move a microservice to different kubernetes environments (build, scan, CI/CD, test, ...)
+to decouple the path (build, deploy, scan, test, ...) to move a microservice to different kubernetes environments
 from the development lifecycle process followed by the developers.
 
 ![vision.png](assets/vision.png)
@@ -33,20 +34,21 @@ from the development lifecycle process followed by the developers.
 
 ## Components
 
-TAP rely on the following components which are installed as packages.
+TAP rely on the following components which are installed as versioned packages from OCI bundles.
 
 >**Note**: You can get more information about the packages (version, description) from this [page](./packages.md):
 
-- `Knative`serving and eventing,
+- `CNCF Buildpacks` 
+- `CNCF Knative`serving and eventing,
 - `kpack` controller able to build images using `Buildpacks`,
-- `Contour` to route the traffic internally or externally using `Ingress`
+- `CNCF Contour` to route the traffic internally or externally using `Ingress`
 - `kapp` controller to install/uninstall k8s resources using templates (ytt, ...)
 - `Application Live & Application Accelerator` to guide the Architects/Developers to design/deploy/monitor applications on k8s.
 - `Tekton pipelines` and `FluxCD` to fetch the sources (git, ...)
 - `Convention` controller able to change the `Workloads` according to METADATA (framework, runtime, ...)
 - `Service Binding & Toolkit` able to manage locally the services,
 - `Cartographer` which allows `App Operators` to create pre-approved paths to production by integrating Kubernetes resources with the elements of toolchains (e.g. Jenkins, CI/CD,...).
-- `Crossplane` control plane which dynamically deploy service instances (e.g. AWS RDS) with Services Toolkit and the pre-installed Bitnami Services.
+- `CNCF Crossplane` control plane which dynamically deploy service instances (e.g. AWS RDS) with Services Toolkit and the pre-installed Bitnami Services.
 - `Bitnami service` Helm charts supported by TAP (MySQL, PostgreSQL, RabbitMQ and Redis)
 - `Application Configuration Service` component provides a Kubernetes-native experience to enable the runtime configuration of existing Spring applications (instead of using Spring Cloud config server)
 - `Spring Cloud Gateway` component able to route internal or external API requests to application services that expose APIs.
