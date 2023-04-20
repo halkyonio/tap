@@ -166,7 +166,7 @@ spring-tap-petclinic-build-10-build-pod                  Succeeded   0          
 spring-tap-petclinic-00015-deployment-75575545fd-k4b27   Running     0          4h50m
 ```
 
-- Review some resources such as `ServiceBinding` and pod to verify if the postgresql user Secret has been mounted as a volume within the pod of the application
+- Review the content of the Pod's manifest to see if the secret has been well mounted as a volume, that the ENV VAR `SERVICE_BINDING_ROOT` is there and if the following mount `/bindings/db` exists.
 
 ```bash
 kubectl get pod -l "app=spring-tap-petclinic-00002" -n demo3 -o yaml | grep -A 4 volume
@@ -188,7 +188,7 @@ kubectl get pod -l "app=spring-tap-petclinic-00002" -n demo3 -o yaml | grep -A 4
       defaultMode: 420
       sources: 
 ```
-- (optional) Check the content of the `Deliverable` resource to get the SHA of the bundle and download it to get the YAML resources content ;-)
+- Next, extract from the `Deliverable` resource the source image, and grab the OCI bundle pushed within the local registry using the `imgpkg` tool to see which YAML resources have been generated ;-)
 ```bash
 IMG_SHA=$(kubectl get deliverable/spring-tap-petclinic -n demo3 -o jsonpath='{.spec.source.image}')
 imgpkg pull --registry-verify-certs=false \
