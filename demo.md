@@ -3,7 +3,7 @@ Table of Contents
 
 * [Demo 1: Tanzu Java Web](#demo-1-tanzu-java-web)
 * [Demo 2: Spring Petclinic &amp; TAP GUI](#demo-2-spring-petclinic--tap-gui)
-* [Demo 3: Spring Petclinic &amp; Service claim about Postgresql](#demo-3-spring-petclinic--service-claim-about-postgresql)
+* [Demo 3: Spring Petclinic &amp; Service claim of Postgresql](#demo-3-spring-petclinic--service-claim-about-postgresql)
 * [Demo 4: Quarkus App + DB](#demo-4-quarkus-app--db)
 
 ## Demo 1: Tanzu Java Web
@@ -90,7 +90,7 @@ tanzu apps -n demo2 workload get $APP
 tanzu apps workload -n demo2 delete $APP
 ```
 
-## Demo 3: Spring Petclinic & Service claim about Postgresql
+## Demo 3: Spring Petclinic & Service claim of Postgresql
 
 This example extends the previous and will demonstrate how to bind a Postgresql DB with the Spring application.
 
@@ -192,8 +192,8 @@ kubectl get pod -l "app=spring-tap-petclinic-00002" -n demo3 -o yaml | grep -A 4
 ```bash
 IMG_SHA=$(kubectl get deliverable/spring-tap-petclinic -n demo3 -o jsonpath='{.spec.source.image}')
 imgpkg pull --registry-verify-certs=false \
-  -b registry.harbor.10.0.77.176.nip.io:32443/tap/spring-tap-petclinic-demo3-bundle:26302cbb-6ab7-4c5a-a4ef-ac20caeeedc7 \
-  -o _temp/sb
+  -b $IMG_SHA \
+  -o $(pwd)/sb
 ```
 - Cleanup
 
