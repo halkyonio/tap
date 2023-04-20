@@ -3,7 +3,7 @@ Table of Contents
 
 * [Demo 1: Tanzu Java Web](#demo-1-tanzu-java-web)
 * [Demo 2: Spring Petclinic &amp; TAP GUI](#demo-2-spring-petclinic--tap-gui)
-* [Demo 3: Spring Petclinic &amp; Service claim of Postgresql](#demo-3-spring-petclinic--service-claim-about-postgresql)
+* [Demo 3: Spring Petclinic &amp; Service claim of Postgresql](#demo-3-spring-petclinic--service-claim-of-postgresql)
 * [Demo 4: Quarkus App + DB](#demo-4-quarkus-app--db)
 
 ## Demo 1: Tanzu Java Web
