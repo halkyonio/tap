@@ -16,7 +16,10 @@ See Getting started [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-
 
 ### Demo 2: Spring Petclinic & TAP GUI
 
-- Create on the TAP cluster, a `demo2` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo2`.
+- Create on the TAP cluster, a `demo2` namespace:
+```bash
+./scripts/tap.sh populateUserNamespace demo2`
+```
 - Create a `workload` using the following github project
 
 ```bash
