@@ -447,6 +447,11 @@ ootb_supply_chain_basic: # Based on supply_chain set above, can be changed to oo
   gitops:
     ssh_secret: "" # Takes "" as value by default; but can be overridden
 
+crossplane:
+  registryCaBundleConfig: |
+EOF
+generate_ca_cert_data_yaml >> ${TANZU_TEMP_DIR}/tap-values.yml
+cat << EOF >> ${TANZU_TEMP_DIR}/tap-values.yml
 #cnrs:
 #  domain_name: "$VM_IP.sslip.io"
 #  provider: local
