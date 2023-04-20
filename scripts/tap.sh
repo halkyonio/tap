@@ -649,7 +649,7 @@ alias kubectx='kubectl ctx'
 alias konfig='kubectl konfig'
 EOF
   fi
-  . $HOME/.krew/bashrc
+  . $HOME/.bashrc
 
   if ! command -v helm &> /dev/null; then
     log "CYAN" "Installing Helm"
