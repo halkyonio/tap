@@ -74,8 +74,8 @@ The instructions of the official [guide](https://docs.vmware.com/en/VMware-Tanzu
 
 To simplify your life, we have designed a [bash script](scripts/tap.sh) which allows to install the different bits in a VM:
 
-1[Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins (package, application, secret, etc)
-2[Cluster Essentials](https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/)
+1. [Tanzu client](https://github.com/vmware-tanzu/tanzu-framework/blob/main/docs/cli/getting-started.md) and plugins (package, application, secret, etc)
+2. [Cluster Essentials](https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/)
    - [Carvel tools](https://carvel.dev/): ytt, imgpkg, kbld, kapp
    - [Kapp controller](https://carvel.dev/kapp-controller/),
    - [Secretgen controller](https://github.com/vmware-tanzu/carvel-secretgen-controller)
