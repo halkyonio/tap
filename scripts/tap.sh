@@ -635,17 +635,24 @@ kubeTools() {
 
     log "CYAN" "Create kubectl & plugins aliases to ${BASHRC_D_DIR}/aliases"
     cat <<EOF > ${BASHRC_D_DIR}/aliases
-### kubectl shortcut -> kc
+# kubectl shortcut -> kc
 alias kc='kubectl'
-### kubectl shortcut -> k
+# kubectl shortcut -> k
 alias k='kubectl'
-### kubectl tree
+
+# kubectl krew
+alias krew='kubectl krew'
+
+# kubectl tree
 alias ktree='kubectl tree'
-### kubectl ns
+
+# kubectl ns
 alias kns='kubectl ns'
-### kubectl ctx
+
+# kubectl ctx
 alias kctx='kubectl ctx'
-### kubectl konfig
+
+# kubectl konfig
 alias konfig='kubectl konfig'
 EOF
   fi
