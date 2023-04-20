@@ -113,7 +113,10 @@ PARAMETERS:
 ```bash
 tanzu service class-claim create postgresql-1 --class postgresql-unmanaged -n demo3 
 ```
-- Please run `tanzu services class-claims get postgresql-1 --namespace demo3` to see the progress of create
+- Please run this command to see if the service has been created and secret
+```bash
+tanzu services class-claims get postgresql-1 --namespace demo3`
+```
 - Obtain the Service Claim reference by running the following command:
 
 ```bash
