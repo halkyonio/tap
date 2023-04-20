@@ -115,7 +115,7 @@ tanzu service class-claim create postgresql-1 --class postgresql-unmanaged -n de
 ```
 - Please run this command to see if the service has been created and secret
 ```bash
-tanzu services class-claims get postgresql-1 --namespace demo3`
+tanzu services class-claims get postgresql-1 --namespace demo3
 ```
 - Obtain the Service Claim reference by running the following command:
 
@@ -137,7 +137,7 @@ Status:
     Kind: Secret
 ```
 >**Tip**: You can get the name of th claim using `kubectl get classClaim/postgresql-1 -n demo3 -ojson | jq -r .metadata.name`
-- Create on the TAP cluster, a `demo3` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo3`.
+
 - Use the `Workload` of the [spring boot petclinic repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
 
 ```bash
