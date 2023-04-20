@@ -448,10 +448,10 @@ ootb_supply_chain_basic: # Based on supply_chain set above, can be changed to oo
     ssh_secret: "" # Takes "" as value by default; but can be overridden
 
 crossplane:
-  registryCaBundleConfig: |
-EOF
-generate_ca_cert_data_yaml >> ${TANZU_TEMP_DIR}/tap-values.yml
-cat << EOF >> ${TANZU_TEMP_DIR}/tap-values.yml
+  registryCaBundleConfig:
+    name: ca-bundle-config  # ConfigMap name
+    key:  ca-bundle         # ConfigMap key pointing to the CA certificate
+
 #cnrs:
 #  domain_name: "$VM_IP.sslip.io"
 #  provider: local
@@ -510,6 +510,11 @@ EOF
 
 
 installTapPackages() {
+  log "WARN" "Due to the following X.505 Cert issue: https://github.com/halkyonio/tap/issues/34, it is needed to create another Crossplane ConfigMap to load the registry CA certificate"
+  kubectl create ns crossplane-system --dry-run=client -o yaml | kubectl apply -f -
+  kubectl -n crossplane-system create cm ca-bundle-config \
+  --from-file=ca-bundle=./${REGISTRY_CA_PATH}
+
   log "CYAN" "Installing the TAP packages ..."
   tanzu package install tap -p tap.tanzu.vmware.com \
     --wait-check-interval 10s \
