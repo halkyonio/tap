@@ -3,7 +3,7 @@ Table of Contents
 
 * [Demo 1: Tanzu Java Web](#demo-1-tanzu-java-web)
 * [Demo 2: Spring Petclinic &amp; TAP GUI](#demo-2-spring-petclinic--tap-gui)
-* [Demo 3: Spring Petclinic &amp; Postgresql](#demo-3-spring-petclinic--postgresql)
+* [Demo 3: Spring Petclinic &amp; service claim about Postgresql](#demo-3-spring-petclinic--service-claim-about-postgresql)
 * [Demo 4: Quarkus App + DB](#demo-4-quarkus-app--db)
 
 ## Demo 1: Tanzu Java Web
@@ -90,7 +90,7 @@ tanzu apps -n demo2 workload get $APP
 tanzu apps workload -n demo2 delete $APP
 ```
 
-## Demo 3: Spring Petclinic & Postgresql
+## Demo 3: Spring Petclinic & service claim about Postgresql
 
 This example extends the previous and will demonstrate how to bind a Postgresql DB with the Spring application.
 
