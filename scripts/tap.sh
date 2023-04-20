@@ -146,6 +146,14 @@ check_distro() {
   log "CYAN" "Detected Linux distribution: $DISTRO"
 }
 
+check_arch() {
+  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
+  if [ -z $ARCH ]; then
+        ARCH='unknown'
+    fi
+    log "CYAN" "Detected Arch: $ARCH"
+}
+
 generate_ca_cert_data_yaml() {
   if [ -n "$REGISTRY_CA_PATH" ]; then
     caCertFormated=$(awk '{printf "      %s\n", $0}' < ${REGISTRY_CA_PATH})
@@ -580,8 +588,8 @@ remove() {
 }
 
 kubeTools() {
-  # Terminal UI to interact with a Kubernetes cluster
-  K9S_VERSION=$(curl --silent "https://api.github.com/repos/derailed/k9s/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
+  K9S_VERSION=$(curl -s "https://api.github.com/repos/derailed/k9s/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
+  KIND_VERSION=$(curl -s "https://api.github.com/repos/kubernetes-sigs/kind/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
 
   REMOTE_HOME_DIR=${REMOTE_HOME_DIR:-$HOME}
   DEST_DIR="/usr/local/bin"
@@ -589,6 +597,7 @@ kubeTools() {
   # Check OS TYPE and/or linux distro
   check_os
   check_distro
+  check_arch
 
   log "CYAN" "Install useful tools: k9s, unzip, wget, jq,..."
   if [[ $DISTRO == 'fedora' ]]; then
@@ -597,12 +606,33 @@ kubeTools() {
     sudo yum install git wget unzip epel-release bash-completion -y
   fi
 
+    if ! command -v helm &> /dev/null; then
+      log "CYAN" "Installing Helm"
+      curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+      chmod 700 get_helm.sh
+      ./get_helm.sh
+    fi
+
+  log "CYAN" "Checking if kubectl is installed..."
+  if ! command -v kubectl &> /dev/null; then
+     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${PLATFORM}/${ARCH}/kubectl
+     chmod +x ./kubectl; sudo mv ./kubectl ${DEST_DIR}/kubectl
+  fi
+
+  log "CYAN" "Checking if kind exists..."
+  if ! command -v kind &> /dev/null; then
+     curl -Lo ./kind https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-${PLATFORM}-${ARCH}
+     chmod +x ./kind; sudo mv ./kind ${DEST_DIR}kind
+  fi
+
+  log "CYAN" "Checking if k9s exists..."
   if ! command -v k9s &> /dev/null; then
     sudo yum install jq -y
-    wget -q https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
+    wget -q https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_x86_64.tar.gz && tar -vxf k9s_Linux_x86_64.tar.gz
     sudo cp k9s ${DEST_DIR}
   fi
 
+  log "CYAN" "Checking if kubectl krew exists..."
   if ! command -v ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew &> /dev/null; then
     log "CYAN" "Install kubectl krew tool - https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
     (
@@ -658,14 +688,7 @@ EOF
   fi
 
   log "CYAN" "$(cat ${BASHRC_D_DIR}/aliases)"
-  log "WARN" "Source now the .bashrc file: \". $HOME/.bashrc\" in your termnal"
-
-  if ! command -v helm &> /dev/null; then
-    log "CYAN" "Installing Helm"
-    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-    chmod 700 get_helm.sh
-    ./get_helm.sh
-  fi
+  log "WARN" "Source now the .bashrc file: \". $HOME/.bashrc\" in your terminal"
 }
 
 # TODO: To be reviewed
