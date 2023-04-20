@@ -114,10 +114,6 @@ PARAMETERS:
 tanzu service class-claim create postgresql-1 --class postgresql-unmanaged -n demo3 
 ```
 - Please run `tanzu services class-claims get postgresql-1 --namespace demo3` to see the progress of create
-
-- When the DB pod is ready, then grant the user to fix the issue `permission denied for schema` that the spring petclinic log will report otherwise
-  `kubectl exec -it postgres-db-0 -n service-instances -- bash -c "psql -d postgres-db -c \"GRANT postgres to pgappuser;\""`
-- 
 - Obtain the Service Claim reference by running the following command:
 
 ```bash
@@ -139,10 +135,9 @@ Status:
 ```
 >**Tip**: You can get the name of th claim using `kubectl get classClaim/postgresql-1 -n demo3 -ojson | jq -r .metadata.name`
 - Create on the TAP cluster, a `demo3` namespace, secret & RBAC using the bash script `./scripts/tap.sh populateUserNamespace demo3`.
-- Use the `Workload` of the [git repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
+- Use the `Workload` of the [spring boot petclinic repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
 
 ```bash
-PROJECT_DIR=$HOME/code/tanzu/tap
 APP=spring-tap-petclinic
 CLAIM_NAME=postgresql-1
 CLAIM_REF=$(kubectl get classClaim/$CLAIM_NAME -n demo3 -ojson | jq -r .metadata.name)
