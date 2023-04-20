@@ -6,11 +6,11 @@ Table of Contents
 * [Demo 3: Spring Petclinic &amp; Postgresql](#demo-3-spring-petclinic--postgresql)
 * [Demo 4: Quarkus App + DB](#demo-4-quarkus-app--db)
 
-### Demo 1: Tanzu Java Web
+## Demo 1: Tanzu Java Web
 
 See Getting started [guide](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/getting-started.html) of Tap 1.5
 
-### Demo 2: Spring Petclinic & TAP GUI
+## Demo 2: Spring Petclinic & TAP GUI
 
 - Create on the TAP cluster, a `demo2` namespace:
 ```bash
@@ -90,7 +90,7 @@ tanzu apps -n demo2 workload get $APP
 tanzu apps workload -n demo2 delete $APP
 ```
 
-### Demo 3: Spring Petclinic & Postgresql
+## Demo 3: Spring Petclinic & Postgresql
 
 This example extends the previous and will demonstrate how to bind a Postgresql DB with the Spring application.
 
@@ -200,7 +200,7 @@ imgpkg pull --registry-verify-certs=false \
 tanzu apps workload -n demo3 delete $APP
 ```
 
-### Demo 4: Quarkus App + DB
+## Demo 4: Quarkus App + DB
 
 TODO: To be reviewed !!
 
