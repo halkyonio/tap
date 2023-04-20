@@ -88,7 +88,7 @@ To simplify your life, we have designed a [bash script](scripts/tap.sh) which al
    The packages are the building blocks or components part of the TAP platform. Each of them will install a specific feature such as Knative, cartographer, contour, cnrs, ...
    They are managed using the following command `tanzu package available | tanzu package installed ...`
 
-> **NOTE**: Some additional kubernetes tools which are very helpful (e.g: k9s, helm, krew) can be installed using the command `./scripts/tap.sh kube-tools`
+>**NOTE**: Some additional kubernetes tools which are very helpful (e.g: k9s, helm, krew) can be installed using the command `./scripts/tap.sh kube-tools`
 
 ### How to install TAP
 
@@ -96,9 +96,9 @@ To install TAP, create first a kind cluster and secured container registry using
 ```bash
 curl -s -L "https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh" | bash -s install --secure-registry --skip-ingress-installation --registry-user admin --registry-password snowdrop --server-ip <VM_IP>
 ```
-> **Tip**: Use the `-h` of the kind.sh script to see the others options !
+>**Tip**: Use the `-h` of the kind.sh script to see the others options !
 
-> **Warning**: If you deploy TAP on a remote VM, then it is mandatory to specify the option `--server-ip ` to expose the kubernetes API server at this address in order to access remotely
+>**Warning**: If you deploy TAP on a remote VM, then it is mandatory to specify the option `--server-ip ` to expose the kubernetes API server at this address in order to access remotely
 
 Next, execute the [tap.sh](scripts/tap.sh) bash script locally and configure the following parameters:
 
@@ -239,9 +239,9 @@ shared:
 ...      
 ```
 
-> **NOTE**: The steps 2 and 3 are managed by the `install.sh` script !
+>**NOTE**: The steps 2 and 3 are managed by the `install.sh` script !
 
-> **Tip**: You can set up a docker registry using our [kind secured script](https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh) :-)
+>**Tip**: You can set up a docker registry using our [kind secured script](https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh) :-)
 
 ### Tanzu Client
 
@@ -322,7 +322,7 @@ tanzu package installed update tap -p tap.tanzu.vmware.com -v 1.0.0 --values-fil
 
 To uninstall the TAP repository and the packages, execute this command `./scripts/tap.sh remove`.
 
-> **Tip**: If you want to clean everything (e.g demo namespaces), then create a new kind kubernetes cluster ;-)
+>**Tip**: If you want to clean everything (e.g demo namespaces), then create a new kind kubernetes cluster ;-)
 
 That's all !
 
