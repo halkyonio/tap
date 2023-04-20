@@ -615,14 +615,18 @@ kubeTools() {
 
   log "CYAN" "Checking if kubectl is installed..."
   if ! command -v kubectl &> /dev/null; then
+     set -x
      curl -sLO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${PLATFORM}/${ARCH}/kubectl"
      chmod +x ./kubectl; sudo mv ./kubectl ${DEST_DIR}/kubectl
+     set +x
   fi
 
   log "CYAN" "Checking if kind exists..."
   if ! command -v kind &> /dev/null; then
+     set -x
      curl -sLo ./kind https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-${PLATFORM}-${ARCH}
-     chmod +x ./kind; sudo mv ./kind ${DEST_DIR}kind
+     chmod +x ./kind; sudo mv ./kind ${DEST_DIR}/kind
+     set +x
   fi
 
   log "CYAN" "Checking if k9s exists..."
