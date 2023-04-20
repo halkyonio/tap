@@ -173,6 +173,26 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     INSTALL_TANZU_CLI="true" \
     "bash -s" -- < ./scripts/tap.sh
 ```
+
+Wait till you will see the list of the packages installed:
+```text
+##################################################
+## Wait till TAP installation is over
+##################################################
+TAP installation status: Reconcile failed
+TAP installation status: Reconciling
+...
+
+##################################################
+## List the TAP packages installed
+##################################################
+
+  NAME                                                 DISPLAY-NAME
+  accelerator.apps.tanzu.vmware.com                    Application Accelerator for VMware Tanzu
+  api-portal.tanzu.vmware.com                          API portal
+...  
+```
+
 **NOTE**: If the `imgpkg` client is already installed on the machine, you can also copy the images to a tar file and next upload
 them to the private docker registry using this command:
 
