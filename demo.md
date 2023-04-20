@@ -1,14 +1,10 @@
-## TAP demo
-
 Table of Contents
 =================
 
-* [Demo 1: Tanzu Java Web](#demo1-tanzu-java-web)
-* [Demo 2: Spring Petclinic &amp; TAP GUI](#demo2-spring-petclinic--tap-gui)
-* [Demo 3: Spring Petclinic &amp; Postgresql](#demo3-spring-petclinic--postgresql)
-* [Demo 4: Quarkus App + DB](#demo4-quarkus-app--db)
-* [Tearing down the quarkus-app](#tearing-down-the-quarkus-app)
-* [Issues](#issues)
+* [Demo 1: Tanzu Java Web](#demo-1-tanzu-java-web)
+* [Demo 2: Spring Petclinic &amp; TAP GUI](#demo-2-spring-petclinic--tap-gui)
+* [Demo 3: Spring Petclinic &amp; Postgresql](#demo-3-spring-petclinic--postgresql)
+* [Demo 4: Quarkus App + DB](#demo-4-quarkus-app--db)
 
 ### Demo 1: Tanzu Java Web
 
@@ -364,18 +360,4 @@ To cleanup
 ```bash
 tanzu apps workload delete quarkus-app -n demo4
 kapp delete -n demo4 -a quarkus-supply-chain -y
-```
-
-### Issues
-
-Component cannot be built by `kpack` as we got the following [error](https://community.pivotal.io/s/question/0D54y00007DRNzjCAH/why-is-tap-workload-returning-as-error-error-failed-to-get-previous-image-missing-os-for-image-ghcriohalkyoniospringtappetclinictapdemo) `ERROR: failed to get previous image: missing OS for image "ghcr.io/halkyonio/spring-tap-petclinic-tap-demo` if we create a project using a `sopurce-image` and this command
-
-```bash
-tanzu apps workload create $APP \
-   --source-image ghcr.io/halkyonio/$APP-demosource \
-   --local-path $PROJECT_DIR/$APP  \
-   --type web \
-   --label app.kubernetes.io/part-of=$APP \
-   -n tap-demo \
-   --yes
 ```
