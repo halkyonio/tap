@@ -615,17 +615,26 @@ kubeTools() {
       ./"${KREW}" install krew
     )
 
-    log "CYAN" "Install kubectl ktree tool - https://github.com/ahmetb/kubectl-tree and kubectx,ns - https://github.com/ahmetb/kubectx"
+    log "CYAN" "Install kubectl-tree - https://github.com/ahmetb/kubectl-tree"
     ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install tree
+
+    log "CYAN" "Install kubectl-ctx, kubectl-ns - https://github.com/ahmetb/kubectx"
     ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ctx
     ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install ns
+
+    log "CYAN" "Install kubectl-konfig - https://github.com/corneliusweig/konfig"
     ${KREW_ROOT:-$HOME/.krew}/bin/kubectl-krew install konfig
 
-    log "CYAN" "Creating some nice aliases, export PATH"
-    cat <<EOF > ${REMOTE_HOME_DIR}/.bash_aliases
-### kubectl krew
-export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+    BASHRC_D_DIR="$HOME/.bashrc.d"
+    if [ ! -d ${BASHRC_D_DIR} ]; then
+        mkdir -p ${BASHRC_D_DIR}
+    fi
 
+    log "CYAN" "Export krew PATH to ${BASHRC_D_DIR}/krew.path"
+    echo "PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH\"" > ${BASHRC_D_DIR}/krew.path
+
+    log "CYAN" "Create kubectl & plugins aliases to ${BASHRC_D_DIR}/aliases"
+    cat <<EOF > ${BASHRC_D_DIR}/aliases
 ### kubectl shortcut -> kc
 alias kc='kubectl'
 ### kubectl shortcut -> k
@@ -640,6 +649,7 @@ alias kubectx='kubectl ctx'
 alias konfig='kubectl konfig'
 EOF
   fi
+  . $HOME/.krew/bashrc
 
   if ! command -v helm &> /dev/null; then
     log "CYAN" "Installing Helm"
