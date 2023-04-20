@@ -689,10 +689,11 @@ alias kctx='kubectl ctx'
 # kubectl konfig
 alias konfig='kubectl konfig'
 EOF
-  fi
 
   log "CYAN" "$(cat ${BASHRC_D_DIR}/aliases)"
   log "WARN" "Source now the .bashrc file: \". $HOME/.bashrc\" in your terminal"
+
+  fi
 }
 
 # TODO: To be reviewed
