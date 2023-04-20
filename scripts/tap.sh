@@ -650,7 +650,7 @@ alias konfig='kubectl konfig'
 EOF
   fi
 
-  log "CYAN" $(cat ${BASHRC_D_DIR}/aliases)
+  log "CYAN" "$(cat ${BASHRC_D_DIR}/aliases)"
   log "WARN" "Source now the .bashrc file: \". $HOME/.bashrc\"" in your termnal"
 
   if ! command -v helm &> /dev/null; then
