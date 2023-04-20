@@ -119,9 +119,9 @@ Next, execute the [tap.sh](scripts/tap.sh) bash script locally and configure the
 - **TANZU_REG_USERNAME**: user to be used to be authenticated against the Tanzu registry
 - **TANZU_REG_PASSWORD**: password to be used to be authenticated against the Tanzu registry
 
-As the script will download different `products` from the https://network.tanzu.vmware.com/ server 
-using the tool [pivnet](https://github.com/pivotal-cf/pivnet-cli), then this is why we must also configure the following parameters
-and have a [Tanzu network account like an API account](https://tanzu.vmware.com/developer/guides/tanzu-network-gs/):
+>**Warning**: As the script will download different `products` from https://network.tanzu.vmware.com/ 
+using [pivnet](https://github.com/pivotal-cf/pivnet-cli), then it is mandatory to configure the following parameter and to 
+have a [Tanzu network account like an API account](https://tanzu.vmware.com/developer/guides/tanzu-network-gs/):
 
 - **TANZU_PIVNET_LEGACY_API_TOKEN**: Token used by pivnet CLI to login to the Tanzu products website
 
@@ -130,7 +130,7 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM. Default: $HOME
 - **VM_IP**: IP address of the VM where the cluster is running
 
-**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
+>**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
 to your registry from the Tanzu registry before to perform the installation. 
 
 In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP as the images will be copied using `imgpkg tool`.
