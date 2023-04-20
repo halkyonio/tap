@@ -204,7 +204,7 @@ them to the private docker registry using this command:
 
 Create first a namespace using the command
 ```bash
-./scripts/tap.sh populateUserNamespace demo1
+./scripts/tap.sh populateUserNamespace demo0
 
 or 
 
