@@ -135,12 +135,7 @@ to your registry from the Tanzu registry before to perform the installation to s
 
 In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP as the images will be copied using `imgpkg tool`.
 
-**NOTE**: If the `imgpkg` client is already installed on the machine, you can also copy the images to a tar file and next upload
-them to the private docker registry using this command:
-
-```bash
-./scripts/tap.sh relocateImages
-```
+>**Tip**: Use the `-h` of the ./scripts/tap.sh script to see the others options we currently support !
 
 Example of installation
 ```bash
@@ -177,6 +172,12 @@ ssh -i ~/.ssh/id_server_private_key snowdrop@10.0.77.176 -p 22 \
     COPY_PACKAGES="false" \
     INSTALL_TANZU_CLI="true" \
     "bash -s" -- < ./scripts/tap.sh
+```
+**NOTE**: If the `imgpkg` client is already installed on the machine, you can also copy the images to a tar file and next upload
+them to the private docker registry using this command:
+
+```bash
+./scripts/tap.sh relocateImages
 ```
 
 ### Testing TAP
