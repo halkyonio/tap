@@ -130,8 +130,8 @@ Finally, define the home directory and IP address of the VM hosting TAP and the 
 - **REMOTE_HOME_DIR**: home directory where files will be installed within the VM. Default: $HOME
 - **VM_IP**: IP address of the VM where the cluster is running
 
->**IMPORTANT**: Tanzu recommends to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
-to your registry from the Tanzu registry before to perform the installation. 
+>**IMPORTANT**: We recommend to relocate the TAP repository [images](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-install-air-gap.html#relocate-images-to-a-registry-0) 
+to your registry from the Tanzu registry before to perform the installation to speed the process if you re-install it. 
 
 In this case, set the `COPY_PACKAGES` parameter to `TRUE` the first time you will install TAP as the images will be copied using `imgpkg tool`.
 
