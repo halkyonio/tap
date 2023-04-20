@@ -21,7 +21,7 @@ Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
-TAP 1.0 has been released in January 2022 and different versions are regularly produced - see [releases note](https://network.pivotal.io/products/tanzu-application-platform/releases). 
+The first TAP version (1.0.0) has been released in January 2022. Full list of releases is available from the [releases page](https://network.pivotal.io/products/tanzu-application-platform/releases).
 
 By supporting the [Supply Chain choreograph](https://cartographer.sh/) pattern, TAP allows
 to decouple the path to move a microservice to different kubernetes environments (build, scan, CI/CD, test, ...)
@@ -33,7 +33,9 @@ from the development lifecycle process followed by the developers.
 
 ## Components
 
-TAP rely on the following components which are installed as [packages](./packages.md).:
+TAP rely on the following components which are installed as packages.
+
+>**Note**: You can get more information about the packages (version, description) from this [page](./packages.md):
 
 - `Knative`serving and eventing,
 - `kpack` controller able to build images using `Buildpacks`,
