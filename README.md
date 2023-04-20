@@ -39,7 +39,7 @@ TAP rely on the following components which are installed as versioned packages f
 
 >**Note**: You can get more information about the packages (version, description) from this [page](./packages.md):
 
-- `CNCF Buildpacks` 
+- `CNCF Buildpacks` builder images able to convert your source code into a secure, efficient, production ready container image 
 - `CNCF Knative`serving and eventing,
 - `kpack` controller able to build images using `Buildpacks`,
 - `CNCF Contour` to route the traffic internally or externally using `Ingress`
