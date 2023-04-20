@@ -109,7 +109,7 @@ PARAMETERS:
 ```bash
 ./scripts/tap.sh populateUserNamespace demo3
 ```
-- Claim a service within the namespace `demo3"` using the class `postgresql-unmanaged`
+- Claim a service within the namespace `demo3` using the class `postgresql-unmanaged`
 ```bash
 tanzu service class-claim create postgresql-1 --class postgresql-unmanaged -n demo3 
 ```
@@ -136,7 +136,7 @@ Status:
     Version: v1
     Kind: Secret
 ```
->**Tip**: You can get the name of th claim using `kubectl get classClaim/postgresql-1 -n demo3 -ojson | jq -r .metadata.name`
+>**Tip**: You can get the name of the claim using `kubectl get classClaim/postgresql-1 -n demo3 -ojson | jq -r .metadata.name`
 
 - Use the `Workload` of the [spring boot petclinic repo](https://github.com/halkyonio/spring-tap-petclinic.git) and configure the `service-ref` like also pass as env var the property to tell to Spring to use the `application-postgresql.properties` file
 
@@ -146,7 +146,8 @@ CLAIM_NAME=postgresql-1
 CLAIM_REF=$(kubectl get classClaim/$CLAIM_NAME -n demo3 -ojson | jq -r .metadata.name)
 tanzu apps workload create $APP \
      -n demo3 \
-     -f $PROJECT_DIR/$APP/config/workload.yaml \
+     --git-repo https://github.com/halkyonio/$APP.git \
+     --git-branch main \
      --annotation "autoscaling.knative.dev/scaleDownDelay=15m" \
      --annotation "autoscaling.knative.dev/minScale=1" \
      --env "SPRING_PROFILES_ACTIVE=postgres" \
