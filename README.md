@@ -17,7 +17,7 @@ Table of Contents
 
 ## What is Tanzu Application Platform - TAP
 
-Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/GUID-overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
+Tanzu Application Platform - https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/overview.html is according to [VMWare](https://tanzu.vmware.com/application-platform)
 a modular, application-aware platform that provides a rich set of developer tooling and a prepaved path to production to build and deploy software
 quickly and securely on any compliant public cloud or on-premises Kubernetes cluster.
 
